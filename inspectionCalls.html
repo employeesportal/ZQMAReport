@@ -1,0 +1,994 @@
+<div class="space-y-4 sm:space-y-6 animate-fade-in flex flex-col h-full relative pb-6">
+    
+    <!-- Header & Agency Switcher -->
+    <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 shrink-0 print:hidden">
+        <div>
+            <h2 class="font-black text-base sm:text-lg uppercase text-slate-900">Inspection Records</h2>
+            <p class="text-[11px] sm:text-xs text-slate-500 font-bold">Admin & Coordinator View</p>
+        </div>
+        
+        <div class="flex p-1 bg-slate-100 rounded-xl border border-slate-200 w-full md:w-auto">
+            <button onclick="switchAgencyView('Equalitas')" id="tab-Equalitas" class="flex-1 md:flex-none px-5 py-2 rounded-lg text-xs font-black transition bg-blue-600 text-white shadow-md">
+                Equalitas
+            </button>
+            <button onclick="switchAgencyView('A-Mark')" id="tab-A-Mark" class="flex-1 md:flex-none px-5 py-2 rounded-lg text-xs font-black transition text-slate-500 hover:text-slate-800 hover:bg-slate-200">
+                A-Mark
+            </button>
+        </div>
+    </div>
+
+    <!-- 🎯 SMART SUMMARY DASHBOARD -->
+    <div id="smart-summary-section" class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col gap-5 shrink-0 print:hidden">
+        
+        <!-- Row 1: Core Metrics -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3" id="summary-row-1">
+            <!-- Injected via JS -->
+        </div>
+
+        <!-- Row 2: Status Breakdown -->
+        <div class="border-t border-slate-100 pt-4 flex flex-col gap-3">
+            <div class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Filter by Call Status</div>
+            <div class="flex flex-wrap gap-2" id="summary-row-2-statuses">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- Row 3: Dynamic Inspector Expansion -->
+        <div id="summary-inspector-breakdown" class="hidden border border-slate-200 bg-slate-50 rounded-xl p-4 flex-col gap-3 transition-all animate-fade-in">
+            <div class="flex items-center justify-between">
+                <div class="text-[10px] font-black uppercase text-slate-500 tracking-wider">Inspector Breakdown for: <span id="expanded-status-name" class="text-blue-700"></span></div>
+                <button onclick="setSummaryStatus('ALL')" class="text-[10px] font-bold text-slate-400 hover:text-slate-700 transition cursor-pointer"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+            </div>
+            <div class="flex flex-wrap gap-2" id="expanded-inspector-chips">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 🎯 UNIFORM FILTERS & ACTIONS BAR -->
+    <div class="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row items-center gap-2.5 sm:gap-3 shrink-0 print:hidden flex-wrap">
+        
+        <!-- 📅 Month Extraction Filter -->
+        <div class="relative w-full lg:w-48 shrink-0">
+            <select id="filter-month-type" onchange="window.refreshMonthDropdown(); window.applyFilters()" class="w-full px-4 h-11 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-blue-50 focus:bg-white cursor-pointer transition text-blue-800">
+                <option value="Received on Date">Month of Call Received</option>
+                <option value="Date of Inspection">Month of Inspection</option>
+                <option value="Inspection Completion Log">Month of Report Preparation</option>
+                <option value="Report Submission Date">Month of Submission</option>
+                <option value="Billed to DISCOM Date">Month of Billed</option>
+            </select>
+        </div>
+        <div class="relative w-full lg:w-40 shrink-0">
+            <select id="filter-month-value" onchange="window.applyFilters()" class="w-full px-4 h-11 border border-blue-300 rounded-xl text-xs font-black outline-none bg-blue-600 text-white focus:bg-blue-700 cursor-pointer transition shadow-md">
+                <option value="ALL">All Months</option>
+            </select>
+        </div>
+
+        <!-- 1. Call Mode Filter -->
+        <div class="relative w-full lg:w-36 shrink-0">
+            <select id="filter-call-mode" onchange="applyFilters()" class="w-full px-4 h-11 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white cursor-pointer transition">
+                <option value="ALL">All Modes</option>
+                <option value="Online">Online</option>
+                <option value="Offline">Offline</option>
+            </select>
+        </div>
+
+        <!-- 2. Call Status Filter -->
+        <div class="relative w-full lg:w-40 shrink-0">
+            <select id="filter-call-status" onchange="applyFilters()" class="w-full px-4 h-11 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white cursor-pointer transition">
+                <option value="ALL">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="Revised">Revised</option>
+                <option value="Duplicate">Duplicate</option>
+                <option value="Complete Offline">Complete Offline</option>
+            </select>
+        </div>
+
+        <!-- 3. Inspector Filter -->
+        <div class="relative w-full lg:w-48 shrink-0">
+            <i data-lucide="user" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 z-10"></i>
+            <select id="filter-inspector" onchange="applyFilters()" class="w-full pl-10 pr-8 h-11 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition cursor-pointer appearance-none">
+                <option value="">All Inspectors</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none"></i>
+        </div>
+
+        <!-- 4. Search Filter -->
+        <div class="relative flex-1 w-full min-w-[200px]">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+            <input type="text" id="filter-search" oninput="applyFilters()" placeholder="Search Code, Contractor, Work..." class="w-full pl-10 pr-4 h-11 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition">
+        </div>
+
+        <!-- Count & Actions -->
+        <div class="flex items-center justify-between lg:justify-end gap-2 w-full lg:w-auto border-t lg:border-t-0 lg:border-l border-slate-200 pt-3 lg:pt-0 lg:pl-3 shrink-0">
+            <span id="record-count" class="text-[10px] font-black uppercase text-slate-400 px-2 whitespace-nowrap">0 Records</span>
+            
+            <button onclick="exportToCSV()" class="px-3 h-11 bg-slate-800 hover:bg-slate-900 text-white rounded-xl transition cursor-pointer flex items-center justify-center shadow-md gap-2" title="Export Filtered Data to CSV">
+                <i data-lucide="download" class="w-4 h-4"></i> <span class="text-xs font-black hidden xl:inline">CSV</span>
+            </button>
+            <button onclick="downloadPDFReport()" class="px-3 h-11 bg-rose-600 hover:bg-rose-700 text-white rounded-xl transition cursor-pointer flex items-center justify-center shadow-md gap-2" title="Export Filtered Data to PDF">
+                <i data-lucide="file-text" class="w-4 h-4"></i> <span class="text-xs font-black hidden xl:inline">PDF</span>
+            </button>
+            <button onclick="window.resetPortalFilters()" class="px-3 h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition cursor-pointer flex items-center justify-center border border-slate-300 gap-2" title="Reset All Filters">
+                <i data-lucide="list-restart" class="w-4 h-4"></i>
+            </button>
+            <button onclick="loadAgencyData(true)" class="p-2.5 bg-slate-100 hover:bg-blue-100 text-blue-700 rounded-xl transition cursor-pointer" title="Refresh Live Data">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 🎯 RESPONSIVE DATA CONTAINER -->
+    <div id="printable-container" class="bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col flex-1 min-h-[400px] overflow-hidden">
+        
+        <div class="hidden print:block text-center pt-6 pb-4 border-b-2 border-slate-900">
+            <h1 class="text-sm font-black uppercase text-slate-900">Inspection Filtered Report — <span id="pdf-agency-title">Equalitas</span></h1>
+            <p class="text-[11px] font-bold text-slate-600 mt-1">Generated: <span id="pdf-report-date"></span></p>
+        </div>
+
+        <div class="overflow-y-auto custom-scrollbar relative flex-1 p-2 sm:p-4">
+            
+            <!-- DESKTOP TABLE VIEW -->
+            <div class="hidden md:block overflow-x-auto w-full">
+                <table class="w-full text-left text-xs border-collapse min-w-[900px]">
+                    <thead id="inspections-thead-desktop" class="sticky top-0 bg-slate-900 text-white uppercase text-[10px] font-black z-10 shadow-sm rounded-t-xl">
+                        <tr>
+                            <th class="p-4 rounded-tl-xl border-r border-slate-700">Inspection Code</th>
+                            <th class="p-4 border-r border-slate-700">Zone & Authority</th>
+                            <th class="p-4 border-r border-slate-700 w-1/4">Contractor & Work</th>
+                            <th class="p-4 border-r border-slate-700">Inspector</th>
+                            <th class="p-4 border-r border-slate-700 text-center">Call Status</th>
+                            <th class="p-4 border-r border-slate-700 text-center">Mode</th>
+                            <th class="p-4 text-center rounded-tr-xl print:hidden">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inspections-tbody-desktop" class="divide-y divide-slate-100 font-medium text-slate-700 align-top">
+                        <tr>
+                            <td colspan="7" class="p-12 text-center text-slate-500 font-bold">
+                                <div class="flex flex-col items-center justify-center gap-2">
+                                    <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600"></i>
+                                    <span>Fetching inspection calls...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- MOBILE COLLAPSIBLE CARDS VIEW -->
+            <div id="inspections-list-mobile" class="md:hidden flex flex-col gap-3 print:hidden">
+                <div class="p-12 text-center text-slate-400 font-bold">Loading records...</div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 🎯 DYNAMIC EXPAND (VIEW) MODAL -->
+    <div id="dynamic-view-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] hidden items-center justify-center p-4 print:hidden">
+        <div class="bg-white w-full max-w-4xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-3xl shrink-0">
+                <h3 class="font-black text-sm sm:text-lg text-slate-800 flex items-center gap-2 truncate">
+                    <i data-lucide="eye" class="w-5 h-5 text-blue-600 shrink-0"></i> View Details: <span id="view-modal-code" class="text-blue-600 truncate"></span>
+                </h3>
+                <button onclick="closeViewModal()" class="text-slate-400 hover:text-slate-700 p-1 bg-slate-200 rounded-lg shrink-0 cursor-pointer"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div id="dynamic-view-grid" class="overflow-y-auto p-4 sm:p-6 custom-scrollbar flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 bg-slate-50/50"></div>
+
+            <div class="p-4 sm:p-5 border-t border-slate-200 bg-slate-50 rounded-b-3xl flex justify-end shrink-0">
+                <button type="button" onclick="closeViewModal()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-black bg-blue-600 text-white hover:bg-blue-700 shadow-md transition cursor-pointer">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎯 MULTI-PURPOSE DRILLDOWN MODAL -->
+    <div id="analysis-drilldown-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[200] hidden flex items-center justify-center p-3 sm:p-4 print:hidden">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden animate-fade-in scale-in">
+            <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
+                <div>
+                    <h3 id="drilldown-modal-title" class="font-black text-sm sm:text-lg text-slate-900 uppercase flex items-center gap-2">
+                        <i data-lucide="list" class="w-5 h-5 text-blue-600"></i> Inspector Calls Summary
+                    </h3>
+                    <p id="drilldown-modal-subtitle" class="text-[11px] sm:text-xs text-slate-500 font-bold mt-0.5"></p>
+                </div>
+                <button onclick="closeDrilldownModal()" class="w-8 h-8 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-black flex items-center justify-center transition cursor-pointer">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="p-0 sm:p-4 overflow-y-auto flex-1 custom-scrollbar bg-slate-50/50">
+                <div id="drilldown-modal-content" class="w-full"></div>
+            </div>
+            <div class="p-4 border-t border-slate-100 bg-white flex justify-end shrink-0">
+                <button onclick="closeDrilldownModal()" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-black shadow-md transition cursor-pointer">Close Window</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .scale-in { animation: scaleIn 0.2s ease-out forwards; }
+    @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    
+    @media print {
+        .print\:hidden { display: none !important; }
+        .print\:block { display: block !important; }
+        body { background: white !important; -webkit-print-color-adjust: exact; }
+    }
+    
+    .pdf-export-active { 
+        background: white !important; 
+        width: 100% !important; 
+        min-width: 100% !important;
+        padding: 10px !important;
+        margin: 0 !important; 
+        position: relative !important;
+        left: 0 !important;
+        top: 0 !important;
+        transform: none !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    .pdf-export-active .overflow-x-auto {
+        overflow: visible !important;
+        width: 100% !important;
+        display: block !important;
+    }
+    
+    .pdf-export-active table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+        font-size: 8px !important;
+    }
+    .pdf-export-active th, .pdf-export-active td {
+        border: 1px solid #cbd5e1 !important; 
+        padding: 6px !important;
+        white-space: normal !important;
+    }
+    .pdf-export-active th {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+    }
+    .pdf-export-active .print\:hidden { display: none !important; }
+</style>
+
+<script>
+    window.API_URL = "https://script.google.com/macros/s/AKfycbzmaV_-21dNjXAkfU5Rdj0mtIZjY_tNrynPDJwmjdVW8vGRJO6qB4hA8slO7LWowBNz/exec";
+    
+    const activeSession = localStorage.getItem('portal_user');
+    window.currentUser = activeSession ? JSON.parse(activeSession) : { role: "admin", name: "Admin", agency: "All" };
+
+    window.moduleState = {
+        agency: "Equalitas",
+        dataCache: [],
+        filteredData: [],
+        inspectorsCache: [],
+        summaryCategory: "ALL", 
+        summaryStatus: "ALL"    
+    };
+
+    window.drilldownCache = {};
+    const CACHE_EXPIRATION_MS = 10 * 60 * 1000; 
+
+    // --- Core Helpers ---
+    window.getExactKey = function(row, keyword) {
+        if (!row) return null;
+        const lowerKeyword = keyword.toLowerCase();
+        return Object.keys(row).find(k => k.toLowerCase().includes(lowerKeyword)) || keyword;
+    };
+    
+    window.getRowValue = function(row, keyword) {
+        const key = window.getExactKey(row, keyword);
+        return row[key];
+    };
+
+    function storeDrilldown(arr) {
+        const id = 'dd_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+        window.drilldownCache[id] = arr;
+        return id;
+    }
+
+    window.getChipColorClass = function(status) {
+        const s = String(status).trim().toLowerCase();
+        if (s === 'pending') return 'bg-blue-700 text-white border-blue-800 hover:bg-blue-800';
+        if (s === 'completed') return 'bg-emerald-700 text-white border-emerald-800 hover:bg-emerald-800';
+        if (s === 'cancelled') return 'bg-red-700 text-white border-red-800 hover:bg-red-800';
+        if (s === 'revised') return 'bg-orange-200 text-amber-900 border-orange-300 hover:bg-orange-300';
+        if (s === 'duplicate') return 'bg-purple-200 text-purple-900 border-purple-300 hover:bg-purple-300';
+        if (s === 'complete offline') return 'bg-green-200 text-green-900 border-green-300 hover:bg-green-300';
+        return 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200';
+    };
+
+    // --- Powerful Date Extractor Engine ---
+    window.extractLatestDate = function(rawStr) {
+        if (!rawStr || String(rawStr).trim() === '-' || String(rawStr).trim().toLowerCase() === 'none' || String(rawStr).trim() === '') return null;
+        
+        // Matches DD/MM/YYYY, DD.MM.YYYY, DD-MM-YYYY
+        const regex = /(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})/g;
+        let match;
+        let latestDate = null;
+        
+        while ((match = regex.exec(String(rawStr))) !== null) {
+            let d = parseInt(match[1], 10);
+            let m = parseInt(match[2], 10) - 1; 
+            let y = parseInt(match[3], 10);
+            if (y < 100) y += 2000;
+            
+            let currentDate = new Date(y, m, d);
+            if (!latestDate || currentDate > latestDate) {
+                latestDate = currentDate;
+            }
+        }
+        return latestDate;
+    };
+
+    window.getYearMonth = function(rawString) {
+        const d = window.extractLatestDate(rawString);
+        if (!d || isNaN(d)) return null;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    };
+
+    // --- Overdue Logic ---
+    window.isCallOverdue = function(row) {
+        const status = String(getRowValue(row, "call status") || "").trim().toLowerCase();
+        if (status !== "" && status !== "pending") return false; 
+
+        const duration = String(getRowValue(row, "proposed insp. duration") || "").trim();
+        const latestDate = window.extractLatestDate(duration);
+        if (!latestDate) return false;
+
+        // Compare against end of the day
+        latestDate.setHours(23, 59, 59);
+        const today = new Date();
+        return latestDate < today;
+    };
+
+    // --- Smart Summary Interactions ---
+    window.setSummaryCategory = function(category) {
+        if (window.moduleState.summaryCategory === category) {
+            window.moduleState.summaryCategory = 'ALL'; 
+        } else {
+            window.moduleState.summaryCategory = category;
+        }
+        window.moduleState.summaryStatus = 'ALL'; 
+        
+        document.getElementById("filter-call-mode").value = "ALL";
+        document.getElementById("filter-call-status").value = "ALL";
+        window.applyFilters();
+    };
+
+    window.setSummaryStatus = function(status) {
+        if (window.moduleState.summaryStatus === status) {
+            window.moduleState.summaryStatus = 'ALL'; 
+        } else {
+            window.moduleState.summaryStatus = status;
+        }
+        window.moduleState.summaryCategory = 'ALL'; 
+        
+        document.getElementById("filter-call-mode").value = "ALL";
+        document.getElementById("filter-call-status").value = "ALL";
+        window.applyFilters();
+    };
+
+    // --- Smart Summary Rendering ---
+    window.renderSmartSummary = function(baseData) {
+        const data = baseData || window.moduleState.dataCache;
+        if (!data || data.length === 0) return;
+
+        let total = data.length;
+        let valid = 0;
+        let online = 0;
+        let offline = 0;
+        let overdue = 0;
+
+        const statusMap = {};
+
+        data.forEach(row => {
+            const status = String(getRowValue(row, 'call status') || "Pending").trim();
+            const mode = String(getRowValue(row, 'call mode') || "").trim().toLowerCase();
+            const inspector = String(getRowValue(row, 'inspecting engineer') || "Unassigned").trim();
+
+            if (!['cancelled', 'duplicate'].includes(status.toLowerCase())) valid++;
+            if (mode === 'online') online++;
+            if (mode === 'offline') offline++;
+            if (window.isCallOverdue(row)) overdue++;
+
+            if (!statusMap[status]) statusMap[status] = { count: 0, inspectors: {} };
+            statusMap[status].count++;
+            
+            if (!statusMap[status].inspectors[inspector]) {
+                statusMap[status].inspectors[inspector] = { count: 0, calls: [] };
+            }
+            statusMap[status].inspectors[inspector].count++;
+            statusMap[status].inspectors[inspector].calls.push(row);
+        });
+
+        const r1 = document.getElementById('summary-row-1');
+        const cat = window.moduleState.summaryCategory;
+        
+        const getBoxClass = (match) => match 
+            ? 'bg-blue-600 text-white shadow-inner ring-2 ring-blue-300 ring-offset-2 scale-[0.98]' 
+            : 'bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:shadow-md hover:-translate-y-0.5';
+
+        r1.innerHTML = `
+            <div onclick="setSummaryCategory('Total')" class="p-3 rounded-2xl flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 ${getBoxClass(cat === 'Total')}">
+                <span class="text-[10px] font-black uppercase tracking-wider opacity-80">Total Calls</span>
+                <span class="text-xl font-black mt-1">${total}</span>
+            </div>
+            <div onclick="setSummaryCategory('Valid')" class="p-3 rounded-2xl flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 ${getBoxClass(cat === 'Valid')}">
+                <span class="text-[10px] font-black uppercase tracking-wider opacity-80">Valid Calls</span>
+                <span class="text-xl font-black mt-1">${valid}</span>
+            </div>
+            <div onclick="setSummaryCategory('Online')" class="p-3 rounded-2xl flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 ${getBoxClass(cat === 'Online')}">
+                <span class="text-[10px] font-black uppercase tracking-wider opacity-80">Online</span>
+                <span class="text-xl font-black mt-1">${online}</span>
+            </div>
+            <div onclick="setSummaryCategory('Offline')" class="p-3 rounded-2xl flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 ${getBoxClass(cat === 'Offline')}">
+                <span class="text-[10px] font-black uppercase tracking-wider opacity-80">Offline</span>
+                <span class="text-xl font-black mt-1">${offline}</span>
+            </div>
+            <div onclick="setSummaryCategory('Overdue')" class="p-3 rounded-2xl flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 ${cat === 'Overdue' ? 'bg-rose-600 text-white shadow-inner ring-2 ring-rose-300 ring-offset-2 scale-[0.98]' : 'bg-rose-50 border border-rose-200 text-rose-800 hover:shadow-md hover:-translate-y-0.5'}">
+                <span class="text-[10px] font-black uppercase tracking-wider opacity-80">Overdue Pending</span>
+                <span class="text-xl font-black mt-1">${overdue}</span>
+            </div>
+        `;
+
+        const r2 = document.getElementById('summary-row-2-statuses');
+        const activeStatus = window.moduleState.summaryStatus;
+        let r2Html = '';
+
+        Object.keys(statusMap).sort().forEach(status => {
+            const count = statusMap[status].count;
+            const isSelected = (activeStatus === status);
+            const baseColor = window.getChipColorClass(status);
+            
+            let ringColor = 'ring-slate-400';
+            if(status.toLowerCase() === 'pending') ringColor = 'ring-blue-500';
+            if(status.toLowerCase() === 'completed') ringColor = 'ring-emerald-500';
+            if(status.toLowerCase() === 'cancelled') ringColor = 'ring-red-500';
+            
+            const activeStyle = isSelected ? `ring-2 ring-offset-2 opacity-100 ${ringColor}` : 'opacity-60 hover:opacity-100';
+            
+            r2Html += `
+                <button onclick="setSummaryStatus('${status}')" class="px-3 py-1.5 rounded-lg border shadow-sm text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${baseColor} ${activeStyle} flex items-center gap-1.5">
+                    ${status} <span class="bg-white/30 px-1.5 py-0.5 rounded-md">${count}</span>
+                </button>
+            `;
+        });
+        r2.innerHTML = r2Html;
+
+        const expBox = document.getElementById('summary-inspector-breakdown');
+        if (activeStatus !== 'ALL' && statusMap[activeStatus]) {
+            document.getElementById('expanded-status-name').textContent = activeStatus;
+            
+            const inspData = statusMap[activeStatus].inspectors;
+            let chipsHtml = '';
+            
+            Object.keys(inspData).sort().forEach(insp => {
+                const iCount = inspData[insp].count;
+                const cacheId = storeDrilldown(inspData[insp].calls);
+                const colorClass = window.getChipColorClass(activeStatus);
+                
+                chipsHtml += `
+                    <div class="flex items-center bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden group">
+                        <span class="px-2.5 py-1.5 text-[10px] font-black text-slate-700 truncate max-w-[120px] sm:max-w-none" title="${insp}">${insp}</span>
+                        <button onclick="openCallsSummary('${insp} - ${activeStatus}', '${cacheId}')" class="px-2.5 py-1.5 text-[10px] font-black border-l transition cursor-pointer hover:brightness-90 ${colorClass}">
+                            ${iCount}
+                        </button>
+                    </div>
+                `;
+            });
+            document.getElementById('expanded-inspector-chips').innerHTML = chipsHtml;
+            expBox.classList.remove('hidden');
+            expBox.classList.add('flex');
+        } else {
+            expBox.classList.add('hidden');
+            expBox.classList.remove('flex');
+        }
+    };
+
+    // --- Drilldown Modal Logic ---
+    window.openCallsSummary = function(title, cacheId) {
+        let rows = window.drilldownCache[cacheId] || [];
+        const modal = document.getElementById('analysis-drilldown-modal');
+        document.getElementById('drilldown-modal-title').innerHTML = `<i data-lucide="list" class="w-5 h-5 text-blue-600"></i> ${title}`;
+        document.getElementById('drilldown-modal-subtitle').textContent = `Total Calls: ${rows.length}`;
+        
+        let tableHTML = `<table class="w-full text-left text-xs border-collapse border border-slate-200 min-w-[700px]">
+            <thead class="bg-slate-100 text-slate-700 uppercase text-[10px] font-black border-b border-slate-200 sticky top-0 shadow-sm">
+                <tr>
+                    <th class="p-3 border-r border-slate-200 w-12 text-center">S.No.</th>
+                    <th class="p-3 border-r border-slate-200">Inspection Code</th>
+                    <th class="p-3 border-r border-slate-200 text-center">Status</th>
+                    <th class="p-3 border-r border-slate-200">Division</th>
+                    <th class="p-3 border-r border-slate-200">Work Description</th>
+                    <th class="p-3 text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-medium text-slate-700 bg-white">`;
+            
+        rows.forEach((r, index) => {
+            const encodedR = encodeURIComponent(JSON.stringify(r));
+            const status = String(getRowValue(r, 'call status') || 'Pending').trim();
+            const colorClass = getChipColorClass(status);
+            
+            tableHTML += `<tr class="hover:bg-slate-50 transition align-top">
+                <td class="p-3 border-r border-slate-100 text-center font-bold">${index + 1}</td>
+                <td class="p-3 border-r border-slate-100 font-bold text-blue-600 cursor-pointer hover:underline" onclick="window.openViewModal('${encodedR}')">${getRowValue(r, 'inspection code') || 'N/A'}</td>
+                <td class="p-3 border-r border-slate-100 text-center"><span class="px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider ${colorClass}">${status}</span></td>
+                <td class="p-3 border-r border-slate-100">${getRowValue(r, 'division') || '-'}</td>
+                <td class="p-3 border-r border-slate-100">${getRowValue(r, 'description of work') || '-'}</td>
+                <td class="p-3 text-center"><button onclick="window.openViewModal('${encodedR}')" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-[10px] font-bold cursor-pointer transition shadow-sm whitespace-nowrap">View</button></td>
+            </tr>`;
+        });
+        tableHTML += `</tbody></table>`;
+        
+        document.getElementById('drilldown-modal-content').innerHTML = `<div class="overflow-x-auto w-full border border-slate-200 rounded-xl shadow-sm custom-scrollbar max-h-[60vh]">${tableHTML}</div>`;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        if(window.lucide) lucide.createIcons();
+    };
+
+    window.closeDrilldownModal = function() {
+        const modal = document.getElementById('analysis-drilldown-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    };
+
+    // --- Core Operations ---
+    window.switchAgencyView = function(agencyName) {
+        window.moduleState.agency = agencyName;
+        window.moduleState.summaryCategory = 'ALL';
+        window.moduleState.summaryStatus = 'ALL';
+
+        const activeClass = "flex-1 md:flex-none px-5 py-2 rounded-lg text-xs font-black transition bg-blue-600 text-white shadow-md";
+        const inactiveClass = "flex-1 md:flex-none px-5 py-2 rounded-lg text-xs font-black transition text-slate-500 hover:text-slate-800 hover:bg-slate-200";
+        document.getElementById('tab-Equalitas').className = agencyName === 'Equalitas' ? activeClass : inactiveClass;
+        document.getElementById('tab-A-Mark').className = agencyName === 'A-Mark' ? activeClass : inactiveClass;
+        
+        window.resetPortalFilters();
+        loadAgencyData(false);
+    };
+
+    window.loadGlobalData = async function() {
+        const apiUrl = window.API_URL || (typeof API_URL !== 'undefined' ? API_URL : '');
+        try {
+            const inspRes = await fetch(apiUrl, { method: "POST", redirect: "follow", body: JSON.stringify({ action: "getAgencyInspectors" }) });
+            const inspResult = await inspRes.json();
+            if (inspResult.status === "success") {
+                window.moduleState.inspectorsCache = inspResult.data || [];
+                populateInspectorDropdown();
+            }
+        } catch(e) { 
+            console.error("Error loading global inspectors", e); 
+        }
+    };
+
+    window.loadAgencyData = async function(forceRefresh = false) {
+        const desktopTbody = document.getElementById("inspections-tbody-desktop");
+        const mobileContainer = document.getElementById("inspections-list-mobile");
+        
+        const cacheKey = `manage_inspections_${window.moduleState.agency}`;
+        const cacheTimeKey = `${cacheKey}_time`;
+
+        if (!forceRefresh) {
+            const cached = sessionStorage.getItem(cacheKey);
+            const time = sessionStorage.getItem(cacheTimeKey);
+            if (cached && time && (Date.now() - parseInt(time, 10) < CACHE_EXPIRATION_MS)) {
+                window.moduleState.dataCache = JSON.parse(cached);
+                populateInspectorDropdown();
+                window.refreshMonthDropdown();
+                window.applyFilters();
+                return;
+            }
+        }
+
+        const loadingHtml = `<tr><td colspan="7" class="p-12 text-center text-slate-500 font-bold"><div class="flex flex-col items-center justify-center gap-2"><i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600"></i><span>Fetching inspection calls...</span></div></td></tr>`;
+        const mobileLoadingHtml = `<div class="p-12 text-center text-slate-500 font-bold flex flex-col items-center gap-2"><i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600"></i><span>Loading records...</span></div>`;
+        
+        if(desktopTbody) desktopTbody.innerHTML = loadingHtml;
+        if(mobileContainer) mobileContainer.innerHTML = mobileLoadingHtml;
+        if(window.lucide) lucide.createIcons();
+
+        try {
+            const apiUrl = window.API_URL || (typeof API_URL !== 'undefined' ? API_URL : '');
+            const cUser = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : { role: 'admin' });
+
+            const [callsRes] = await Promise.all([
+                fetch(apiUrl, {
+                    method: "POST",
+                    redirect: "follow",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "getCalls", user: cUser, agency: window.moduleState.agency })
+                }),
+                window.moduleState.inspectorsCache.length === 0 ? loadGlobalData() : Promise.resolve()
+            ]);
+
+            const result = await callsRes.json();
+
+            if (result.status === "success" || result.status === true) {
+                window.moduleState.dataCache = result.data || [];
+                sessionStorage.setItem(cacheKey, JSON.stringify(window.moduleState.dataCache));
+                sessionStorage.setItem(cacheTimeKey, Date.now().toString());
+
+                populateInspectorDropdown();
+                window.refreshMonthDropdown();
+                window.applyFilters();
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (err) {
+            const errorHtml = `<tr><td colspan="7" class="p-12 text-center text-rose-500 font-bold">Error: ${err.message}</td></tr>`;
+            const mobileErrorHtml = `<div class="p-12 text-center text-rose-500 font-bold">Error: ${err.message}</div>`;
+            if(desktopTbody) desktopTbody.innerHTML = errorHtml;
+            if(mobileContainer) mobileContainer.innerHTML = mobileErrorHtml;
+        }
+    };
+
+    window.exportToCSV = function() {
+        const data = window.moduleState.filteredData;
+        if (!data || data.length === 0) {
+            alert("No records to export. Please adjust your filters.");
+            return;
+        }
+
+        const headersSet = new Set();
+        data.forEach(row => Object.keys(row).forEach(k => headersSet.add(k)));
+        const headers = Array.from(headersSet).filter(k => k !== "Agency_Source");
+
+        let csvContent = headers.map(h => `"${h}"`).join(",") + "\n";
+
+        data.forEach(row => {
+            const rowStr = headers.map(h => {
+                let val = row[h] === null || row[h] === undefined ? "" : String(row[h]);
+                return `"${val.replace(/"/g, '""')}"`;
+            }).join(",");
+            csvContent += rowStr + "\n";
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Inspections_${window.moduleState.agency}_${new Date().getTime()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    window.downloadPDFReport = function() {
+        if (!confirm(`Download filtered report as PDF?`)) return;
+        
+        document.body.style.cursor = 'wait';
+        
+        if (typeof window.html2pdf === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+            script.onload = () => executePDFGeneration();
+            script.onerror = () => { alert("Failed to load PDF library."); document.body.style.cursor = 'default'; };
+            document.head.appendChild(script);
+        } else {
+            executePDFGeneration();
+        }
+    };
+
+    function executePDFGeneration() {
+        document.getElementById('pdf-agency-title').textContent = window.moduleState.agency;
+        document.getElementById('pdf-report-date').textContent = new Date().toLocaleDateString('en-IN');
+        
+        const element = document.getElementById('printable-container');
+        const filename = `Inspection_Report_${window.moduleState.agency}_${new Date().toISOString().split('T')[0]}.pdf`;
+        
+        element.classList.add('pdf-export-active');
+        
+        const opt = {
+            margin:       [0.2, 0.2, 0.2, 0.2],
+            filename:     filename,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, scrollX: 0, scrollY: 0, x: 0, windowWidth: element.scrollWidth },
+            jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' },
+            pagebreak:    { mode: ['css', 'legacy'] }
+        };
+
+        window.html2pdf().set(opt).from(element).save().then(() => { 
+            element.classList.remove('pdf-export-active');
+            document.body.style.cursor = 'default'; 
+        }).catch(err => {
+            console.error(err);
+            element.classList.remove('pdf-export-active');
+            document.body.style.cursor = 'default'; 
+        });
+    }
+
+    window.populateInspectorDropdown = function() {
+        const filterEl = document.getElementById("filter-inspector");
+        if(!filterEl) return;
+        const currentSelection = filterEl.value;
+
+        const agencyInspectors = window.moduleState.inspectorsCache
+            .filter(i => i.agency.toLowerCase() === window.moduleState.agency.toLowerCase())
+            .map(i => i.name)
+            .sort();
+
+        let optionsHtml = `<option value="">All Inspectors</option>`;
+        agencyInspectors.forEach(insp => {
+            optionsHtml += `<option value="${insp.replace(/"/g, '&quot;')}">${insp}</option>`;
+        });
+        
+        filterEl.innerHTML = optionsHtml;
+        if (agencyInspectors.includes(currentSelection)) filterEl.value = currentSelection;
+    };
+
+    window.refreshMonthDropdown = function() {
+        const typeEl = document.getElementById('filter-month-type');
+        const valueEl = document.getElementById('filter-month-value');
+        if (!typeEl || !valueEl) return;
+
+        const targetCol = typeEl.value; 
+        const currentVal = valueEl.value;
+        const uniqueMonths = new Set();
+
+        window.moduleState.dataCache.forEach(row => {
+            const rawValue = getRowValue(row, targetCol);
+            const ym = window.getYearMonth(rawValue);
+            if (ym) uniqueMonths.add(ym);
+        });
+
+        const sortedMonths = Array.from(uniqueMonths).sort().reverse();
+        let optionsHTML = '<option value="ALL">All Months</option>';
+        sortedMonths.forEach(ym => {
+            const [year, month] = ym.split('-');
+            const monthName = new Date(year, parseInt(month) - 1).toLocaleString('default', { month: 'short', year: 'numeric' });
+            optionsHTML += `<option value="${ym}">${monthName}</option>`;
+        });
+
+        valueEl.innerHTML = optionsHTML;
+        if (sortedMonths.includes(currentVal)) valueEl.value = currentVal;
+        else valueEl.value = "ALL";
+    };
+
+    window.resetPortalFilters = function() {
+        document.getElementById("filter-search").value = "";
+        document.getElementById("filter-inspector").value = "";
+        document.getElementById("filter-call-status").value = "ALL";
+        document.getElementById("filter-call-mode").value = "ALL";
+        
+        const mt = document.getElementById("filter-month-type");
+        if(mt) mt.selectedIndex = 0;
+        
+        window.refreshMonthDropdown();
+        
+        window.moduleState.summaryCategory = 'ALL';
+        window.moduleState.summaryStatus = 'ALL';
+        
+        window.applyFilters();
+    };
+
+    window.applyFilters = function() {
+        const searchQ = (document.getElementById("filter-search")?.value || "").toLowerCase();
+        const inspQ = document.getElementById("filter-inspector")?.value || "";
+        const callStatusQ = document.getElementById("filter-call-status")?.value || "ALL";
+        const callModeQ = document.getElementById("filter-call-mode")?.value || "ALL";
+        const monthType = document.getElementById("filter-month-type")?.value;
+        const monthValue = document.getElementById("filter-month-value")?.value || "ALL";
+        
+        const sCat = window.moduleState.summaryCategory;
+        const sStat = window.moduleState.summaryStatus;
+
+        // Stage 1: Base Data (Powers the Summary)
+        const baseFilteredData = window.moduleState.dataCache.filter(row => {
+            const code = String(getRowValue(row, "Inspection Code") || "").toLowerCase();
+            const contractor = String(getRowValue(row, "Contactor Name") || getRowValue(row, "Contractor Name") || "").toLowerCase();
+            const work = String(getRowValue(row, "Description of Work") || "").toLowerCase();
+            const inspector = String(getRowValue(row, "Inspecting Engineer TPIA") || "");
+            const callStatus = String(getRowValue(row, "Call Status") || "Pending").trim();
+            const callMode = String(getRowValue(row, "Call Mode") || "").trim();
+
+            const matchesSearch = code.includes(searchQ) || contractor.includes(searchQ) || work.includes(searchQ);
+            const matchesInsp = (inspQ === "" || inspector === inspQ);
+            const matchesCallStatus = (callStatusQ === "ALL" || callStatus.toLowerCase() === callStatusQ.toLowerCase());
+            const matchesCallMode = (callModeQ === "ALL" || callMode.toLowerCase() === callModeQ.toLowerCase());
+
+            let matchesMonth = true;
+            if (monthValue !== "ALL" && monthType) {
+                const rawVal = getRowValue(row, monthType);
+                const ym = window.getYearMonth(rawVal);
+                matchesMonth = (ym === monthValue);
+            }
+
+            return matchesSearch && matchesInsp && matchesCallStatus && matchesCallMode && matchesMonth;
+        });
+
+        // Push Base Data to Smart Summary
+        window.renderSmartSummary(baseFilteredData);
+
+        // Stage 2: Summary Overrides (Powers the actual table)
+        const finalFilteredData = baseFilteredData.filter(row => {
+            const callStatus = String(getRowValue(row, "Call Status") || "Pending").trim();
+            const callMode = String(getRowValue(row, "Call Mode") || "").trim();
+
+            let matchesCat = true;
+            if (sCat === 'Valid') matchesCat = !['cancelled', 'duplicate'].includes(callStatus.toLowerCase());
+            else if (sCat === 'Online') matchesCat = (callMode.toLowerCase() === 'online');
+            else if (sCat === 'Offline') matchesCat = (callMode.toLowerCase() === 'offline');
+            else if (sCat === 'Overdue') matchesCat = window.isCallOverdue(row);
+
+            let matchesSStat = true;
+            if (sStat !== 'ALL') {
+                matchesSStat = (callStatus === sStat);
+            }
+
+            return matchesCat && matchesSStat;
+        });
+
+        window.moduleState.filteredData = finalFilteredData; 
+        window.renderDataTable(finalFilteredData);
+    };
+
+    window.renderDataTable = function(data) {
+        const desktopTbody = document.getElementById("inspections-tbody-desktop");
+        const mobileContainer = document.getElementById("inspections-list-mobile");
+        
+        document.getElementById("record-count").innerText = `${data.length} Records`;
+
+        const isOverdueCat = window.moduleState.summaryCategory === 'Overdue';
+        
+        // Dynamically Update Desktop Header
+        const theadDesktop = document.getElementById("inspections-thead-desktop");
+        if(theadDesktop) {
+            theadDesktop.innerHTML = `
+                <tr>
+                    <th class="p-4 rounded-tl-xl border-r border-slate-700">Inspection Code</th>
+                    <th class="p-4 border-r border-slate-700">Zone & Authority</th>
+                    ${isOverdueCat ? '<th class="p-4 border-r border-slate-700 text-center text-rose-300">Proposed Dates</th>' : ''}
+                    <th class="p-4 border-r border-slate-700 w-1/4">Contractor & Work</th>
+                    <th class="p-4 border-r border-slate-700">Inspector</th>
+                    <th class="p-4 border-r border-slate-700 text-center">Call Status</th>
+                    <th class="p-4 border-r border-slate-700 text-center">Mode</th>
+                    <th class="p-4 text-center rounded-tr-xl print:hidden">Action</th>
+                </tr>
+            `;
+        }
+
+        if (data.length === 0) {
+            const emptyHtml = `<tr><td colspan="${isOverdueCat ? 8 : 7}" class="p-12 text-center text-slate-400 italic font-bold">No records found.</td></tr>`;
+            const mobileEmptyHtml = `<div class="p-12 text-center text-slate-400 italic font-bold">No records found.</div>`;
+            if(desktopTbody) desktopTbody.innerHTML = emptyHtml;
+            if(mobileContainer) mobileContainer.innerHTML = mobileEmptyHtml;
+            return;
+        }
+
+        requestAnimationFrame(() => {
+            const desktopFrag = document.createDocumentFragment();
+            const mobileFrag = document.createDocumentFragment();
+
+            data.forEach(row => {
+                const encodedRow = encodeURIComponent(JSON.stringify(row));
+                const code = getRowValue(row, "Inspection Code") || "-";
+                const orderRef = getRowValue(row, "Inspector Order Ref No") || "";
+                const authority = getRowValue(row, "Letter Issue Authority") || "-";
+                const zone = getRowValue(row, "Zone") || "-";
+                const contractor = getRowValue(row, "Contactor Name") || getRowValue(row, "Contractor Name") || "-";
+                const work = getRowValue(row, "Description of Work") || "-";
+                const inspector = getRowValue(row, "Inspecting Engineer TPIA") || "-";
+                const callStatus = getRowValue(row, "Call Status") || "Pending";
+                const callMode = getRowValue(row, "Call Mode") || "N/A";
+                const proposedDuration = getRowValue(row, "proposed insp. duration") || "-";
+                
+                const statusColor = getChipColorClass(callStatus);
+                const modeColor = callMode.toLowerCase() === 'online' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : (callMode.toLowerCase() === 'offline' ? 'bg-slate-100 text-slate-700 border-slate-300' : 'bg-slate-50 text-slate-500 border-slate-200');
+
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-blue-50/50 transition border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-4 border-r border-slate-100 font-mono">
+                        <div class="font-black text-blue-700">${code}</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5">${orderRef}</div>
+                    </td>
+                    <td class="p-4 border-r border-slate-100">
+                        <div class="font-bold text-slate-900">${zone}</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5">${authority}</div>
+                    </td>
+                    ${isOverdueCat ? `<td class="p-4 border-r border-slate-100 text-center"><span class="text-[11px] font-black text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200 inline-block whitespace-nowrap shadow-sm">${proposedDuration}</span></td>` : ''}
+                    <td class="p-4 border-r border-slate-100">
+                        <div class="font-bold text-slate-900 truncate max-w-[200px]" title="${contractor}">${contractor}</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5 truncate max-w-[200px]" title="${work}">${work}</div>
+                    </td>
+                    <td class="p-4 border-r border-slate-100 font-bold text-slate-800">
+                        <i data-lucide="user" class="w-3 h-3 inline mr-1 text-slate-400"></i>${inspector}
+                    </td>
+                    <td class="p-4 border-r border-slate-100 text-center">
+                        <span class="px-2.5 py-1.5 rounded-full text-[10px] font-black uppercase ${statusColor}">${callStatus}</span>
+                    </td>
+                    <td class="p-4 border-r border-slate-100 text-center">
+                        <span class="px-2 py-1 rounded text-[9px] font-black uppercase border shadow-sm ${modeColor}">${callMode}</span>
+                    </td>
+                    <td class="p-4 text-center print:hidden">
+                        <button onclick="openViewModal('${encodedRow}')" class="p-2 bg-slate-100 hover:bg-blue-100 text-blue-700 font-bold rounded-xl transition shadow-sm cursor-pointer mx-auto flex items-center justify-center" title="View Full Record">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+                desktopFrag.appendChild(tr);
+
+                const card = document.createElement("div");
+                card.className = "bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                        <div>
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Inspection ID</span>
+                            <span class="text-xs font-mono font-black text-blue-700">${code}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Zone</span>
+                            <span class="text-xs font-bold text-slate-800">${zone}</span>
+                        </div>
+                    </div>
+                    
+                    ${isOverdueCat ? `
+                    <div class="mt-1 mb-2 p-2.5 bg-rose-50 rounded-lg border border-rose-100 flex items-center justify-between shadow-sm">
+                        <span class="text-[10px] font-black text-rose-500 uppercase tracking-wider">Overdue Dates</span>
+                        <span class="text-xs font-bold text-rose-700">${proposedDuration}</span>
+                    </div>` : ''}
+
+                    <div>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Work Description</span>
+                        <p class="text-xs font-medium text-slate-800 line-clamp-2">${work || '-'}</p>
+                    </div>
+
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="px-2.5 py-1 rounded-full text-[9px] font-black uppercase ${statusColor}">${callStatus}</span>
+                        <span class="px-2 py-1 rounded text-[9px] font-black uppercase border shadow-sm ${modeColor}">${callMode}</span>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 print:hidden">
+                        <button onclick="openViewModal('${encodedRow}')" class="w-full py-2.5 px-4 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                            <i data-lucide="eye" class="w-3.5 h-3.5"></i> View Details
+                        </button>
+                    </div>
+                `;
+                mobileFrag.appendChild(card);
+            });
+
+            if(desktopTbody) { desktopTbody.innerHTML = ""; desktopTbody.appendChild(desktopFrag); }
+            if(mobileContainer) { mobileContainer.innerHTML = ""; mobileContainer.appendChild(mobileFrag); }
+            if(window.lucide) window.lucide.createIcons();
+        });
+    };
+
+    window.openViewModal = function(encodedRow) {
+        const rowData = JSON.parse(decodeURIComponent(encodedRow));
+        document.getElementById("view-modal-code").innerText = getRowValue(rowData, "Inspection Code") || "Unknown ID";
+        const grid = document.getElementById("dynamic-view-grid");
+        grid.innerHTML = "";
+
+        Object.keys(rowData).forEach(key => {
+            if (key === "Agency_Source") return;
+            const val = rowData[key] || "-";
+            const isFullWidth = key.toLowerCase().includes("description") || key.toLowerCase().includes("site") || key.toLowerCase().includes("type of inspection") || key.toLowerCase().includes("mandays");
+            
+            grid.innerHTML += `
+                <div class="${isFullWidth ? 'md:col-span-2 lg:col-span-3' : ''} bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center">
+                    <label class="block text-[9px] font-black uppercase text-slate-400 mb-1.5">${key}</label>
+                    <div class="text-xs sm:text-sm font-bold text-slate-800 whitespace-pre-wrap break-words leading-snug">${val}</div>
+                </div>
+            `;
+        });
+
+        document.getElementById("dynamic-view-modal").classList.remove("hidden");
+        document.getElementById("dynamic-view-modal").classList.add("flex");
+        if(window.lucide) lucide.createIcons();
+    };
+
+    window.closeViewModal = function() {
+        document.getElementById("dynamic-view-modal").classList.add("hidden");
+        document.getElementById("dynamic-view-modal").classList.remove("flex");
+    };
+
+    // Initialize application logic
+    loadGlobalData().then(() => loadAgencyData(false));
+</script>

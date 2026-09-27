@@ -1,0 +1,561 @@
+<div class="space-y-6 animate-fade-in flex flex-col h-full relative pb-8">
+    
+    <!-- Header & Agency Switcher -->
+    <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
+        <div>
+            <h2 class="font-black text-base sm:text-lg uppercase text-slate-900 text-center md:text-left">Daily Work Portal</h2>
+            <p class="text-[11px] sm:text-xs text-slate-500 font-bold text-center md:text-left">Admin & Coordinator Access Only</p>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+            <!-- Agency Switcher -->
+            <div class="flex p-1 bg-slate-100 rounded-xl border border-slate-200 w-full sm:w-auto">
+                <button onclick="switchSummaryAgency('Equalitas')" id="sum-tab-Equalitas" class="flex-1 sm:flex-none px-5 sm:px-6 py-2 rounded-lg text-xs font-black transition bg-blue-600 text-white shadow-md">
+                    Equalitas
+                </button>
+                <button onclick="switchSummaryAgency('A-Mark')" id="sum-tab-A-Mark" class="flex-1 sm:flex-none px-5 sm:px-6 py-2 rounded-lg text-xs font-black transition text-slate-500 hover:text-slate-800 hover:bg-slate-200">
+                    A-Mark
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📝 DAILY WORK VIEW -->
+    <div id="portal-view-daily" class="space-y-6 flex flex-col">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <div class="relative w-full sm:w-64">
+                    <i data-lucide="calendar" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 z-10"></i>
+                    <input type="date" id="filter-daily-date" onchange="window.renderDailyPortal()" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition cursor-pointer">
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+                <button onclick="window.syncLivePortalData(event)" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Sync Live
+                </button>
+                <button onclick="window.resetPortalFilters()" class="flex-1 sm:flex-none px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl transition border border-slate-300 flex items-center justify-center gap-2 cursor-pointer">
+                    <i data-lucide="list-restart" class="w-4 h-4"></i> Reset
+                </button>
+                <button onclick="window.downloadPDFReport()" class="flex-1 sm:flex-none px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer">
+                    <i data-lucide="download-cloud" class="w-4 h-4"></i> PDF
+                </button>
+            </div>
+        </div>
+
+        <div id="daily-printable-content" class="space-y-6 bg-white p-3 sm:p-4 rounded-2xl w-full">
+            <div class="text-center pb-3 border-b-2 border-slate-900 mb-4">
+                <h1 class="text-sm sm:text-base font-black uppercase text-slate-900">Daily Work Activity Report — <span id="daily-agency-title">Equalitas</span></h1>
+                <p class="text-[11px] sm:text-xs font-bold text-slate-600 mt-1">Report Generated Date: <span id="daily-report-date"></span> | Activity Date: <span id="daily-activity-date-label"></span></p>
+            </div>
+
+            <div id="daily-summary-banner" class="hidden grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6 bg-slate-50 border border-slate-200 rounded-2xl p-4 break-inside-avoid">
+                <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm text-center">
+                    <span class="block text-[9px] font-black uppercase text-slate-400">Total Force</span>
+                    <span id="sum-total-emp" class="text-2xl font-black text-slate-700">0</span>
+                </div>
+                <div class="bg-white rounded-xl p-3 border border-emerald-200 bg-emerald-50 shadow-sm text-center">
+                    <span class="block text-[9px] font-black uppercase text-emerald-600">On Duty / Active</span>
+                    <span id="sum-active-emp" class="text-2xl font-black text-emerald-700">0</span>
+                </div>
+                <div class="bg-white rounded-xl p-3 border border-rose-200 bg-rose-50 shadow-sm text-center">
+                    <span class="block text-[9px] font-black uppercase text-rose-600">Leave / Absent</span>
+                    <span id="sum-leave-emp" class="text-2xl font-black text-rose-700">0</span>
+                </div>
+                <div class="bg-white rounded-xl p-3 border border-amber-200 bg-amber-50 shadow-sm text-center">
+                    <span class="block text-[9px] font-black uppercase text-amber-600">Idle / No Work</span>
+                    <span id="sum-idle-emp" class="text-2xl font-black text-amber-700">0</span>
+                </div>
+                <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm text-center">
+                    <span class="block text-[9px] font-black uppercase text-purple-500">Inspections Done</span>
+                    <span id="sum-insp-done" class="text-2xl font-black text-purple-600">0</span>
+                </div>
+                <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm text-center">
+                    <span class="block text-[9px] font-black uppercase text-blue-500">Reports Prepared</span>
+                    <span id="sum-rep-done" class="text-2xl font-black text-blue-600">0</span>
+                </div>
+            </div>
+
+            <div id="daily-inspectors-grid" class="space-y-6">
+                <div class="p-12 text-center text-slate-400 font-bold bg-white rounded-3xl border border-slate-200">Loading daily logs...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL POPUP (Shared Detail View) -->
+<div id="summary-drilldown-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-fade-in">
+        <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <div>
+                <h3 id="drilldown-modal-title" class="font-black text-xs sm:text-sm text-slate-900 uppercase">Filtered Inspection Calls</h3>
+                <p id="drilldown-modal-subtitle" class="text-[11px] sm:text-xs text-slate-500 font-bold">List of related calls matching criteria</p>
+            </div>
+            <button onclick="window.closeDrilldownModal()" class="w-8 h-8 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-black flex items-center justify-center transition cursor-pointer">✕</button>
+        </div>
+        <div class="p-3 sm:p-5 overflow-y-auto flex-1 custom-scrollbar">
+            <div id="drilldown-modal-content" class="overflow-x-auto"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .print\:hidden { display: none !important; }
+        .print\:block { display: block !important; }
+        body { background: white !important; -webkit-print-color-adjust: exact; }
+    }
+    
+    .pdf-export-active { 
+        background: white !important; 
+        width: 100% !important; 
+        min-width: 100% !important;
+        padding: 10px !important;
+        margin: 0 !important; 
+        position: relative !important;
+        left: 0 !important;
+        top: 0 !important;
+        transform: none !important;
+    }
+    
+    .pdf-export-active .overflow-x-auto {
+        overflow: visible !important;
+        width: 100% !important;
+        display: block !important;
+    }
+    
+    .pdf-export-active .print\:hidden { display: none !important; }
+    .pdf-export-active .print\:block { display: block !important; }
+    
+    .pdf-export-active .pdf-page-break {
+        display: block !important;
+        page-break-before: always;
+        break-before: page;
+        height: 1px;
+        margin-top: 30px;
+    }
+    
+    .pdf-export-active tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .pdf-export-active table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+        font-size: 8px !important;
+    }
+    .pdf-export-active tr { border: none !important; }
+    .pdf-export-active th, .pdf-export-active td { border: 1px solid #cbd5e1 !important; }
+</style>
+
+<script>
+    window.API_URL = "https://script.google.com/macros/s/AKfycbxYMiv0JkwTGb0HAc-K6mBF5C9iXYdchW44GUmgmnLc7YHUDmJEU6LIyPtCFnF0H3l7/exec";
+    const activeSession = localStorage.getItem('portal_user');
+    window.currentUser = activeSession ? JSON.parse(activeSession) : { role: "admin", name: "Admin", agency: "All" };
+
+    window.currentAgency = "Equalitas";
+    window.cachedCallsData = []; 
+    window.agencyInspectorsCache = [];
+    window.isFetching = false;
+    window.dailyOpsCache = {}; 
+    const CACHE_EXPIRATION_MS = 10 * 60 * 1000; 
+
+    // ⚡ NEW HELPER: Safely extracts values even if headers change slightly
+    window.getRowValue = function(row, keyword) {
+        if (!row) return null;
+        const lowerKeyword = keyword.toLowerCase();
+        const exactKey = Object.keys(row).find(k => k.toLowerCase().includes(lowerKeyword));
+        return exactKey ? row[exactKey] : null;
+    };
+
+    window.downloadPDFReport = function() {
+        if (!confirm(`Are you sure you want to download the DAILY WORK report as a PDF?\n\n(Note: Wide tables will automatically scale to fit the page)`)) return;
+        document.body.style.cursor = 'wait';
+        
+        if (typeof window.html2pdf === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+            script.onload = () => executePDFGeneration();
+            script.onerror = () => { alert("Failed to load PDF library."); document.body.style.cursor = 'default'; };
+            document.head.appendChild(script);
+        } else {
+            executePDFGeneration();
+        }
+    };
+
+    function executePDFGeneration() {
+        const element = document.getElementById('daily-printable-content');
+        const filename = `${window.currentAgency}_daily_report_${new Date().toISOString().split('T')[0]}.pdf`;
+        element.classList.add('pdf-export-active');
+        
+        const opt = {
+            margin:       [0.2, 0.2, 0.2, 0.2],
+            filename:     filename,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, scrollX: 0, scrollY: 0, x: 0, windowWidth: element.scrollWidth },
+            jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' },
+            pagebreak:    { mode: ['css', 'legacy'] }
+        };
+
+        window.html2pdf().set(opt).from(element).save().then(() => { 
+            element.classList.remove('pdf-export-active');
+            document.body.style.cursor = 'default'; 
+        }).catch(err => {
+            console.error(err);
+            element.classList.remove('pdf-export-active');
+            document.body.style.cursor = 'default'; 
+        });
+    }
+
+    window.showToast = function(message, type = "success") {
+        const toast = document.createElement('div');
+        const colorClass = type === "success" ? "bg-emerald-600" : "bg-rose-600";
+        toast.className = `fixed bottom-6 right-6 px-5 py-3.5 rounded-2xl shadow-2xl font-black text-xs text-white z-[200] transition-opacity duration-300 flex items-center gap-3 ${colorClass}`;
+        toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i> ${message}`;
+        document.body.appendChild(toast);
+        if(window.lucide) lucide.createIcons();
+        setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
+    };
+
+    function getTodayIndianFormat() {
+        const today = new Date();
+        return `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+    }
+
+    function formatToIndianDisplayDate(yyyyMmDd) {
+        if (!yyyyMmDd) return '';
+        const parts = yyyyMmDd.split('-');
+        return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : yyyyMmDd;
+    }
+
+    async function fetchInspectorsList() {
+        if (window.agencyInspectorsCache.length > 0) return;
+        try {
+            const res = await fetch(window.API_URL, { 
+                method: 'POST', redirect: 'follow',
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ action: "getAgencyInspectors" }) 
+            });
+            const result = await res.json();
+            if (result.status === "success" || result.status === true) {
+                window.agencyInspectorsCache = result.data || [];
+            }
+        } catch (e) { window.showToast("Failed to load inspectors list", "error"); }
+    }
+
+    async function fetchAgencyData(agencyName, forceRefresh = false) {
+        if (window.isFetching) return false;
+        const cacheKey = `agencyData_${agencyName}`;
+        const cacheTimestampKey = `agencyData_${agencyName}_timestamp`;
+
+        if (!forceRefresh) {
+            const cachedData = sessionStorage.getItem(cacheKey);
+            const cachedTime = sessionStorage.getItem(cacheTimestampKey);
+            if (cachedData && cachedTime && (Date.now() - parseInt(cachedTime, 10) < CACHE_EXPIRATION_MS)) {
+                window.cachedCallsData = JSON.parse(cachedData);
+                return true;
+            }
+        }
+
+        window.isFetching = true;
+        try {
+            const payload = { action: "getDailyWorkPortalCalls", user: window.currentUser, agency: agencyName };
+            const response = await fetch(window.API_URL, { 
+                method: 'POST', redirect: 'follow', 
+                body: JSON.stringify(payload), 
+                headers: { "Content-Type": "text/plain;charset=utf-8" } 
+            });
+            const result = await response.json();
+            
+            if (result.status === "success" || result.status === true) {
+                window.cachedCallsData = result.data || [];
+                sessionStorage.setItem(cacheKey, JSON.stringify(window.cachedCallsData));
+                sessionStorage.setItem(cacheTimestampKey, Date.now().toString());
+                window.isFetching = false;
+                return true;
+            } else {
+                window.showToast(result.message || "Failed to fetch data", "error");
+                window.isFetching = false; return false;
+            }
+        } catch (error) {
+            window.showToast("Error connecting to database.", "error");
+            window.isFetching = false; return false;
+        }
+    }
+
+    window.syncLivePortalData = async function(event) {
+        const btn = event ? event.currentTarget : null;
+        const originalHTML = btn ? btn.innerHTML : "";
+        if (btn) { btn.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> Syncing...`; btn.disabled = true; }
+
+        sessionStorage.clear(); 
+        window.dailyOpsCache = {}; 
+        window.isFetching = false;
+
+        await Promise.all([ fetchInspectorsList(), fetchAgencyData(window.currentAgency, true) ]);
+        await window.renderDailyPortal(true);
+        
+        window.showToast("Data successfully synchronized!", "success");
+        if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
+        if (window.lucide) window.lucide.createIcons();
+    };
+
+    window.resetPortalFilters = function() {
+        const dateInput = document.getElementById('filter-daily-date');
+        if (dateInput) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            dateInput.value = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+        }
+        window.renderDailyPortal();
+    };
+
+    function isCompletedStatus(val) {
+        if (!val) return false;
+        const str = String(val).trim().toLowerCase();
+        return str !== "" && str !== "pending";
+    }
+
+    function parseIndianDateString(rawString) {
+        if (!rawString) return null;
+        // Hunts specifically for DD/MM/YYYY regardless of text around it
+        const str = String(rawString).trim();
+        const isoRegex = /(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/;
+        let match = isoRegex.exec(str);
+        if (match) return new Date(parseInt(match[1], 10), parseInt(match[2], 10) - 1, parseInt(match[3], 10));
+
+        const inRegex = /(?:^|[^\d])(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})(?=[^\d]|$)/;
+        match = inRegex.exec(str);
+        if (match) {
+            let y = parseInt(match[3], 10);
+            if (y < 100) y += 2000;
+            return new Date(y, parseInt(match[2], 10) - 1, parseInt(match[1], 10));
+        }
+        return new Date(str);
+    }
+
+    window.updateDailyStatus = function(dateKey, inspector, field, value) {
+        if (!window.dailyOpsCache[dateKey]) window.dailyOpsCache[dateKey] = {};
+        if (!window.dailyOpsCache[dateKey][inspector]) window.dailyOpsCache[dateKey][inspector] = { status: '', code: '', comment: '' };
+        window.dailyOpsCache[dateKey][inspector][field] = value;
+        if (field === 'status') window.renderDailyPortal(false);
+    };
+
+    window.renderDailyPortal = async function(forceRefresh = false) {
+        const container = document.getElementById('daily-inspectors-grid');
+        const dateInput = document.getElementById('filter-daily-date');
+        if (!container || !dateInput) return;
+
+        if (!dateInput.value) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            dateInput.value = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+        }
+        
+        const selectedDate = dateInput.value;
+        document.getElementById('daily-report-date').textContent = getTodayIndianFormat();
+        document.getElementById('daily-agency-title').textContent = window.currentAgency;
+        document.getElementById('daily-activity-date-label').textContent = formatToIndianDisplayDate(selectedDate);
+
+        container.innerHTML = '<div class="p-12 text-center text-slate-500 font-bold bg-white rounded-3xl border border-slate-200 col-span-full"><span class="animate-pulse">Loading daily schedules...</span></div>';
+
+        if (window.cachedCallsData.length === 0 || forceRefresh) await fetchAgencyData(window.currentAgency, forceRefresh);
+        if (!window.agencyInspectorsCache || window.agencyInspectorsCache.length === 0 || forceRefresh) await fetchInspectorsList();
+
+        const data = window.cachedCallsData;
+        const agencyInspectors = window.agencyInspectorsCache.filter(i => i.agency.toLowerCase() === window.currentAgency.toLowerCase()).map(i => i.name).sort();
+
+        const inspectorMap = {};
+        agencyInspectors.forEach(insp => { inspectorMap[insp] = { completedTasks: [], preparedTasks: [] }; });
+
+        // ⚡ UPDATED DATA LOOP: Uses robust `getRowValue` extraction
+        data.forEach(row => {
+            const inspector = String(window.getRowValue(row, 'inspecting engineer') || 'Unassigned').trim();
+            if (!inspectorMap[inspector]) inspectorMap[inspector] = { completedTasks: [], preparedTasks: [] };
+
+            // Fetch dates specifically from Log strings (Supports "25/09/2026 12:18:29")
+            const inspLogRaw = window.getRowValue(row, 'inspection completion log') || window.getRowValue(row, 'inspection completed') || '';
+            const prepLogRaw = window.getRowValue(row, 'report prepared') || window.getRowValue(row, 'report repared') || '';
+
+            if (isCompletedStatus(inspLogRaw) && parseAllIndianDates(inspLogRaw).some(dt => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}` === selectedDate)) {
+                inspectorMap[inspector].completedTasks.push(row);
+            }
+            if (isCompletedStatus(prepLogRaw) && parseAllIndianDates(prepLogRaw).some(dt => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}` === selectedDate)) {
+                inspectorMap[inspector].preparedTasks.push(row);
+            }
+        });
+
+        const opsCache = window.dailyOpsCache[selectedDate] || {};
+        let stats = { total: agencyInspectors.length, active: 0, leave: 0, idle: 0, insp: 0, rep: 0 };
+        const fragment = document.createDocumentFragment();
+
+        let tableWrapper = document.createElement('div');
+        tableWrapper.className = "overflow-x-auto bg-white shadow-sm w-full";
+        tableWrapper.innerHTML = `
+            <table class="w-full text-left text-xs border-collapse border border-slate-300 min-w-[900px]">
+                <thead class="bg-slate-100 text-slate-700 uppercase text-[10px] font-black border-b border-slate-300">
+                    <tr>
+                        <th class="p-4 border border-slate-300 w-1/5">Inspector Name</th>
+                        <th class="p-4 border border-slate-300 w-1/4">Inspections Completed</th>
+                        <th class="p-4 border border-slate-300 w-1/4">Reports Prepared</th>
+                        <th class="p-4 border border-slate-300 w-1/4">Daily Status & Remarks</th>
+                    </tr>
+                </thead>
+                <tbody class="font-medium text-slate-700" id="daily-tbody-rows"></tbody>
+            </table>`;
+        fragment.appendChild(tableWrapper);
+        container.innerHTML = '';
+        container.appendChild(fragment);
+
+        const tbodyRows = document.getElementById('daily-tbody-rows');
+        const rowsFrag = document.createDocumentFragment();
+
+        function parseAllIndianDates(rawStr) {
+            if (!rawStr) return [];
+            const results = [];
+            // Robustly strips out text markers before parsing
+            const str = String(rawStr).replace(/[a-zA-Z]+\s*at/gi, '').trim();
+            const words = str.split(/[\s,]+/);
+            words.forEach(w => {
+                const d = parseIndianDateString(w);
+                if (d && !isNaN(d)) results.push(d);
+            });
+            if (results.length === 0) {
+                const d = parseIndianDateString(str);
+                if (d && !isNaN(d)) results.push(d);
+            }
+            return results;
+        }
+        
+        function extractTotalMandays(rawVal) {
+            if (!rawVal) return '0.00';
+            const str = String(rawVal);
+            const totalMatch = str.match(/total\s*[:=]\s*([0-9.]+)/i);
+            if (totalMatch) return parseFloat(totalMatch[1]).toFixed(2);
+            const numRegex = /\b\d+(?:\.\d+)?\b/g;
+            let match, sum = 0, found = false;
+            while ((match = numRegex.exec(str)) !== null) {
+                const num = parseFloat(match[0]);
+                if (num < 100) { sum += num; found = true; }
+            }
+            return found ? sum.toFixed(2) : '0.00';
+        }
+
+        Object.keys(inspectorMap).sort().forEach(inspector => {
+            const info = inspectorMap[inspector];
+            const hasWork = info.completedTasks.length > 0 || info.preparedTasks.length > 0;
+            if (!hasWork && inspector === 'Unassigned') return;
+
+            let savedState = opsCache[inspector] || { status: '', code: '', comment: '' };
+            const safeInspector = inspector.replace(/'/g, "\\'");
+            const safeStatus = savedState.status || "";
+            const safeComment = (savedState.comment || "").replace(/"/g, '&quot;');
+
+            if (hasWork || safeStatus === 'Site Inspection' || safeStatus === 'Office Work') {
+                stats.active++;
+                if (hasWork) { stats.insp += info.completedTasks.length; stats.rep += info.preparedTasks.length; }
+            } else if (safeStatus === 'On Leave' || safeStatus === 'Absent') { stats.leave++; } 
+            else { stats.idle++; }
+
+            let badgeHtml = hasWork || safeStatus === 'Site Inspection' || safeStatus === 'Office Work' 
+                ? `<span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md text-[9px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 mt-1"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div> ${hasWork ? "Active / On Duty" : safeStatus}</span>`
+                : (safeStatus === 'On Leave' || safeStatus === 'Absent' ? `<span class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-md text-[9px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 mt-1"> ${safeStatus}</span>` : `<span class="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-md text-[9px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 mt-1"> Idle / No Work</span>`);
+
+            // ⚡ UPDATED RENDER LOOP: Safely maps extracted values
+            let completedHtml = `<div class="text-[10px] font-black uppercase text-emerald-800 mb-2 border-b border-emerald-200 pb-1">Inspections Completed - ${info.completedTasks.length.toString().padStart(2, '0')}</div>`;
+            completedHtml += info.completedTasks.length > 0 ? `<ul class="space-y-3">` + info.completedTasks.map(t => `<li class="leading-snug"><span class="font-bold text-blue-600 cursor-pointer hover:underline text-[11px]" onclick="window.openSingleInspectionDetails('${encodeURIComponent(JSON.stringify(t))}')">${window.getRowValue(t, 'inspection code') || 'N/A'}</span><br><span class="text-[10px] text-slate-500">${window.getRowValue(t, 'zone') || '-'} - ${window.getRowValue(t, 'inspector order ref') || '-'}</span></li>`).join('') + `</ul>` : `<span class="text-[10px] text-slate-400 italic">None</span>`;
+
+            let preparedHtml = `<div class="text-[10px] font-black uppercase text-blue-800 mb-2 border-b border-emerald-200 pb-1">Reports Prepared - ${info.preparedTasks.length.toString().padStart(2, '0')}</div>`;
+            preparedHtml += info.preparedTasks.length > 0 ? `<ul class="space-y-3">` + info.preparedTasks.map(t => `<li class="leading-snug"><span class="font-bold text-blue-600 cursor-pointer hover:underline text-[11px]" onclick="window.openSingleInspectionDetails('${encodeURIComponent(JSON.stringify(t))}')">${window.getRowValue(t, 'inspection code') || 'N/A'}</span><br><span class="text-[10px] text-slate-500">${window.getRowValue(t, 'zone') || '-'} - <strong class="text-blue-700 font-mono">${extractTotalMandays(window.getRowValue(t, 'calculated mandays'))} MD</strong></span></li>`).join('') + `</ul>` : `<span class="text-[10px] text-slate-400 italic">None</span>`;
+
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-50 transition break-inside-avoid align-top";
+            tr.innerHTML = `
+                <td class="p-4 border border-b border-slate-300">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <div class="w-6 h-6 rounded-full ${hasWork || safeStatus === 'Site Inspection' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'} font-black flex items-center justify-center text-[10px] shrink-0">${inspector.charAt(0).toUpperCase()}</div>
+                        <h3 class="font-black text-slate-900 text-[11px]">${inspector}</h3>
+                    </div>
+                    ${badgeHtml}
+                </td>
+                <td class="p-4 border border-b border-slate-300 bg-emerald-50/20">${completedHtml}</td>
+                <td class="p-4 border border-b border-slate-300 bg-blue-50/20">${preparedHtml}</td>
+                <td class="p-4 border border-b border-slate-300">
+                    <div class="print:hidden space-y-2">
+                        <select onchange="window.updateDailyStatus('${selectedDate}', '${safeInspector}', 'status', this.value)" class="w-full p-2 text-[10px] border border-slate-200 rounded-lg outline-none bg-slate-50 font-bold cursor-pointer">
+                            <option value="" ${safeStatus === '' ? 'selected' : ''}>- Select Status -</option>
+                            <option value="Site Inspection" ${safeStatus === 'Site Inspection' ? 'selected' : ''}>Site Inspection</option>
+                            <option value="Office Work" ${safeStatus === 'Office Work' ? 'selected' : ''}>Office Work</option>
+                            <option value="On Leave" ${safeStatus === 'On Leave' ? 'selected' : ''}>On Leave</option>
+                            <option value="Absent" ${safeStatus === 'Absent' ? 'selected' : ''}>Absent</option>
+                        </select>
+                        <textarea oninput="window.updateDailyStatus('${selectedDate}', '${safeInspector}', 'comment', this.value)" placeholder="Coordinator remark..." class="w-full p-2.5 text-[10px] border border-slate-200 rounded-lg outline-none bg-slate-50 font-bold resize-none leading-snug">${safeComment}</textarea>
+                    </div>
+                </td>`;
+            rowsFrag.appendChild(tr);
+        });
+
+        tbodyRows.appendChild(rowsFrag);
+        document.getElementById('sum-total-emp').innerText = stats.total;
+        document.getElementById('sum-active-emp').innerText = stats.active;
+        document.getElementById('sum-leave-emp').innerText = stats.leave;
+        document.getElementById('sum-idle-emp').innerText = stats.idle;
+        document.getElementById('sum-insp-done').innerText = stats.insp;
+        document.getElementById('sum-rep-done').innerText = stats.rep;
+        document.getElementById('daily-summary-banner').classList.remove('hidden');
+        if(window.lucide) window.lucide.createIcons();
+    };
+
+    window.openSingleInspectionDetails = function(rowDataStr) {
+        let rowData = typeof rowDataStr === 'string' ? JSON.parse(decodeURIComponent(rowDataStr)) : rowDataStr;
+        const modal = document.getElementById('summary-drilldown-modal');
+        document.getElementById('drilldown-modal-title').textContent = `Inspection Details: ${window.getRowValue(rowData, 'inspection code') || 'N/A'}`;
+        document.getElementById('drilldown-modal-subtitle').textContent = `Inspecting Engineer: ${window.getRowValue(rowData, 'inspecting engineer') || 'Unassigned'}`;
+        
+        let detailsHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">`;
+        for (const [key, val] of Object.entries(rowData)) {
+            if (key === "Agency_Source") continue;
+            detailsHTML += `<div class="p-3 bg-slate-50 border border-slate-200 rounded-xl"><span class="block text-[10px] font-black uppercase text-slate-400">${key}</span><span class="font-bold text-slate-800">${val || '-'}</span></div>`;
+        }
+        document.getElementById('drilldown-modal-content').innerHTML = detailsHTML + `</div>`;
+        modal.classList.remove('hidden'); modal.classList.add('flex');
+    };
+
+    window.closeDrilldownModal = function() { 
+        const m = document.getElementById('summary-drilldown-modal');
+        m.classList.add('hidden'); m.classList.remove('flex'); 
+    };
+
+    window.switchSummaryAgency = async function(agencyName) {
+        if (window.currentAgency === agencyName) return; 
+        window.currentAgency = agencyName;
+        window.cachedCallsData = []; 
+        
+        const equalitasTab = document.getElementById('sum-tab-Equalitas');
+        const aMarkTab = document.getElementById('sum-tab-A-Mark');
+        const activeClass = ['bg-blue-600', 'text-white', 'shadow-md'];
+        const inactiveClass = ['text-slate-500', 'hover:text-slate-800', 'hover:bg-slate-200'];
+
+        if (agencyName === 'Equalitas') {
+            equalitasTab.classList.add(...activeClass); equalitasTab.classList.remove(...inactiveClass);
+            aMarkTab.classList.add(...inactiveClass); aMarkTab.classList.remove(...activeClass);
+        } else {
+            aMarkTab.classList.add(...activeClass); aMarkTab.classList.remove(...inactiveClass);
+            equalitasTab.classList.add(...inactiveClass); equalitasTab.classList.remove(...activeClass);
+        }
+        
+        await window.renderDailyPortal();
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        window.dailyOpsCache = {}; 
+        const dateInput = document.getElementById('filter-daily-date');
+        if (dateInput && !dateInput.value) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            dateInput.value = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+        }
+        fetchInspectorsList().then(() => { window.renderDailyPortal(); });
+    });
+</script>

@@ -1,0 +1,323 @@
+<div class="space-y-6 animate-fade-in flex flex-col h-full relative pb-8">
+    
+    <!-- 🎯 Header & Action Bar -->
+    <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
+        <div>
+            <h2 class="font-black text-base sm:text-lg uppercase text-slate-900 text-center md:text-left">Fee Details Portal</h2>
+            <p class="text-[11px] sm:text-xs text-slate-500 font-bold text-center md:text-left">Manage Contractor Agreements & Billing</p>
+        </div>
+        
+        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+            <!-- Search Box -->
+            <div class="relative w-full sm:w-64 mr-2">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+                <input type="text" id="fee-search" oninput="window.filterFeeTable()" placeholder="Search any column..." class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition">
+            </div>
+
+            <button onclick="window.fetchFeeData(true)" class="flex-1 sm:flex-none px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl transition border border-slate-300 flex items-center justify-center gap-2 shadow-sm">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Sync
+            </button>
+            <button onclick="window.openFeeModal()" class="flex-1 sm:flex-none px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i> Add Record
+            </button>
+        </div>
+    </div>
+
+    <!-- 📊 Data Table Container -->
+    <div class="bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col overflow-hidden flex-1 min-h-[500px]">
+        <div class="overflow-x-auto w-full custom-scrollbar relative flex-1">
+            <table class="w-full text-left text-xs border-collapse min-w-[1000px]">
+                <thead id="fee-table-head" class="sticky top-0 bg-slate-900 text-white uppercase text-[10px] font-black z-10 shadow-sm">
+                    <!-- Dynamically Generated Headers -->
+                    <tr><th class="p-4">Loading columns...</th></tr>
+                </thead>
+                <tbody id="fee-table-body" class="font-medium text-slate-800 align-middle divide-y divide-slate-100">
+                    <tr><td class="p-12 text-center text-slate-500 font-bold"><i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600 mx-auto"></i></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 📝 DYNAMIC ADD/EDIT MODAL -->
+<div id="fee-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in">
+        
+        <!-- Modal Header -->
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
+            <div>
+                <h3 id="fee-modal-title" class="font-black text-sm sm:text-lg text-slate-900 uppercase flex items-center gap-2">
+                    <i data-lucide="file-edit" class="w-5 h-5 text-blue-600"></i> New Fee Record
+                </h3>
+                <p class="text-[11px] text-slate-500 font-bold mt-0.5">Fill out the generated fields below</p>
+            </div>
+            <button type="button" onclick="window.closeFeeModal()" class="w-8 h-8 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-black flex items-center justify-center transition">✕</button>
+        </div>
+
+        <!-- Modal Body (Dynamic Form) -->
+        <form id="fee-form" onsubmit="window.saveFeeData(event)" class="flex flex-col flex-1 overflow-hidden">
+            <div class="p-5 overflow-y-auto custom-scrollbar flex-1 bg-white">
+                <div id="dynamic-form-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Form fields dynamically injected here -->
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
+                <button type="button" onclick="window.closeFeeModal()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-black rounded-xl transition">Cancel</button>
+                <button type="submit" id="fee-submit-btn" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl transition shadow-md flex items-center gap-2">
+                    <i data-lucide="save" class="w-4 h-4"></i> Save Record
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    window.API_URL = "https://script.google.com/macros/s/AKfycbzmaV_-21dNjXAkfU5Rdj0mtIZjY_tNrynPDJwmjdVW8vGRJO6qB4hA8slO7LWowBNz/exec"; 
+    
+    // Core state
+    window.feeDataCache = [];
+    window.feeFilteredData = [];
+    window.feeHeaders = [
+        "LogID", "Tender No", "Complete or Partial", "Count of Call", 
+        "Contactor Agreement Amount", "Contractor Name", "TPIA Inspector", 
+        "Inspection Completion Date", "List of Inspection Codes"
+    ]; // Fallback headers in case sheet is totally empty
+
+    // ==========================================
+    // 1. DATA FETCHING
+    // ==========================================
+    window.fetchFeeData = async function(forceRefresh = false) {
+        const tbody = document.getElementById('fee-table-body');
+        const thead = document.getElementById('fee-table-head');
+        
+        if (forceRefresh) {
+            tbody.innerHTML = `<tr><td colspan="20" class="p-12 text-center text-slate-500 font-bold"><i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600 mx-auto mb-2"></i> Syncing from Google Sheets...</td></tr>`;
+            if(window.lucide) lucide.createIcons();
+        }
+
+        try {
+            const payload = { action: "getFeeDetails" };
+            const response = await fetch(window.API_URL, { 
+                method: 'POST', redirect: 'follow', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } 
+            });
+            const result = await response.json();
+            
+            if (result.status === "success" || result.status === true) {
+                window.feeDataCache = result.data || [];
+                
+                // Dynamically update headers based on whatever the backend actually returned
+                if (window.feeDataCache.length > 0) {
+                    window.feeHeaders = Object.keys(window.feeDataCache[0]).filter(k => k !== '_rowIndex' && k !== 'Agency_Source');
+                }
+                
+                window.filterFeeTable(); // Renders the table
+                if(forceRefresh) window.showToast("Data Synced Successfully", "success");
+            } else {
+                throw new Error(result.message || "Failed to load data.");
+            }
+        } catch (error) {
+            console.error(error);
+            tbody.innerHTML = `<tr><td colspan="20" class="p-12 text-center text-rose-500 font-bold">Error loading data. See console.</td></tr>`;
+            window.showToast("Connection Error", "error");
+        }
+    };
+
+    // ==========================================
+    // 2. DYNAMIC TABLE RENDERING
+    // ==========================================
+    window.filterFeeTable = function() {
+        const searchQ = (document.getElementById('fee-search').value || "").toLowerCase();
+        
+        window.feeFilteredData = window.feeDataCache.filter(row => {
+            if (!searchQ) return true;
+            return window.feeHeaders.some(header => String(row[header] || "").toLowerCase().includes(searchQ));
+        });
+
+        const thead = document.getElementById('fee-table-head');
+        const tbody = document.getElementById('fee-table-body');
+
+        // Render dynamic headers
+        let headerHtml = `<tr>`;
+        window.feeHeaders.forEach(h => {
+            headerHtml += `<th class="p-4 border-r border-slate-700 whitespace-nowrap">${h}</th>`;
+        });
+        headerHtml += `<th class="p-4 text-center sticky right-0 bg-slate-900 border-l border-slate-700 print:hidden">Actions</th></tr>`;
+        thead.innerHTML = headerHtml;
+
+        // Render dynamic body
+        if (window.feeFilteredData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="${window.feeHeaders.length + 1}" class="p-12 text-center text-slate-400 font-bold italic">No records found.</td></tr>`;
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        window.feeFilteredData.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-blue-50/50 transition border-b border-slate-100";
+            
+            let html = '';
+            window.feeHeaders.forEach(h => {
+                const val = row[h] || "-";
+                // Style specific columns smartly if they exist
+                if (h.toLowerCase().includes('logid')) {
+                    html += `<td class="p-4 border-r border-slate-100 font-mono font-black text-blue-700">${val}</td>`;
+                } else if (h.toLowerCase().includes('amount') || h.toLowerCase().includes('count')) {
+                    html += `<td class="p-4 border-r border-slate-100 font-bold text-emerald-700">${val}</td>`;
+                } else if (h.toLowerCase().includes('status') || h.toLowerCase().includes('partial')) {
+                    html += `<td class="p-4 border-r border-slate-100"><span class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-[10px] font-black uppercase">${val}</span></td>`;
+                } else {
+                    html += `<td class="p-4 border-r border-slate-100 truncate max-w-[200px]" title="${val}">${val}</td>`;
+                }
+            });
+
+            // Action Button
+            const encodedRow = encodeURIComponent(JSON.stringify(row));
+            html += `<td class="p-4 text-center sticky right-0 bg-white border-l border-slate-100 print:hidden">
+                        <button onclick="window.openFeeModal('${encodedRow}')" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-[10px] font-bold shadow-sm transition">Edit</button>
+                     </td>`;
+            
+            tr.innerHTML = html;
+            fragment.appendChild(tr);
+        });
+
+        tbody.innerHTML = '';
+        tbody.appendChild(fragment);
+    };
+
+    // ==========================================
+    // 3. DYNAMIC MODAL LOGIC (AUTO-GENERATES INPUTS)
+    // ==========================================
+    window.openFeeModal = function(encodedRow = null) {
+        const modal = document.getElementById('fee-modal');
+        const grid = document.getElementById('dynamic-form-grid');
+        const isUpdate = encodedRow !== null;
+        
+        let rowData = {};
+        if (isUpdate) {
+            rowData = JSON.parse(decodeURIComponent(encodedRow));
+            document.getElementById('fee-modal-title').innerHTML = `<i data-lucide="edit" class="w-5 h-5 text-blue-600"></i> Edit Record: ${rowData.LogID}`;
+        } else {
+            document.getElementById('fee-modal-title').innerHTML = `<i data-lucide="file-plus" class="w-5 h-5 text-blue-600"></i> Add New Record`;
+        }
+
+        // Dynamically inject form fields based on known headers
+        grid.innerHTML = '';
+        window.feeHeaders.forEach(header => {
+            const val = rowData[header] || "";
+            const lowerH = header.toLowerCase();
+            const safeId = `input_${header.replace(/\s+/g, '_')}`;
+            
+            let inputHtml = '';
+
+            // Smart Input Types based on column name
+            if (lowerH === "logid") {
+                inputHtml = `<input type="text" id="${safeId}" name="${header}" value="${val}" ${isUpdate ? 'readonly' : 'readonly placeholder="Auto-generated on save"'} class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-100 text-slate-500 cursor-not-allowed">`;
+            } 
+            else if (lowerH.includes('date')) {
+                // Convert DD/MM/YYYY to YYYY-MM-DD for input type="date"
+                let dateVal = val;
+                if (val && val.includes('/')) {
+                    const parts = val.split('/');
+                    if (parts.length === 3) dateVal = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                }
+                inputHtml = `<input type="date" id="${safeId}" name="${header}" value="${dateVal}" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white focus:border-blue-500 transition">`;
+            }
+            else if (lowerH.includes('amount') || lowerH.includes('count') || lowerH.includes('number')) {
+                inputHtml = `<input type="number" step="any" id="${safeId}" name="${header}" value="${val}" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white focus:border-blue-500 transition">`;
+            }
+            else if (lowerH.includes('list') || lowerH.includes('description')) {
+                inputHtml = `<textarea id="${safeId}" name="${header}" rows="3" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white focus:border-blue-500 transition resize-none custom-scrollbar">${val}</textarea>`;
+            }
+            else {
+                inputHtml = `<input type="text" id="${safeId}" name="${header}" value="${val}" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white focus:border-blue-500 transition">`;
+            }
+
+            // Wrapper
+            const isFullWidth = lowerH.includes('list') || lowerH.includes('description');
+            grid.innerHTML += `
+                <div class="flex flex-col gap-1.5 ${isFullWidth ? 'sm:col-span-2' : ''}">
+                    <label class="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-1">${header}</label>
+                    ${inputHtml}
+                </div>
+            `;
+        });
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        if(window.lucide) lucide.createIcons();
+    };
+
+    window.closeFeeModal = function() {
+        const modal = document.getElementById('fee-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    };
+
+    // ==========================================
+    // 4. DATA SAVING
+    // ==========================================
+    window.saveFeeData = async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('fee-submit-btn');
+        const originalBtnHtml = btn.innerHTML;
+        btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Saving...`;
+        btn.disabled = true;
+
+        // 1. Gather all dynamic form data
+        const formData = new FormData(document.getElementById('fee-form'));
+        const payloadData = {};
+        
+        for (let [key, value] of formData.entries()) {
+            // Revert date from YYYY-MM-DD back to DD/MM/YYYY for Google Sheets safely if it is a date field
+            if (value && value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                const parts = value.split('-');
+                value = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            payloadData[key] = value;
+        }
+
+        try {
+            const requestPayload = { 
+                action: "saveFeeDetail", 
+                payload: payloadData
+            };
+
+            const response = await fetch(window.API_URL, { 
+                method: 'POST', redirect: 'follow', body: JSON.stringify(requestPayload), headers: { "Content-Type": "text/plain;charset=utf-8" } 
+            });
+            const result = await response.json();
+            
+            if (result.status === "success" || result.status === true) {
+                window.showToast(`Record ${result.data.action} successfully!`, "success");
+                window.closeFeeModal();
+                window.fetchFeeData(true); // Hard refresh table to show new data
+            } else {
+                throw new Error(result.message || "Failed to save data.");
+            }
+        } catch (error) {
+            console.error(error);
+            window.showToast(error.message, "error");
+        } finally {
+            btn.innerHTML = originalBtnHtml;
+            btn.disabled = false;
+            if(window.lucide) lucide.createIcons();
+        }
+    };
+
+    window.showToast = function(message, type = "success") {
+        const toast = document.createElement('div');
+        const colorClass = type === "success" ? "bg-emerald-600" : "bg-rose-600";
+        toast.className = `fixed bottom-6 right-6 px-5 py-3.5 rounded-2xl shadow-2xl font-black text-xs text-white z-[200] transition-opacity duration-300 flex items-center gap-3 ${colorClass}`;
+        toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i> ${message}`;
+        document.body.appendChild(toast);
+        if(window.lucide) lucide.createIcons();
+        setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        window.fetchFeeData(false);
+    });
+</script>

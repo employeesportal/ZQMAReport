@@ -1,0 +1,662 @@
+<div class="space-y-6 animate-fade-in flex flex-col h-full relative pb-8">
+    
+    <!-- 🎯 Header & Agency Switcher -->
+    <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 shrink-0 print:hidden">
+        <div>
+            <h2 class="font-black text-base sm:text-lg uppercase text-slate-900 text-center md:text-left flex items-center justify-center md:justify-start gap-2">
+                <i data-lucide="calendar-search" class="w-5 h-5 text-blue-600"></i> Report Wise Analysis
+            </h2>
+            <p class="text-[11px] sm:text-xs text-slate-500 font-bold text-center md:text-left">Admin Access Only — Call Lifecycle Tracking</p>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+            <!-- Agency Switcher -->
+            <div class="flex p-1 bg-slate-100 rounded-xl border border-slate-200 w-full sm:w-auto">
+                <button onclick="window.switchReportAgency('Equalitas')" id="tab-Equalitas" class="flex-1 sm:flex-none px-5 sm:px-6 py-2 rounded-lg text-xs font-black transition bg-blue-600 text-white shadow-md">
+                    Equalitas
+                </button>
+                <button onclick="window.switchReportAgency('A-Mark')" id="tab-A-Mark" class="flex-1 sm:flex-none px-5 sm:px-6 py-2 rounded-lg text-xs font-black transition text-slate-500 hover:text-slate-800 hover:bg-slate-200">
+                    A-Mark
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎯 Controls & Filters -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row items-center gap-3 shrink-0 print:hidden">
+        
+        <!-- Zone Filter -->
+        <div class="relative w-full lg:w-40">
+            <select id="filter-zone" onchange="window.applyReportFilters()" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition cursor-pointer appearance-none">
+                <option value="ALL">All Zones</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none"></i>
+        </div>
+
+        <!-- Inspector Filter -->
+        <div class="relative w-full lg:w-48">
+            <select id="filter-inspector" onchange="window.applyReportFilters()" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition cursor-pointer appearance-none">
+                <option value="ALL">All Inspectors</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none"></i>
+        </div>
+
+        <!-- Call Status Filter -->
+        <div class="relative w-full lg:w-40">
+            <select id="filter-status" onchange="window.applyReportFilters()" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition cursor-pointer appearance-none">
+                <option value="ALL">All Statuses</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none"></i>
+        </div>
+
+        <!-- Call Mode Filter -->
+        <div class="relative w-full lg:w-36">
+            <select id="filter-mode" onchange="window.applyReportFilters()" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition cursor-pointer appearance-none">
+                <option value="ALL">All Modes</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none"></i>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto lg:ml-auto">
+            <span id="report-count" class="text-xs font-black text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200 shadow-sm whitespace-nowrap">0 Calls</span>
+            <button onclick="window.clearReportFilters()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl transition border border-slate-300 flex items-center justify-center gap-2 shadow-sm">
+                <i data-lucide="list-restart" class="w-3.5 h-3.5"></i> Clear
+            </button>
+            <button onclick="window.fetchReportAnalysisData(true)" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Sync
+            </button>
+            <button onclick="window.downloadPDFReport()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                <i data-lucide="download-cloud" class="w-3.5 h-3.5"></i> PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- 📊 DATA TABLE -->
+    <div id="report-printable-content" class="bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col overflow-hidden flex-1 min-h-[500px]">
+        
+        <div class="hidden print:block text-center pt-6 pb-4 border-b-2 border-slate-900 mx-4">
+            <h1 class="text-sm font-black uppercase text-slate-900">Report Wise Analysis — <span id="pdf-agency-title">Equalitas</span></h1>
+            <p class="text-[11px] font-bold text-slate-600 mt-1">Generated: <span id="pdf-report-date"></span></p>
+        </div>
+
+        <div class="overflow-x-auto w-full custom-scrollbar relative flex-1">
+            <table class="w-full text-left text-xs border-collapse min-w-[900px]">
+                <thead class="sticky top-0 bg-slate-900 text-slate-300 uppercase text-[9px] tracking-wider font-black z-10 shadow-sm">
+                    <tr>
+                        <th class="p-3 border-r border-slate-700 w-12 text-center">S.No.</th>
+                        
+                        <!-- Sortable Columns -->
+                        <th class="p-3 border-r border-slate-700 cursor-pointer hover:bg-slate-800 transition group select-none w-1/4" onclick="window.sortReportData('code')" title="Sort by Code">
+                            <div class="flex items-center justify-between text-white"><span>Code / Ref No</span> <i data-lucide="arrow-up-down" class="w-3 h-3 opacity-50 group-hover:opacity-100"></i></div>
+                        </th>
+                        
+                        <th class="p-3 border-r border-slate-700 cursor-pointer hover:bg-slate-800 transition group select-none w-1/4" onclick="window.sortReportData('inspector')" title="Sort by Inspector">
+                            <div class="flex items-center justify-between text-white"><span>Inspector / Zone</span> <i data-lucide="arrow-up-down" class="w-3 h-3 opacity-50 group-hover:opacity-100"></i></div>
+                        </th>
+                        
+                        <th class="p-3 border-r border-slate-700 cursor-pointer hover:bg-slate-800 transition group select-none w-32" onclick="window.sortReportData('status')" title="Sort by Status">
+                            <div class="flex items-center justify-between text-white"><span>Mode / Status</span> <i data-lucide="arrow-up-down" class="w-3 h-3 opacity-50 group-hover:opacity-100"></i></div>
+                        </th>
+                        
+                        <!-- 🚀 SMART COMBINED DATE SORTING UI -->
+                        <th class="p-3 bg-slate-800 text-white w-1/3 border-b-2 border-indigo-500">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="calendar-clock" class="w-3.5 h-3.5 text-indigo-400"></i> 
+                                    <span>Lifecycle Timeline</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 bg-slate-900 px-2 py-1 rounded shadow-inner print:hidden">
+                                    <span class="text-[8px] text-slate-500 hidden xl:inline">SORT:</span>
+                                    <select id="date-sort-select" onchange="window.sortReportData(this.value)" onclick="event.stopPropagation()" class="text-[9px] font-bold bg-transparent text-indigo-200 outline-none cursor-pointer max-w-[110px]">
+                                        <option value="" disabled selected>Select Date...</option>
+                                        <option value="received">Received Date</option>
+                                        <option value="proposed">Proposed Duration</option>
+                                        <option value="inspection">Inspection Date</option>
+                                        <option value="completion">Completion Log</option>
+                                        <option value="prepared">Report Prepared</option>
+                                        <option value="submitted">Report Submitted</option>
+                                    </select>
+                                    <button onclick="window.toggleDateSortDirection(event)" class="p-1 hover:bg-slate-700 rounded transition" title="Toggle Ascending/Descending">
+                                        <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-300"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="report-table-body" class="font-medium text-slate-800 align-middle divide-y divide-slate-100 bg-slate-50/30">
+                    <tr><td colspan="5" class="p-12 text-center text-slate-500 font-bold"><i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600 mx-auto"></i></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 🎯 FULL DETAILS MODAL -->
+<div id="report-details-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[200] hidden items-center justify-center p-3 sm:p-4 print:hidden">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden animate-fade-in scale-in">
+        <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
+            <div>
+                <h3 class="font-black text-sm sm:text-lg text-slate-900 uppercase flex items-center gap-2">
+                    <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i> Inspection Call Details
+                </h3>
+                <p id="modal-subtitle-code" class="text-blue-600 font-black font-mono text-xs mt-0.5"></p>
+            </div>
+            <button onclick="window.closeReportDetails()" class="w-8 h-8 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-black flex items-center justify-center transition cursor-pointer">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <div class="p-4 sm:p-6 overflow-y-auto flex-1 custom-scrollbar bg-slate-50/50">
+            <div id="report-modal-content-area" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+        <div class="p-4 border-t border-slate-100 bg-white flex justify-end shrink-0">
+            <button onclick="window.closeReportDetails()" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-black shadow-md transition cursor-pointer">Close</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .scale-in { animation: scaleIn 0.2s ease-out forwards; }
+    @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    @media print {
+        .print\:hidden { display: none !important; }
+        .print\:block { display: block !important; }
+        body { background: white !important; -webkit-print-color-adjust: exact; }
+    }
+    
+    .pdf-export-active { 
+        background: white !important; 
+        width: 100% !important; 
+        min-width: 100% !important;
+        padding: 10px !important;
+        margin: 0 !important; 
+        position: relative !important;
+        left: 0 !important;
+        top: 0 !important;
+        transform: none !important;
+    }
+    
+    .pdf-export-active .overflow-x-auto { overflow: visible !important; width: 100% !important; display: block !important; }
+    .pdf-export-active table { border-collapse: collapse !important; width: 100% !important; font-size: 9px !important; }
+    .pdf-export-active th, .pdf-export-active td { border: 1px solid #cbd5e1 !important; padding: 6px !important; }
+    
+    /* PDF Styling for Select Dropdown Hide */
+    .pdf-export-active select { appearance: none; border: none; background: transparent; color: inherit; }
+</style>
+
+<script>
+    window.API_URL = "https://script.google.com/macros/s/AKfycbxYMiv0JkwTGb0HAc-K6mBF5C9iXYdchW44GUmgmnLc7YHUDmJEU6LIyPtCFnF0H3l7/exec";
+    const activeSession = localStorage.getItem('portal_user');
+    window.currentUser = activeSession ? JSON.parse(activeSession) : { role: "admin", name: "Admin", agency: "All" };
+
+    window.reportCurrentAgency = "Equalitas";
+    window.reportDataCache = []; 
+    window.reportFilteredData = [];
+    window.isFetchingReport = false;
+    const CACHE_EXPIRATION_MS = 10 * 60 * 1000; 
+
+    // Sorting State
+    window.reportSortConfig = { key: null, asc: true };
+
+    // --- Helpers ---
+    window.getExactKey = function(row, keyword) {
+        if (!row) return null;
+        const lowerKeyword = keyword.toLowerCase();
+        return Object.keys(row).find(k => k.toLowerCase().includes(lowerKeyword)) || keyword;
+    };
+    window.getRowValue = function(row, keyword) {
+        const key = window.getExactKey(row, keyword);
+        return row[key] || "";
+    };
+    
+    // Extracts ms for exact chronological sorting. Handles optional time.
+    window.extractLatestDateMs = function(rawStr) {
+        if (!rawStr || String(rawStr).trim() === '-' || String(rawStr).trim().toLowerCase() === 'none') return 0;
+        const regex = /(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/g;
+        let match;
+        let latestMs = 0;
+        
+        while ((match = regex.exec(String(rawStr))) !== null) {
+            let d = parseInt(match[1], 10); 
+            let m = parseInt(match[2], 10) - 1; 
+            let y = parseInt(match[3], 10);
+            if (y < 100) y += 2000;
+            
+            let hr = match[4] ? parseInt(match[4], 10) : 0;
+            let min = match[5] ? parseInt(match[5], 10) : 0;
+            let sec = match[6] ? parseInt(match[6], 10) : 0;
+
+            let currentMs = new Date(y, m, d, hr, min, sec).getTime();
+            if (currentMs > latestMs) latestMs = currentMs;
+        }
+        return latestMs;
+    };
+
+    window.getChipColorClass = function(status) {
+        const s = String(status).trim().toLowerCase();
+        if (s === 'pending') return 'bg-blue-700 text-white border-blue-800';
+        if (s === 'completed') return 'bg-emerald-700 text-white border-emerald-800';
+        if (s === 'cancelled') return 'bg-red-700 text-white border-red-800';
+        if (s === 'revised') return 'bg-orange-200 text-amber-900 border-orange-300';
+        if (s === 'duplicate') return 'bg-purple-200 text-purple-900 border-purple-300';
+        if (s === 'complete offline') return 'bg-green-200 text-green-900 border-green-300';
+        return 'bg-slate-100 text-slate-700 border-slate-300';
+    };
+
+    window.showToast = function(message, type = "success") {
+        const toast = document.createElement('div');
+        const colorClass = type === "success" ? "bg-emerald-600" : "bg-rose-600";
+        toast.className = `fixed bottom-6 right-6 px-5 py-3.5 rounded-2xl shadow-2xl font-black text-xs text-white z-[200] transition-opacity duration-300 flex items-center gap-3 ${colorClass}`;
+        toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i> ${message}`;
+        document.body.appendChild(toast);
+        if(window.lucide) lucide.createIcons();
+        setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
+    };
+
+    // --- Modal View Logic ---
+    window.openReportDetails = function(encodedRow) {
+        let rowData = {};
+        try { rowData = JSON.parse(decodeURIComponent(encodedRow)); } catch(e) { return; }
+        
+        document.getElementById('modal-subtitle-code').textContent = `Inspection ID: ${window.getRowValue(rowData, 'inspection code') || 'N/A'}`;
+        const contentArea = document.getElementById('report-modal-content-area');
+        contentArea.innerHTML = '';
+        
+        Object.keys(rowData).forEach(key => {
+            if (key === "Agency_Source") return;
+            const val = rowData[key] || "-";
+            const isFullWidth = key.toLowerCase().includes("description") || key.toLowerCase().includes("site") || key.toLowerCase().includes("remark") || key.toLowerCase().includes("type of inspection");
+            
+            contentArea.innerHTML += `
+                <div class="${isFullWidth ? 'md:col-span-2 lg:col-span-3' : ''} bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center">
+                    <label class="block text-[9px] font-black uppercase text-slate-400 mb-1.5 tracking-wide">${key}</label>
+                    <div class="text-xs font-bold text-slate-800 whitespace-pre-wrap break-words leading-snug">${val}</div>
+                </div>
+            `;
+        });
+        
+        document.getElementById('report-details-modal').classList.remove('hidden');
+        document.getElementById('report-details-modal').classList.add('flex');
+        if(window.lucide) lucide.createIcons();
+    };
+
+    window.closeReportDetails = function() {
+        document.getElementById('report-details-modal').classList.add('hidden');
+        document.getElementById('report-details-modal').classList.remove('flex');
+    };
+
+    // --- PDF Export ---
+    window.downloadPDFReport = function() {
+        if (!confirm(`Download Report Wise Analysis as PDF?`)) return;
+        document.body.style.cursor = 'wait';
+        if (typeof window.html2pdf === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+            script.onload = () => executePDFGeneration();
+            script.onerror = () => { alert("Failed to load PDF library."); document.body.style.cursor = 'default'; };
+            document.head.appendChild(script);
+        } else {
+            executePDFGeneration();
+        }
+    };
+
+    function executePDFGeneration() {
+        document.getElementById('pdf-agency-title').textContent = window.reportCurrentAgency;
+        document.getElementById('pdf-report-date').textContent = new Date().toLocaleDateString('en-IN');
+        const element = document.getElementById('report-printable-content');
+        const filename = `${window.reportCurrentAgency}_ReportAnalysis_${new Date().toISOString().split('T')[0]}.pdf`;
+        element.classList.add('pdf-export-active');
+        
+        const opt = {
+            margin:       [0.2, 0.2, 0.2, 0.2],
+            filename:     filename,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, scrollX: 0, scrollY: 0, x: 0, windowWidth: element.scrollWidth },
+            jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' },
+            pagebreak:    { mode: ['css', 'legacy'] }
+        };
+
+        window.html2pdf().set(opt).from(element).save().then(() => { 
+            element.classList.remove('pdf-export-active');
+            document.body.style.cursor = 'default'; 
+        }).catch(err => {
+            element.classList.remove('pdf-export-active');
+            document.body.style.cursor = 'default'; 
+        });
+    }
+
+    // --- Data Fetching ---
+    window.fetchReportAnalysisData = async function(forceRefresh = false) {
+        if (window.isFetchingReport) return;
+        
+        if (forceRefresh) {
+            document.getElementById('report-table-body').innerHTML = `<tr><td colspan="5" class="p-12 text-center text-slate-500 font-bold"><i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600 mx-auto"></i> Syncing live data...</td></tr>`;
+            if(window.lucide) lucide.createIcons();
+        }
+
+        const cacheKey = `reportAnalysis_${window.reportCurrentAgency}`;
+        const cacheTimestampKey = `reportAnalysis_${window.reportCurrentAgency}_timestamp`;
+        
+        if (!forceRefresh) {
+            const cachedData = sessionStorage.getItem(cacheKey);
+            const cachedTime = sessionStorage.getItem(cacheTimestampKey);
+            if (cachedData && cachedTime && (Date.now() - parseInt(cachedTime, 10) < CACHE_EXPIRATION_MS)) {
+                window.reportDataCache = JSON.parse(cachedData);
+                window.populateReportFilters();
+                window.applyReportFilters();
+                return;
+            }
+        }
+
+        window.isFetchingReport = true;
+        try {
+            const payload = { action: "getReportAnalysisCalls", user: window.currentUser, agency: window.reportCurrentAgency };
+            const response = await fetch(window.API_URL, { method: 'POST', redirect: 'follow', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } });
+            const result = await response.json();
+            
+            if (result.status === "success" || result.status === true) {
+                window.reportDataCache = result.data || [];
+                sessionStorage.setItem(cacheKey, JSON.stringify(window.reportDataCache));
+                sessionStorage.setItem(cacheTimestampKey, Date.now().toString());
+                
+                window.populateReportFilters();
+                window.applyReportFilters();
+                if (forceRefresh) window.showToast("Data synced successfully.");
+            } else {
+                window.showToast("Failed to fetch data.", "error");
+            }
+        } catch (error) {
+            window.showToast("Connection Error.", "error");
+        }
+        window.isFetchingReport = false;
+    };
+
+    // --- Switch Agency ---
+    window.switchReportAgency = function(agencyName) {
+        if (window.reportCurrentAgency === agencyName) return; 
+        window.reportCurrentAgency = agencyName;
+        window.reportDataCache = []; 
+        
+        const equalitasTab = document.getElementById('tab-Equalitas');
+        const aMarkTab = document.getElementById('tab-A-Mark');
+        const activeClass = ['bg-blue-600', 'text-white', 'shadow-md'];
+        const inactiveClass = ['text-slate-500', 'hover:text-slate-800', 'hover:bg-slate-200'];
+
+        if (agencyName === 'Equalitas') {
+            equalitasTab.classList.add(...activeClass); equalitasTab.classList.remove(...inactiveClass);
+            aMarkTab.classList.add(...inactiveClass); aMarkTab.classList.remove(...activeClass);
+        } else {
+            aMarkTab.classList.add(...activeClass); aMarkTab.classList.remove(...inactiveClass);
+            equalitasTab.classList.add(...inactiveClass); equalitasTab.classList.remove(...activeClass);
+        }
+        
+        window.clearReportFilters(true); 
+        window.fetchReportAnalysisData();
+    };
+
+    // --- Filters ---
+    window.populateReportFilters = function() {
+        const zoneSelect = document.getElementById('filter-zone');
+        const inspSelect = document.getElementById('filter-inspector');
+        const statusSelect = document.getElementById('filter-status');
+        const modeSelect = document.getElementById('filter-mode');
+
+        const uniqueZones = new Set();
+        const uniqueInsps = new Set();
+        const uniqueStatuses = new Set();
+        const uniqueModes = new Set();
+
+        window.reportDataCache.forEach(r => {
+            const z = String(window.getRowValue(r, 'zone')).trim();
+            const i = String(window.getRowValue(r, 'inspecting engineer')).trim();
+            const s = String(window.getRowValue(r, 'call status')).trim();
+            const m = String(window.getRowValue(r, 'call mode')).trim();
+            
+            if (z) uniqueZones.add(z);
+            if (i) uniqueInsps.add(i);
+            if (s) uniqueStatuses.add(s);
+            if (m) uniqueModes.add(m);
+        });
+
+        const preserveSelection = (el, set, defaultText) => {
+            const current = el.value;
+            let opts = `<option value="ALL">${defaultText}</option>`;
+            Array.from(set).sort().forEach(item => { opts += `<option value="${item.replace(/"/g, '&quot;')}">${item}</option>`; });
+            el.innerHTML = opts;
+            if (Array.from(set).includes(current)) el.value = current;
+        };
+
+        preserveSelection(zoneSelect, uniqueZones, 'All Zones');
+        preserveSelection(inspSelect, uniqueInsps, 'All Inspectors');
+        preserveSelection(statusSelect, uniqueStatuses, 'All Statuses');
+        preserveSelection(modeSelect, uniqueModes, 'All Modes');
+    };
+
+    window.clearReportFilters = function(skipRender = false) {
+        document.getElementById('filter-zone').value = 'ALL';
+        document.getElementById('filter-inspector').value = 'ALL';
+        document.getElementById('filter-status').value = 'ALL';
+        document.getElementById('filter-mode').value = 'ALL';
+        
+        // Reset sorting logic safely
+        window.reportSortConfig = { key: null, asc: true }; 
+        const dateSelect = document.getElementById('date-sort-select');
+        if (dateSelect) dateSelect.value = "";
+        
+        if(!skipRender) window.applyReportFilters();
+    };
+
+    window.applyReportFilters = function() {
+        const fZone = document.getElementById('filter-zone').value;
+        const fInsp = document.getElementById('filter-inspector').value;
+        const fStatus = document.getElementById('filter-status').value;
+        const fMode = document.getElementById('filter-mode').value;
+
+        window.reportFilteredData = window.reportDataCache.filter(r => {
+            const z = String(window.getRowValue(r, 'zone')).trim();
+            const i = String(window.getRowValue(r, 'inspecting engineer')).trim();
+            const s = String(window.getRowValue(r, 'call status')).trim();
+            const m = String(window.getRowValue(r, 'call mode')).trim();
+
+            const matchZ = fZone === 'ALL' || z === fZone;
+            const matchI = fInsp === 'ALL' || i === fInsp;
+            const matchS = fStatus === 'ALL' || s === fStatus;
+            const matchM = fMode === 'ALL' || m === fMode;
+
+            return matchZ && matchI && matchS && matchM;
+        });
+
+        // Re-apply sorting if active
+        if (window.reportSortConfig.key) {
+            window.executeSort();
+        } else {
+            window.renderReportTable();
+        }
+    };
+
+    // --- 🚀 DATE SORTING LOGIC ---
+    window.sortReportData = function(colKey) {
+        if (!colKey) return;
+        
+        if (window.reportSortConfig.key === colKey) {
+            window.reportSortConfig.asc = !window.reportSortConfig.asc; // Toggle order if same key
+        } else {
+            window.reportSortConfig.key = colKey;
+            window.reportSortConfig.asc = true; // Default ASC for new key
+        }
+        
+        // UI reflection for the dropdown
+        const dateSelect = document.getElementById('date-sort-select');
+        const dateKeys = ['received', 'proposed', 'inspection', 'completion', 'prepared', 'submitted'];
+        if (dateSelect) {
+            if (dateKeys.includes(colKey)) {
+                dateSelect.value = colKey;
+            } else {
+                dateSelect.value = ""; // Clear dropdown if standard column sorted
+            }
+        }
+        
+        window.executeSort();
+    };
+
+    window.toggleDateSortDirection = function(e) {
+        e.stopPropagation();
+        const currentSort = document.getElementById('date-sort-select').value;
+        if (!currentSort) {
+            window.showToast('Select a Date column to sort first', 'error');
+            return;
+        }
+        window.reportSortConfig.asc = !window.reportSortConfig.asc;
+        window.executeSort();
+    };
+
+    window.executeSort = function() {
+        const { key, asc } = window.reportSortConfig;
+        if (!key) return;
+        
+        window.reportFilteredData.sort((a, b) => {
+            let valA = "", valB = "";
+            let isDateSort = false;
+
+            if (key === 'code') { valA = window.getRowValue(a, 'inspection code'); valB = window.getRowValue(b, 'inspection code'); }
+            else if (key === 'inspector') { valA = window.getRowValue(a, 'inspecting engineer'); valB = window.getRowValue(b, 'inspecting engineer'); }
+            else if (key === 'status') { valA = window.getRowValue(a, 'call status'); valB = window.getRowValue(b, 'call status'); }
+            
+            // Dynamic Mapping for Date fields
+            else if (['received', 'proposed', 'inspection', 'completion', 'prepared', 'submitted'].includes(key)) {
+                isDateSort = true;
+                const colMap = {
+                    'received': 'received on date',
+                    'proposed': 'proposed insp',
+                    'inspection': 'date of inspection',
+                    'completion': 'completion log',
+                    'prepared': 'report prepared',
+                    'submitted': 'report submission'
+                };
+                valA = window.getRowValue(a, colMap[key]);
+                valB = window.getRowValue(b, colMap[key]);
+            }
+
+            if (isDateSort) {
+                const msA = window.extractLatestDateMs(valA);
+                const msB = window.extractLatestDateMs(valB);
+                return asc ? msA - msB : msB - msA;
+            }
+
+            return asc ? String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA));
+        });
+        
+        window.renderReportTable();
+    };
+
+    // --- Rendering ---
+    window.renderReportTable = function() {
+        const tbody = document.getElementById('report-table-body');
+        document.getElementById('report-count').innerText = `${window.reportFilteredData.length} Calls`;
+
+        if (window.reportFilteredData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="p-12 text-center text-slate-400 font-bold italic">No records found matching filters.</td></tr>`;
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        
+        // Helper to format dates cleanly
+        const cleanVal = (val) => val && val !== '-' ? String(val).replace(/Yes\s+at/gi, '').trim() : '-';
+        
+        // 🚀 NEW: Helper to strip time from Date-Only fields
+        const dateOnly = (val) => {
+            let v = cleanVal(val);
+            if (v !== '-') return v.split(/\s+/)[0]; 
+            return v;
+        };
+
+        window.reportFilteredData.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-white transition border-b border-slate-200/60";
+            
+            const code = window.getRowValue(row, 'inspection code') || '-';
+            const orderRef = window.getRowValue(row, 'inspector order ref') || '-';
+            const inspector = window.getRowValue(row, 'inspecting engineer') || 'Unassigned';
+            const zone = window.getRowValue(row, 'zone') || '-';
+            const mode = window.getRowValue(row, 'call mode') || '-';
+            const status = window.getRowValue(row, 'call status') || 'Pending';
+            
+            // Apply Date-Only filter to specific columns
+            const received = dateOnly(window.getRowValue(row, 'received on date'));
+            const proposed = cleanVal(window.getRowValue(row, 'proposed insp'));
+            const inspection = cleanVal(window.getRowValue(row, 'date of inspection'));
+            const completion = cleanVal(window.getRowValue(row, 'completion log'));
+            const prepared = cleanVal(window.getRowValue(row, 'report prepared'));
+            const submitted = dateOnly(window.getRowValue(row, 'report submission date'));
+
+            const statusColor = window.getChipColorClass(status);
+            const modeColor = mode.toLowerCase() === 'online' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-slate-600 bg-slate-100 border-slate-300';
+
+            const encodedRow = encodeURIComponent(JSON.stringify(row));
+
+            tr.innerHTML = `
+                <td class="p-3 border-r border-slate-200/60 text-center font-bold text-slate-500">${index + 1}</td>
+                
+                <td class="p-3 border-r border-slate-200/60">
+                    <div class="font-black font-mono text-blue-700 cursor-pointer hover:underline hover:text-blue-900 inline-block group" onclick="window.openReportDetails('${encodedRow}')" title="Click to view full row details">
+                        ${code} <i data-lucide="external-link" class="w-3 h-3 inline text-slate-300 group-hover:text-blue-500 ml-1"></i>
+                    </div>
+                    <div class="text-[9px] text-slate-400 mt-1 uppercase tracking-wider">${orderRef}</div>
+                </td>
+                
+                <td class="p-3 border-r border-slate-200/60">
+                    <div class="font-bold text-slate-900 truncate max-w-[150px]" title="${inspector}">${inspector}</div>
+                    <div class="text-[9px] text-slate-500 mt-1 uppercase tracking-wider font-bold">Zone: ${zone}</div>
+                </td>
+                
+                <td class="p-3 border-r border-slate-200/60">
+                    <div class="flex flex-col gap-1.5 items-start">
+                        <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase shadow-sm border border-transparent ${statusColor}">${status}</span>
+                        <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase shadow-sm border ${modeColor}">${mode}</span>
+                    </div>
+                </td>
+
+                <td class="p-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2 p-2 bg-slate-50 rounded-xl border border-slate-100 shadow-sm w-full">
+                        <div class="flex flex-col border-r border-slate-200/50 pr-2">
+                            <span class="text-[8px] text-slate-400 uppercase tracking-widest font-black">Received</span> 
+                            <span class="font-mono text-[10px] text-slate-700 font-bold">${received}</span>
+                        </div>
+                        <div class="flex flex-col border-r border-slate-200/50 pr-2">
+                            <span class="text-[8px] text-slate-400 uppercase tracking-widest font-black">Proposed</span> 
+                            <span class="font-mono text-[10px] text-slate-700 font-bold">${proposed}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[8px] text-indigo-400 uppercase tracking-widest font-black">Insp Date</span> 
+                            <span class="font-mono text-[10px] text-indigo-700 font-black">${inspection}</span>
+                        </div>
+                        <div class="flex flex-col border-r border-slate-200/50 pr-2 pt-1 border-t border-slate-200/50">
+                            <span class="text-[8px] text-indigo-400 uppercase tracking-widest font-black">Comp Log</span> 
+                            <span class="font-mono text-[10px] text-indigo-700 font-black">${completion}</span>
+                        </div>
+                        <div class="flex flex-col border-r border-slate-200/50 pr-2 pt-1 border-t border-slate-200/50">
+                            <span class="text-[8px] text-emerald-400 uppercase tracking-widest font-black">Prepared</span> 
+                            <span class="font-mono text-[10px] text-emerald-700 font-black">${prepared}</span>
+                        </div>
+                        <div class="flex flex-col pt-1 border-t border-slate-200/50">
+                            <span class="text-[8px] text-emerald-400 uppercase tracking-widest font-black">Submitted</span> 
+                            <span class="font-mono text-[10px] text-emerald-700 font-black">${submitted}</span>
+                        </div>
+                    </div>
+                </td>
+            `;
+            fragment.appendChild(tr);
+        });
+
+        tbody.innerHTML = '';
+        tbody.appendChild(fragment);
+        if(window.lucide) lucide.createIcons();
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        window.fetchReportAnalysisData();
+    });
+</script>

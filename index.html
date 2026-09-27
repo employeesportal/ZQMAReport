@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZQMA Portal Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f8fafc;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 font-sans antialiased overflow-hidden">
+
+    <script>
+        // 🎯 GLOBAL CONFIGURATION
+        const API_URL = "https://script.google.com/macros/s/AKfycbxYMiv0JkwTGb0HAc-K6mBF5C9iXYdchW44GUmgmnLc7YHUDmJEU6LIyPtCFnF0H3l7/exec";
+
+        let currentUser = JSON.parse(localStorage.getItem('portal_user')) || null;
+        let currentView = null;
+
+       // 🎯 PORTAL MODULES REGISTRY (Points to external HTML files)
+       const PORTAL_MODULES = {
+    "inspections": {
+        id: "inspections", label: "Manage Inspections", icon: "clipboard-list",
+        file: "inspectionCalls.html", roles: ["admin", "coordinator"]
+    },
+    
+    // 🚀 SEPARATED: Inspection Summary Portal
+    "summary": {
+        id: "summary", label: "Inspection Summary", icon: "bar-chart-3",
+        file: "summary.html", roles: ["admin", "coordinator"]
+    },
+    // 🚀 SEPARATED: Daily Work Portal
+    "daily_work": {
+        id: "daily_work", label: "Daily Work", icon: "calendar-clock",
+        file: "dailyWork.html", roles: ["admin", "coordinator"]
+    },
+    // 🚀 NEW: Analysis Portal (Strictly Admin Only)
+    "analysis": {
+        id: "analysis", label: "Analysis Portal", icon: "pie-chart",
+        file: "analysisPortal.html", roles: ["admin"]
+    },
+    "report_analysis": {
+        id: "report_analysis", label: "Report Analysis", icon: "calendar-search",
+        file: "reportAnalysis.html", roles: ["admin"]
+    },
+    // 💰 NEW: Fee Details Portal
+    "fee_details": {
+        id: "fee_details", label: "Fee Details", icon: "receipt", // 'receipt', 'wallet', or 'banknote' work well here
+        file: "feeDetails.html", roles: ["admin"] // Remove "coordinator" if it should be Admin only
+    },
+    // 🚀 MODULE FOR INSPECTORS (USERS)
+    "my_inspections": {
+        id: "my_inspections", label: "My Inspections", icon: "clipboard-check",
+        file: "userPortal.html", roles: ["user"]
+    },
+    // 🚀 CREDENTIALS
+    "change_credentials": {
+        id: "change_credentials", label: "Change Credentials", icon: "key-round",
+        file: "changeCredentials.html", roles: ["user"] 
+    }
+};
+
+    </script>
+
+    <!-- ================= LOGIN SCREEN ================= -->
+    <div id="login-view" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-8 border border-slate-800 relative">
+            <div class="text-center mb-6">
+                <div
+                    class="inline-flex w-12 h-12 bg-blue-600 rounded-xl items-center justify-center text-white mb-3 shadow-md">
+                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+                <h2 class="text-lg font-black text-slate-900 tracking-tight">ZQMA Inspection Portal </h2>
+                <p class="text-xs text-slate-500 mt-1 font-bold">Sign in to access your modules</p>
+            </div>
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Username</label>
+                    <input type="text" id="login-user" required
+                        class="w-full px-4 py-3 border border-slate-300 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 focus:bg-white"
+                        placeholder="Enter username">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Passcode</label>
+                    <div class="relative">
+                        <input type="password" id="login-pass" required
+                            class="w-full pl-4 pr-10 py-3 border border-slate-300 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 focus:bg-white"
+                            placeholder="••••••••">
+                        <button type="button" onclick="togglePasswordVisibility()"
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer">
+                            <i id="eye-icon" data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" id="login-btn"
+                    class="w-full py-3 mt-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition cursor-pointer">
+                    Authenticate
+                </button>
+                <p id="login-error" class="text-xs text-rose-500 font-bold text-center hidden mt-2"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MAIN APP VIEW ================= -->
+    <div id="app-view" class="flex h-screen w-full hidden">
+        <div id="mobile-overlay" onclick="toggleSidebar()"
+            class="fixed inset-0 bg-slate-900/50 z-40 hidden md:hidden backdrop-blur-sm"></div>
+
+        <aside id="sidebar"
+            class="fixed md:static inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-300 flex flex-col transition-transform transform -translate-x-full md:translate-x-0 shadow-2xl md:shadow-none">
+            <div class="p-5 flex items-center justify-between border-b border-slate-800 bg-slate-950 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    </div>
+                    <span class="font-black text-sm text-white uppercase tracking-wider">ZQMA<span
+                            class="text-blue-500"> Portal</span></span>
+                </div>
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white"><i data-lucide="x"
+                        class="w-5 h-5"></i></button>
+            </div>
+
+            <nav id="nav-links" class="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar"></nav>
+
+            <div class="p-4 bg-slate-950 border-t border-slate-800 shrink-0">
+                <div class="flex items-center gap-3 mb-3">
+                    <div id="user-avatar"
+                        class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-black uppercase text-sm shadow-inner">
+                        U</div>
+                    <div class="min-w-0">
+                        <p id="user-name" class="text-xs font-bold text-white truncate">Loading...</p>
+                        <p id="user-role"
+                            class="text-[10px] text-slate-400 truncate uppercase tracking-wider font-bold">Role</p>
+                    </div>
+                </div>
+                <button onclick="handleLogout()"
+                    class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-black text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition cursor-pointer">
+                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign Out
+                </button>
+            </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden bg-slate-50">
+            <header
+                class="md:hidden bg-white border-b border-slate-200 p-4 flex items-center justify-between shrink-0 sticky top-0 z-30">
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleSidebar()" class="text-slate-600 p-1 rounded-lg hover:bg-slate-100"><i
+                            data-lucide="menu" class="w-6 h-6"></i></button>
+                    <span id="mobile-header-title"
+                        class="font-black text-sm uppercase text-slate-800 tracking-wider">Loading...</span>
+                </div>
+            </header>
+
+            <!-- 🎯 DYNAMIC MODULES ARE INJECTED HERE -->
+            <main id="main-content" class="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar relative">
+                <div class="flex h-full items-center justify-center text-slate-400">Loading module...</div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('login-pass');
+            const eyeIcon = document.getElementById('eye-icon');
+            if (passInput.type === "password") {
+                passInput.type = "text"; eyeIcon.setAttribute("data-lucide", "eye-off");
+            } else {
+                passInput.type = "password"; eyeIcon.setAttribute("data-lucide", "eye");
+            }
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // SESSION & INIT
+        // ==========================================
+        function initializeApp() {
+            if (currentUser) {
+                document.getElementById('login-view').classList.add('hidden');
+                document.getElementById('app-view').classList.remove('hidden');
+
+                document.getElementById('user-name').innerText = currentUser.name;
+                document.getElementById('user-role').innerText = `${currentUser.role} • ${currentUser.agency || 'System'}`;
+                document.getElementById('user-avatar').innerText = String(currentUser.name).charAt(0).toUpperCase();
+
+                renderNavigation();
+
+                const allowedModules = Object.values(PORTAL_MODULES).filter(m => m.roles.includes(currentUser.role));
+                if (allowedModules.length > 0) loadView(allowedModules[0].id);
+
+            } else {
+                document.getElementById('login-view').classList.remove('hidden');
+                document.getElementById('app-view').classList.add('hidden');
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('login-btn');
+            const errEl = document.getElementById('login-error');
+            const user = document.getElementById('login-user').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+
+            btn.innerText = "Authenticating..."; errEl.classList.add('hidden');
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: "POST", body: JSON.stringify({ action: "login", username: user, passcode: pass })
+                });
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    currentUser = data.data;
+                    localStorage.setItem('portal_user', JSON.stringify(currentUser));
+                    initializeApp();
+                } else {
+                    errEl.innerText = data.message || "Invalid credentials."; errEl.classList.remove('hidden');
+                }
+            } catch (err) {
+                errEl.innerText = "Network Error. Check API_URL."; errEl.classList.remove('hidden');
+            } finally {
+                btn.innerText = "Authenticate";
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('portal_user'); currentUser = null; window.location.reload();
+        }
+
+        // ==========================================
+        // ROUTING & DYNAMIC FILE LOADING
+        // ==========================================
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        function renderNavigation() {
+            const nav = document.getElementById('nav-links');
+            nav.innerHTML = `<div class="px-3 mb-2 mt-2"><span class="text-[10px] font-black text-slate-500 uppercase tracking-wider block">Main Menu</span></div>`;
+
+            Object.values(PORTAL_MODULES).forEach(module => {
+                if (module.roles.includes(currentUser.role)) {
+                    const isActive = currentView === module.id;
+                    const btnClass = isActive
+                        ? `w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-bold bg-blue-600 text-white shadow-md transition mb-1 text-left`
+                        : `w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition mb-1 text-left`;
+
+                    nav.innerHTML += `
+                <button onclick="loadView('${module.id}')" class="${btnClass}">
+                    <i data-lucide="${module.icon}" class="w-4 h-4 shrink-0 ${isActive ? 'text-blue-200' : ''}"></i> 
+                    <span class="leading-tight">${module.label}</span>
+                </button>
+            `;
+                }
+            });
+            lucide.createIcons();
+        }
+
+
+        async function loadView(viewId) {
+            currentView = viewId;
+            renderNavigation();
+            document.getElementById('mobile-header-title').innerText = PORTAL_MODULES[viewId].label;
+
+            const mainContent = document.getElementById('main-content');
+            mainContent.innerHTML = `<div class="p-12 text-center text-slate-400 animate-pulse font-bold">Loading ${PORTAL_MODULES[viewId].label}...</div>`;
+
+            try {
+                const response = await fetch(PORTAL_MODULES[viewId].file);
+                if (!response.ok) throw new Error("File not found");
+
+                const htmlText = await response.text();
+
+                // 1. Inject the HTML into the DOM
+                mainContent.innerHTML = htmlText;
+
+                // 2. Extract and force-execute the scripts safely using native Module scoping
+                const scripts = mainContent.querySelectorAll('script');
+                scripts.forEach(oldScript => {
+                    if (oldScript.textContent.trim()) {
+                        const newScript = document.createElement('script');
+
+                        // 🎯 THE FIX: Native ES6 module scoping completely eliminates 
+                        // "already declared" errors and requires no string wrapping!
+                        newScript.type = "module";
+                        newScript.textContent = oldScript.textContent;
+
+                        // Append directly to document.head to guarantee execution
+                        document.head.appendChild(newScript);
+
+                        console.log(`[System] Executed script for module: ${viewId}`);
+                    }
+                    // Remove the dead script tag from the layout
+                    oldScript.remove();
+                });
+
+                if (window.lucide) lucide.createIcons();
+            } catch (err) {
+                console.error("Module load error:", err);
+                mainContent.innerHTML = `
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm text-center">
+                <p class="text-rose-500 font-bold">Failed to load ${PORTAL_MODULES[viewId].file}.</p>
+            </div>`;
+            }
+
+            if (window.innerWidth < 768) toggleSidebar();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (API_URL.includes("YOUR_SCRIPT_ID")) {
+                document.getElementById('login-error').innerText = "Please update API_URL.";
+                document.getElementById('login-error').classList.remove('hidden');
+            } else {
+                initializeApp();
+            }
+        });
+    </script>
+</body>
+
+</html>

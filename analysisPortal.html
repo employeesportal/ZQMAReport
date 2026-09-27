@@ -1,0 +1,1434 @@
+<div class="space-y-6 animate-fade-in flex flex-col h-full relative pb-8">
+    
+    <!-- 🎯 Header & Agency Switcher -->
+    <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 shrink-0 print:hidden">
+        <div>
+            <h2 class="font-black text-base sm:text-lg uppercase text-slate-900 text-center md:text-left flex items-center justify-center md:justify-start gap-2">
+                <i data-lucide="bar-chart-2" class="w-5 h-5 text-blue-600"></i> Analytics & Insights Portal
+            </h2>
+            <p class="text-[11px] sm:text-xs text-slate-500 font-bold text-center md:text-left">Admin Access Only — Inspection Analysis</p>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+            <!-- View Mode Switcher -->
+            <div class="flex p-1 bg-slate-100 rounded-xl border border-slate-200 w-full sm:w-auto">
+                <button onclick="window.switchAnalysisTab('contractor')" id="tab-contractor" class="flex-1 sm:flex-none px-4 sm:px-5 py-2 rounded-lg text-xs font-black transition bg-blue-600 text-white shadow-md">
+                    Contractor-Wise
+                </button>
+                <button onclick="window.switchAnalysisTab('inspector')" id="tab-inspector" class="flex-1 sm:flex-none px-4 sm:px-5 py-2 rounded-lg text-xs font-black transition text-slate-500 hover:text-slate-800 hover:bg-slate-200">
+                    Inspector-Wise
+                </button>
+            </div>
+
+            <!-- Agency Switcher -->
+            <div class="flex p-1 bg-slate-100 rounded-xl border border-slate-200 w-full sm:w-auto">
+                <button onclick="window.switchAnalysisAgency('Equalitas')" id="sum-tab-Equalitas" class="flex-1 sm:flex-none px-5 sm:px-6 py-2 rounded-lg text-xs font-black transition bg-blue-600 text-white shadow-md">
+                    Equalitas
+                </button>
+                <button onclick="window.switchAnalysisAgency('A-Mark')" id="sum-tab-A-Mark" class="flex-1 sm:flex-none px-5 sm:px-6 py-2 rounded-lg text-xs font-black transition text-slate-500 hover:text-slate-800 hover:bg-slate-200">
+                    A-Mark
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎯 Controls & Filters -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row items-center gap-3 shrink-0 print:hidden">
+        
+        <!-- Zone Filter -->
+        <div class="relative w-full lg:w-48">
+            <i data-lucide="map-pin" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 z-10"></i>
+            <select id="filter-zone" onchange="window.applyAnalysisFilters()" class="w-full pl-10 pr-8 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition cursor-pointer appearance-none">
+                <option value="ALL">All Zones</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none"></i>
+        </div>
+
+        <!-- Search & Select Contractor -->
+        <div class="relative w-full lg:w-64">
+            <i data-lucide="building-2" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 z-10"></i>
+            <input type="text" list="analysis-contractor-list" id="filter-contractor" oninput="window.applyAnalysisFilters()" placeholder="Search / Select Contractor..." class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition placeholder-slate-400">
+            <datalist id="analysis-contractor-list"></datalist>
+        </div>
+
+        <!-- Select Inspector -->
+        <div class="relative w-full lg:w-56">
+            <i data-lucide="user" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 z-10"></i>
+            <select id="filter-inspector" onchange="window.applyAnalysisFilters()" class="w-full pl-10 pr-8 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition cursor-pointer appearance-none">
+                <option value="ALL">All Inspectors</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none"></i>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto lg:ml-auto">
+            <button onclick="window.clearAnalysisFilters()" class="flex-1 lg:flex-none px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl transition border border-slate-300 flex items-center justify-center gap-2 cursor-pointer">
+                <i data-lucide="list-restart" class="w-4 h-4"></i> Clear
+            </button>
+            <button onclick="window.syncAnalysisData(event)" class="flex-1 lg:flex-none px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Sync Data
+            </button>
+            <button onclick="window.downloadPDFReport()" class="flex-1 lg:flex-none px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer">
+                <i data-lucide="download-cloud" class="w-4 h-4"></i> PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- 📊 MAIN DATA CONTAINER -->
+    <div id="analysis-content-area" class="bg-white p-0 sm:p-4 rounded-3xl sm:border border-slate-200 sm:shadow-sm min-h-[400px]">
+        
+        <div id="loading-state" class="flex flex-col items-center justify-center py-20 text-slate-500">
+            <i data-lucide="loader-2" class="w-8 h-8 animate-spin text-blue-600 mb-3"></i>
+            <span class="font-bold text-sm">Crunching analytics...</span>
+        </div>
+
+        <!-- 🔍 Active Tender Isolation Badge -->
+        <div id="tender-focus-badge" class="hidden flex-wrap items-center justify-between gap-3 mb-4 p-3 bg-amber-50 border border-amber-200 shadow-sm rounded-xl mx-4 sm:mx-0 print:hidden">
+            <div class="text-xs font-bold text-amber-900 flex items-center gap-2">
+                <i data-lucide="filter" class="w-4 h-4 text-amber-600"></i>
+                <span>Currently Isolating Tender: <span id="focused-tender-text" class="font-black text-amber-700 ml-1"></span></span>
+            </div>
+            <button onclick="window.toggleTenderFocus(event, null)" class="px-4 py-1.5 bg-amber-200 hover:bg-amber-300 text-amber-900 text-[10px] font-black rounded-lg transition shadow-sm cursor-pointer whitespace-nowrap">
+                Clear Isolation
+            </button>
+        </div>
+
+        <!-- 🎨 Interactive Call Status Color Legend / Filters -->
+        <div id="color-legend" class="hidden flex-wrap items-center justify-center sm:justify-start gap-2 mb-4 p-3 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black uppercase mx-0 print:hidden">
+            <span class="text-slate-500 font-bold mr-1 hidden sm:block">Filter by Status:</span>
+            <button onclick="window.toggleStatusFilter('ALL')" data-status="ALL" class="status-filter-btn px-3 py-1 rounded bg-white text-slate-800 shadow-sm border border-slate-300 opacity-100 ring-2 ring-offset-1 ring-slate-400 transition cursor-pointer">All</button>
+            <button onclick="window.toggleStatusFilter('pending')" data-status="pending" class="status-filter-btn px-2 py-1 rounded bg-blue-700 text-white shadow-sm border border-blue-800 opacity-50 hover:opacity-100 transition cursor-pointer">Pending</button>
+            <button onclick="window.toggleStatusFilter('completed')" data-status="completed" class="status-filter-btn px-2 py-1 rounded bg-emerald-700 text-white shadow-sm border border-emerald-800 opacity-50 hover:opacity-100 transition cursor-pointer">Completed</button>
+            <button onclick="window.toggleStatusFilter('cancelled')" data-status="cancelled" class="status-filter-btn px-2 py-1 rounded bg-red-700 text-white shadow-sm border border-red-800 opacity-50 hover:opacity-100 transition cursor-pointer">Cancelled</button>
+            <button onclick="window.toggleStatusFilter('revised')" data-status="revised" class="status-filter-btn px-2 py-1 rounded bg-orange-200 text-amber-900 shadow-sm border border-orange-300 opacity-50 hover:opacity-100 transition cursor-pointer">Revised</button>
+            <button onclick="window.toggleStatusFilter('duplicate')" data-status="duplicate" class="status-filter-btn px-2 py-1 rounded bg-purple-200 text-purple-900 shadow-sm border border-purple-300 opacity-50 hover:opacity-100 transition cursor-pointer">Duplicate</button>
+            <button onclick="window.toggleStatusFilter('complete offline')" data-status="complete offline" class="status-filter-btn px-2 py-1 rounded bg-green-200 text-green-900 shadow-sm border border-green-300 opacity-50 hover:opacity-100 transition cursor-pointer">Complete Offline</button>
+            <button onclick="window.toggleStatusFilter('other')" data-status="other" class="status-filter-btn px-2 py-1 rounded bg-slate-100 text-slate-700 shadow-sm border border-slate-300 opacity-50 hover:opacity-100 transition cursor-pointer">Other / Null</button>
+        </div>
+
+        <!-- 🖨️ PDF WRAPPER -->
+        <div id="analysis-printable-content" class="w-full">
+            <div class="hidden print:block text-center pb-3 border-b-2 border-slate-900 mb-4">
+                <h1 class="text-sm font-black uppercase text-slate-900">Analysis Report — <span id="pdf-agency-title">Equalitas</span></h1>
+                <p class="text-[11px] font-bold text-slate-600 mt-1">Generated: <span id="pdf-report-date"></span></p>
+            </div>
+
+            <!-- CONTRACTOR-WISE TABLE VIEW -->
+            <div id="view-contractor" class="hidden w-full">
+                <!-- Desktop View -->
+                <div class="hidden md:block overflow-x-auto w-full custom-scrollbar rounded-xl border border-slate-200">
+                    <table class="w-full text-left text-xs border-collapse min-w-[1200px]">
+                        <thead class="sticky top-0 bg-slate-100 text-slate-900 uppercase text-[10px] font-black z-10 shadow-sm border-b-2 border-slate-300">
+                            <tr>
+                                <th class="p-3 border-r border-slate-300 text-center w-12">S.No.</th>
+                                <th class="p-3 border-r border-slate-300 w-1/6">Contractor Name</th>
+                                <th class="p-3 border-r border-slate-300 w-1/6 cursor-pointer hover:bg-slate-200 transition group select-none" onclick="window.toggleSortByTender()">
+                                    <div class="flex items-center justify-between">
+                                        <span>Tender No. & Amt (₹)</span>
+                                        <div class="tender-sort-icon p-1 rounded bg-slate-200 group-hover:bg-slate-300 transition print:hidden" title="Sort all rows purely by Tender No">
+                                            <i data-lucide="arrow-down-up" class="w-3 h-3 text-slate-500"></i>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th class="p-3 border-r border-slate-300 w-1/6">Inspecting Engineer (TPIA)</th>
+                                <th class="p-3 border-r border-slate-300 text-center w-20">Total Calls</th>
+                                <th class="p-3 border-r border-slate-300 text-center w-24 text-blue-700 bg-blue-50/50">Total Mandays</th>
+                                <th class="p-3">Inspection Codes (Click for Details)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contractor-tbody" class="font-medium text-slate-800 bg-white">
+                            <!-- Injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Mobile Accordion View -->
+                <div id="contractor-mobile-container" class="block md:hidden w-full space-y-1 print:hidden"></div>
+            </div>
+
+            <!-- INSPECTOR-WISE TABLE VIEW -->
+            <div id="view-inspector" class="hidden w-full">
+                <!-- Desktop View -->
+                <div class="hidden md:block overflow-x-auto w-full custom-scrollbar rounded-xl border border-slate-200">
+                    <table class="w-full text-left text-xs border-collapse min-w-[1200px]">
+                        <thead class="sticky top-0 bg-slate-100 text-slate-900 uppercase text-[10px] font-black z-10 shadow-sm border-b-2 border-slate-300">
+                            <tr>
+                                <th class="p-3 border-r border-slate-300 text-center w-12">S.No.</th>
+                                <th class="p-3 border-r border-slate-300 w-1/6">Inspecting Engineer (TPIA)</th>
+                                <th class="p-3 border-r border-slate-300 w-1/6">Contractor Name</th>
+                                <th class="p-3 border-r border-slate-300 w-1/6 cursor-pointer hover:bg-slate-200 transition group select-none" onclick="window.toggleSortByTender()">
+                                    <div class="flex items-center justify-between">
+                                        <span>Tender No. & Amt (₹)</span>
+                                        <div class="tender-sort-icon p-1 rounded bg-slate-200 group-hover:bg-slate-300 transition print:hidden" title="Sort all rows purely by Tender No">
+                                            <i data-lucide="arrow-down-up" class="w-3 h-3 text-slate-500"></i>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th class="p-3 border-r border-slate-300 text-center w-20">Total Calls</th>
+                                <th class="p-3 border-r border-slate-300 text-center w-24 text-blue-700 bg-blue-50/50">Total Mandays</th>
+                                <th class="p-3">Inspection Codes (Click for Details)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inspector-tbody" class="font-medium text-slate-800 bg-white">
+                            <!-- Injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Mobile Accordion View -->
+                <div id="inspector-mobile-container" class="block md:hidden w-full space-y-1 print:hidden"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🎯 MULTI-PURPOSE DRILLDOWN MODAL -->
+<div id="analysis-drilldown-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[50] hidden flex items-center justify-center p-3 sm:p-4 print:hidden">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden animate-fade-in scale-in">
+        <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
+            <div>
+                <h3 id="modal-title-main" class="font-black text-sm sm:text-lg text-slate-900 uppercase flex items-center gap-2">
+                    <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i> Full Inspection Details
+                </h3>
+                <p id="modal-subtitle-code" class="text-blue-600 font-black font-mono text-xs mt-0.5"></p>
+            </div>
+            <button onclick="window.closeAnalysisModal()" class="w-8 h-8 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-black flex items-center justify-center transition cursor-pointer">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <div class="p-4 sm:p-6 overflow-y-auto flex-1 custom-scrollbar bg-slate-50/50">
+            <div id="analysis-modal-content-area" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+        <div class="p-4 border-t border-slate-100 bg-white flex justify-end shrink-0">
+            <button onclick="window.closeAnalysisModal()" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-black shadow-md transition cursor-pointer">Close Window</button>
+        </div>
+    </div>
+</div>
+
+<!-- 🚀 NEW: PUSH TO FEE DETAILS MODAL -->
+<div id="push-fee-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] hidden items-center justify-center p-4 print:hidden">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl flex flex-col overflow-hidden animate-fade-in scale-in">
+        <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
+            <div>
+                <h3 class="font-black text-sm sm:text-lg text-slate-900 uppercase flex items-center gap-2">
+                    <i data-lucide="send" class="w-5 h-5 text-indigo-600"></i> Push to Fee Details
+                </h3>
+                <p class="text-[11px] sm:text-xs text-slate-500 font-bold mt-0.5">Review data and add Value Percent before pushing</p>
+            </div>
+            <button type="button" onclick="window.closePushFeeModal()" class="w-8 h-8 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-black flex items-center justify-center transition cursor-pointer">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <form id="push-fee-form" onsubmit="window.submitPushFeeData(event)" class="flex flex-col max-h-[70vh]">
+            <div class="p-4 sm:p-6 overflow-y-auto flex-1 custom-scrollbar bg-slate-50/50 space-y-4 text-xs font-bold text-slate-700">
+                <!-- Form fields generated dynamically here -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="push-fee-grid"></div>
+            </div>
+            <div class="p-4 border-t border-slate-100 bg-white flex justify-end gap-3 shrink-0">
+                <button type="button" onclick="window.closePushFeeModal()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-black rounded-xl transition cursor-pointer">Cancel</button>
+                <button type="submit" id="push-fee-submit-btn" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-md transition cursor-pointer flex items-center gap-2">
+                    <i data-lucide="save" class="w-4 h-4"></i> Confirm & Push
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .scale-in { animation: scaleIn 0.2s ease-out forwards; }
+    @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    table td { border: 1px solid #e2e8f0; } 
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+
+    @media print {
+        .print\:hidden { display: none !important; }
+        .print\:block { display: block !important; }
+        body { background: white !important; -webkit-print-color-adjust: exact; }
+    }
+    
+    .pdf-export-active { 
+        background: white !important; 
+        width: 100% !important; 
+        min-width: 100% !important;
+        padding: 10px !important;
+        margin: 0 !important; 
+        position: relative !important;
+        left: 0 !important;
+        top: 0 !important;
+        transform: none !important;
+    }
+    
+    .pdf-export-active .overflow-x-auto {
+        overflow: visible !important;
+        width: 100% !important;
+        display: block !important;
+    }
+    
+    .pdf-export-active table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+        font-size: 8px !important;
+    }
+    .pdf-export-active th, .pdf-export-active td {
+        border: 1px solid #cbd5e1 !important; 
+        padding: 4px !important;
+    }
+</style>
+
+<script>
+    window.API_URL = "https://script.google.com/macros/s/AKfycbxYMiv0JkwTGb0HAc-K6mBF5C9iXYdchW44GUmgmnLc7YHUDmJEU6LIyPtCFnF0H3l7/exec";
+
+    window.analysisCurrentAgency = "Equalitas";
+    window.analysisCurrentTab = "contractor";
+    window.analysisDataCache = []; 
+    window.isFetchingAnalysis = false;
+    window.analysisSortByTender = false; 
+    window.analysisFocusedTender = null; 
+    window.analysisStatusFilter = 'ALL'; 
+    const CACHE_EXPIRATION_MS = 10 * 60 * 1000; 
+
+    // Helper Functions
+    window.showToast = function(message, type = "success") {
+        const toast = document.createElement('div');
+        const colorClass = type === "success" ? "bg-emerald-600" : "bg-rose-600";
+        toast.className = `fixed bottom-6 right-6 px-5 py-3.5 rounded-2xl shadow-2xl font-black text-xs text-white z-[200] transition-opacity duration-300 flex items-center gap-3 ${colorClass}`;
+        toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i> ${message}`;
+        document.body.appendChild(toast);
+        if(window.lucide) lucide.createIcons();
+        setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
+    };
+
+    window.getExactKey = function(row, keyword) {
+        if (!row) return null;
+        const lowerKeyword = keyword.toLowerCase();
+        return Object.keys(row).find(k => k.toLowerCase().includes(lowerKeyword)) || keyword;
+    };
+    window.getRowValue = function(row, keyword) {
+        const key = window.getExactKey(row, keyword);
+        return row[key];
+    };
+
+    // 🚀 Robust Date Extractor
+    window.extractLatestDate = function(rawStr) {
+        if (!rawStr || String(rawStr).trim() === '-' || String(rawStr).trim().toLowerCase() === 'none' || String(rawStr).trim() === '') return null;
+        const regex = /(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})/g;
+        let match;
+        let latestDate = null;
+        while ((match = regex.exec(String(rawStr))) !== null) {
+            let d = parseInt(match[1], 10);
+            let m = parseInt(match[2], 10) - 1;
+            let y = parseInt(match[3], 10);
+            if (y < 100) y += 2000;
+            let currentDate = new Date(y, m, d);
+            if (!latestDate || currentDate > latestDate) latestDate = currentDate;
+        }
+        return latestDate;
+    };
+
+    window.generateDeterministicLogID = function(tenderNo, inspectorName) {
+        const cleanTender = String(tenderNo).replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+        const cleanInsp = String(inspectorName).replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+        return `FEE-${cleanTender}-${cleanInsp}`;
+    };
+
+    window.downloadPDFReport = function() {
+        if (!confirm(`Are you sure you want to download the ${window.analysisCurrentTab.toUpperCase()} analysis report as a PDF?\n\n(Note: Wide tables will automatically scale to fit)`)) return;
+        
+        document.body.style.cursor = 'wait';
+        
+        if (typeof window.html2pdf === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+            script.onload = () => executePDFGeneration();
+            script.onerror = () => { alert("Failed to load PDF library."); document.body.style.cursor = 'default'; };
+            document.head.appendChild(script);
+        } else {
+            executePDFGeneration();
+        }
+    };
+
+    function executePDFGeneration() {
+        document.getElementById('pdf-agency-title').textContent = window.analysisCurrentAgency;
+        document.getElementById('pdf-report-date').textContent = new Date().toLocaleDateString('en-IN');
+        
+        const element = document.getElementById('analysis-printable-content');
+        const filename = `${window.analysisCurrentAgency}_${window.analysisCurrentTab}_analysis_${new Date().toISOString().split('T')[0]}.pdf`;
+        
+        element.classList.add('pdf-export-active');
+        
+        const opt = {
+            margin:       [0.2, 0.2, 0.2, 0.2],
+            filename:     filename,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, scrollX: 0, scrollY: 0, x: 0, windowWidth: element.scrollWidth },
+            jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' },
+            pagebreak:    { mode: ['css', 'legacy'] }
+        };
+
+        window.html2pdf().set(opt).from(element).save().then(() => { 
+            element.classList.remove('pdf-export-active');
+            document.body.style.cursor = 'default'; 
+        }).catch(err => {
+            console.error(err);
+            element.classList.remove('pdf-export-active');
+            document.body.style.cursor = 'default'; 
+        });
+    }
+
+    window.toggleStatusFilter = function(status) {
+        window.analysisStatusFilter = status;
+        window.updateStatusFilterUI(status);
+        window.applyAnalysisFilters();
+    };
+
+    window.updateStatusFilterUI = function(status) {
+        document.querySelectorAll('.status-filter-btn').forEach(btn => {
+            btn.classList.remove('ring-2', 'ring-offset-1', 'opacity-100', 'ring-slate-400', 'ring-blue-500', 'ring-emerald-500', 'ring-red-500', 'ring-orange-400', 'ring-purple-400', 'ring-green-400');
+            btn.classList.add('opacity-50');
+            
+            if (btn.getAttribute('data-status') === status) {
+                btn.classList.remove('opacity-50');
+                btn.classList.add('opacity-100', 'ring-2', 'ring-offset-1');
+                
+                if(status === 'ALL') btn.classList.add('ring-slate-400');
+                else if(status === 'pending') btn.classList.add('ring-blue-500');
+                else if(status === 'completed') btn.classList.add('ring-emerald-500');
+                else if(status === 'cancelled') btn.classList.add('ring-red-500');
+                else if(status === 'revised') btn.classList.add('ring-orange-400');
+                else if(status === 'duplicate') btn.classList.add('ring-purple-400');
+                else if(status === 'complete offline') btn.classList.add('ring-green-400');
+                else if(status === 'other') btn.classList.add('ring-slate-400');
+            }
+        });
+    };
+
+    window.toggleTenderFocus = function(event, encodedTenderId) {
+        if(event) event.stopPropagation();
+        if (!encodedTenderId) {
+            window.analysisFocusedTender = null;
+        } else {
+            const tenderId = decodeURIComponent(encodedTenderId);
+            if (window.analysisFocusedTender === tenderId) {
+                window.analysisFocusedTender = null; 
+            } else {
+                window.analysisFocusedTender = tenderId;
+            }
+        }
+        window.applyAnalysisFilters();
+    };
+
+    window.toggleSortByTender = function() {
+        window.analysisSortByTender = !window.analysisSortByTender;
+        document.querySelectorAll('.tender-sort-icon').forEach(iconBox => {
+            if (window.analysisSortByTender) {
+                iconBox.classList.remove('bg-slate-200', 'group-hover:bg-slate-300');
+                iconBox.classList.add('bg-blue-100', 'group-hover:bg-blue-200');
+                iconBox.innerHTML = `<i data-lucide="arrow-down" class="w-3 h-3 text-blue-700"></i>`;
+            } else {
+                iconBox.classList.add('bg-slate-200', 'group-hover:bg-slate-300');
+                iconBox.classList.remove('bg-blue-100', 'group-hover:bg-blue-200');
+                iconBox.innerHTML = `<i data-lucide="arrow-down-up" class="w-3 h-3 text-slate-500"></i>`;
+            }
+        });
+        window.applyAnalysisFilters(); 
+    };
+
+    function formatCurrency(val) {
+        if (!val || val === "None" || val === "-" || isNaN(parseFloat(val))) return val || "N/A";
+        return "₹" + parseFloat(val).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+    }
+
+    function safeStr(val) {
+        return String(val || '').trim() || 'Unassigned / N/A';
+    }
+
+    function extractTotalMandays(rawVal) {
+        if (!rawVal) return 0;
+        const str = String(rawVal);
+        const totalMatch = str.match(/total\s*[:=]\s*([0-9.]+)/i);
+        if (totalMatch) return parseFloat(totalMatch[1]);
+        const numRegex = /\b\d+(?:\.\d+)?\b/g;
+        let match, sum = 0, found = false;
+        while ((match = numRegex.exec(str)) !== null) {
+            const num = parseFloat(match[0]);
+            if (num < 100) { sum += num; found = true; }
+        }
+        return found ? sum : 0;
+    }
+
+    function getChipColorClass(status) {
+        const s = String(status).trim().toLowerCase();
+        if (s === 'pending') return 'bg-blue-700 text-white border-blue-800 hover:bg-blue-800';
+        if (s === 'completed') return 'bg-emerald-700 text-white border-emerald-800 hover:bg-emerald-800';
+        if (s === 'cancelled') return 'bg-red-700 text-white border-red-800 hover:bg-red-800';
+        if (s === 'revised') return 'bg-orange-200 text-amber-900 border-orange-300 hover:bg-orange-300';
+        if (s === 'duplicate') return 'bg-purple-200 text-purple-900 border-purple-300 hover:bg-purple-300';
+        if (s === 'complete offline') return 'bg-green-200 text-green-900 border-green-300 hover:bg-green-300';
+        return 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200';
+    }
+
+    function buildFocusButton(tenderId) {
+        const safeTenderId = encodeURIComponent(tenderId);
+        const isFocused = window.analysisFocusedTender === tenderId;
+        const btnClass = isFocused 
+            ? 'bg-amber-400 text-amber-900 border border-amber-500 shadow-inner' 
+            : 'bg-slate-200 text-slate-500 hover:bg-slate-300 border border-slate-300 shadow-sm';
+        const tooltip = isFocused ? 'Clear Tender Isolation' : 'Isolate only this Tender';
+        return `
+            <button onclick="window.toggleTenderFocus(event, '${safeTenderId}')" title="${tooltip}" class="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-md transition-all cursor-pointer ${btnClass} shrink-0 print:hidden">
+                <i data-lucide="${isFocused ? 'filter-x' : 'filter'}" class="w-3.5 h-3.5"></i>
+            </button>
+        `;
+    }
+
+    // 🚀 NEW LOGIC: Renders chips with "Latest Date" badge
+    function renderChipsWithLatestDate(callsArray) {
+        if (!callsArray || callsArray.length === 0) return '';
+        
+        let maxTime = Math.max(0, ...callsArray.map(c => c.timeMs));
+        
+        return callsArray.map(c => {
+            const isLatest = (c.timeMs === maxTime && maxTime > 0);
+            // Append formatted date inside the chip if it's the latest
+            const dateDisplay = (isLatest && c.dateStr && c.dateStr !== 'Unassigned / N/A') 
+                ? `<span class="ml-1.5 pl-1.5 border-l border-current opacity-90 text-[8px] font-sans whitespace-nowrap">${c.dateStr}</span>` 
+                : '';
+            
+            return `
+            <button onclick="window.openAnalysisModal('${c.encodedRow}')" class="px-2 py-1.5 flex items-center border rounded text-[10px] font-mono font-bold transition shadow-sm cursor-pointer whitespace-nowrap ${getChipColorClass(c.status)}">
+                <span>${c.code}</span>${dateDisplay}
+            </button>`;
+        }).join('');
+    }
+
+    // 🚀 PUSH TO FEE MODAL FUNCTIONS
+    window.openPushFeeModal = function(encodedData) {
+        const data = JSON.parse(decodeURIComponent(encodedData));
+        const grid = document.getElementById('push-fee-grid');
+        grid.innerHTML = '';
+
+        Object.keys(data).forEach(key => {
+            const isFull = key === "List of Inspection Codes";
+            grid.innerHTML += `
+                <div class="flex flex-col gap-1.5 ${isFull ? 'sm:col-span-2' : ''}">
+                    <label class="text-[10px] font-black uppercase text-slate-500">${key}</label>
+                    <input type="text" name="${key}" value="${data[key]}" readonly class="w-full px-3 py-2 border border-slate-200 rounded-lg outline-none bg-slate-100 text-slate-600 cursor-not-allowed">
+                </div>
+            `;
+        });
+
+        const today = new Date().toLocaleDateString('en-IN');
+        grid.innerHTML += `
+            <div class="flex flex-col gap-1.5">
+                <label class="text-[10px] font-black uppercase text-indigo-600">Record Date <span class="text-rose-500">*</span></label>
+                <input type="text" name="Record Date" value="${today}" required class="w-full px-3 py-2 border border-indigo-300 rounded-lg outline-none bg-white focus:ring-2 focus:ring-indigo-200 transition text-slate-900 shadow-sm">
+            </div>
+        `;
+
+        grid.innerHTML += `
+            <div class="flex flex-col gap-1.5">
+                <label class="text-[10px] font-black uppercase text-indigo-600">Value Percent (%) <span class="text-rose-500">*</span></label>
+                <input type="number" step="any" name="Value Percent" placeholder="e.g. 10.5" required class="w-full px-3 py-2 border border-indigo-300 rounded-lg outline-none bg-white focus:ring-2 focus:ring-indigo-200 transition text-slate-900 shadow-sm">
+            </div>
+        `;
+
+        document.getElementById('push-fee-modal').classList.remove('hidden');
+        document.getElementById('push-fee-modal').classList.add('flex');
+        if(window.lucide) lucide.createIcons();
+    };
+
+    window.closePushFeeModal = function() {
+        document.getElementById('push-fee-modal').classList.add('hidden');
+        document.getElementById('push-fee-modal').classList.remove('flex');
+    };
+
+    window.submitPushFeeData = async function(event) {
+        event.preventDefault();
+        const btn = document.getElementById('push-fee-submit-btn');
+        const origHtml = btn.innerHTML;
+        btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Pushing...`;
+        btn.disabled = true;
+
+        const formData = new FormData(event.target);
+        const payloadData = {};
+        for(let [k,v] of formData.entries()) {
+            payloadData[k] = v;
+        }
+
+        try {
+            const requestPayload = {
+                action: "saveFeeDetail",
+                payload: payloadData
+            };
+            const response = await fetch(window.API_URL, {
+                method: 'POST', redirect: 'follow', body: JSON.stringify(requestPayload), headers: { "Content-Type": "text/plain;charset=utf-8" }
+            });
+            const result = await response.json();
+
+            if(result.status === "success" || result.status === true) {
+                window.showToast("Successfully pushed to Fee Details!", "success");
+                window.closePushFeeModal();
+            } else {
+                throw new Error(result.message || "Failed to push data");
+            }
+        } catch (error) {
+            window.showToast(error.message, "error");
+        } finally {
+            btn.innerHTML = origHtml;
+            btn.disabled = false;
+            if(window.lucide) lucide.createIcons();
+        }
+    };
+
+
+    window.openAnalysisModal = function(encodedRow) {
+        let rowData = {};
+        try { rowData = JSON.parse(decodeURIComponent(encodedRow)); } catch(e) { return; }
+        document.getElementById('modal-title-main').innerHTML = `<i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i> Full Inspection Details`;
+        document.getElementById('modal-subtitle-code').textContent = `Inspection ID: ${getRowValue(rowData, 'inspection code') || 'N/A'}`;
+        const contentArea = document.getElementById('analysis-modal-content-area');
+        contentArea.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4";
+        contentArea.innerHTML = '';
+        Object.keys(rowData).forEach(key => {
+            if (key === "Agency_Source") return;
+            const val = rowData[key] || "-";
+            const isFullWidth = key.toLowerCase().includes("description") || key.toLowerCase().includes("site") || key.toLowerCase().includes("remark") || key.toLowerCase().includes("type of inspection");
+            contentArea.innerHTML += `
+                <div class="${isFullWidth ? 'md:col-span-2 lg:col-span-3' : ''} bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center">
+                    <label class="block text-[9px] font-black uppercase text-slate-400 mb-1.5 tracking-wide">${key}</label>
+                    <div class="text-xs font-bold text-slate-800 whitespace-pre-wrap break-words leading-snug">${val}</div>
+                </div>
+            `;
+        });
+        document.getElementById('analysis-drilldown-modal').classList.remove('hidden');
+        if(window.lucide) lucide.createIcons();
+    };
+
+    window.openCallsSummary = function(title, encodedRows) {
+        let rows = [];
+        try { rows = JSON.parse(decodeURIComponent(encodedRows)); } catch(e) { return; }
+        document.getElementById('modal-title-main').innerHTML = `<i data-lucide="list" class="w-5 h-5 text-blue-600"></i> ${title}`;
+        document.getElementById('modal-subtitle-code').textContent = `Total Calls Found: ${rows.length}`;
+        let tableHTML = `<table class="w-full text-left text-xs border-collapse border border-slate-200"><thead class="bg-slate-100 text-slate-700 uppercase text-[10px] font-black border-b border-slate-200 sticky top-0 shadow-sm"><tr><th class="p-3 border-r border-slate-200 w-12 text-center">S.No.</th><th class="p-3 border-r border-slate-200">Inspection Code</th><th class="p-3 border-r border-slate-200 text-center">Status</th><th class="p-3 border-r border-slate-200">Division</th><th class="p-3 border-r border-slate-200">Work Description</th><th class="p-3 text-center">Action</th></tr></thead><tbody class="divide-y divide-slate-100 font-medium text-slate-700 bg-white">`;
+        rows.forEach((r, index) => {
+            const encodedR = encodeURIComponent(JSON.stringify(r));
+            const status = safeStr(getRowValue(r, 'call status'));
+            const colorClass = getChipColorClass(status);
+            tableHTML += `<tr class="hover:bg-slate-50 transition align-top"><td class="p-3 border-r border-slate-100 text-center font-bold">${index + 1}</td><td class="p-3 border-r border-slate-100 font-bold text-blue-600 cursor-pointer hover:underline" onclick="window.openAnalysisModal('${encodedR}')">${getRowValue(r, 'inspection code') || 'N/A'}</td><td class="p-3 border-r border-slate-100 text-center"><span class="px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider ${colorClass}">${status}</span></td><td class="p-3 border-r border-slate-100">${getRowValue(r, 'division') || '-'}</td><td class="p-3 border-r border-slate-100">${getRowValue(r, 'description of work') || '-'}</td><td class="p-3 text-center"><button onclick="window.openAnalysisModal('${encodedR}')" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-[10px] font-bold cursor-pointer transition shadow-sm whitespace-nowrap">View Full</button></td></tr>`;
+        });
+        tableHTML += `</tbody></table>`;
+        const contentArea = document.getElementById('analysis-modal-content-area');
+        contentArea.className = "";
+        contentArea.innerHTML = `<div class="overflow-x-auto w-full border border-slate-200 rounded-xl shadow-sm custom-scrollbar max-h-[60vh]">${tableHTML}</div>`;
+        document.getElementById('analysis-drilldown-modal').classList.remove('hidden');
+        if(window.lucide) lucide.createIcons();
+    };
+
+    window.openWorkDetails = function(title, encodedRows) {
+        let rows = [];
+        try { rows = JSON.parse(decodeURIComponent(encodedRows)); } catch(e) { return; }
+        document.getElementById('modal-title-main').innerHTML = `<i data-lucide="layers" class="w-5 h-5 text-blue-600"></i> ${title}`;
+        document.getElementById('modal-subtitle-code').textContent = `Total Executed Inspections: ${rows.length}`;
+        let tableHTML = `<table class="w-full text-left text-xs border-collapse border border-slate-200"><thead class="bg-slate-100 text-slate-700 uppercase text-[10px] font-black border-b border-slate-200 sticky top-0 shadow-sm"><tr><th class="p-3 border-r border-slate-200 w-12 text-center">S.No.</th><th class="p-3 border-r border-slate-200 w-1/5">Inspection Code</th><th class="p-3 border-r border-slate-200 w-1/3">Type of Inspection</th><th class="p-3 border-r border-slate-200 w-1/6 text-center">Quantity</th><th class="p-3 w-1/5">Calculated Mandays</th></tr></thead><tbody class="divide-y divide-slate-100 font-medium text-slate-700 bg-white">`;
+        rows.forEach((r, index) => {
+            tableHTML += `<tr class="hover:bg-slate-50 transition align-top"><td class="p-3 border-r border-slate-100 text-center font-bold">${index + 1}</td><td class="p-3 border-r border-slate-100 font-bold text-blue-700">${getRowValue(r, 'inspection code') || 'N/A'}</td><td class="p-3 border-r border-slate-100 whitespace-pre-wrap leading-relaxed">${getRowValue(r, 'type of inspection') || '-'}</td><td class="p-3 border-r border-slate-100 whitespace-pre-wrap text-center font-bold leading-relaxed">${getRowValue(r, 'quantity') || '-'}</td><td class="p-3 whitespace-pre-wrap font-mono text-emerald-700 font-bold leading-relaxed">${getRowValue(r, 'calculated mandays') || '-'}</td></tr>`;
+        });
+        tableHTML += `</tbody></table>`;
+        const contentArea = document.getElementById('analysis-modal-content-area');
+        contentArea.className = "";
+        contentArea.innerHTML = `<div class="overflow-x-auto w-full border border-slate-200 rounded-xl shadow-sm custom-scrollbar max-h-[60vh]">${tableHTML}</div>`;
+        document.getElementById('analysis-drilldown-modal').classList.remove('hidden');
+        if(window.lucide) lucide.createIcons();
+    };
+
+    window.closeAnalysisModal = function() {
+        document.getElementById('analysis-drilldown-modal').classList.add('hidden');
+    };
+
+    async function fetchAnalysisData(agencyName, forceRefresh = false) {
+        if (window.isFetchingAnalysis) return false;
+        const cacheKey = `analysisData_${agencyName}_light`;
+        const cacheTimestampKey = `analysisData_${agencyName}_light_timestamp`;
+        if (!forceRefresh) {
+            const cachedData = sessionStorage.getItem(cacheKey);
+            const cachedTime = sessionStorage.getItem(cacheTimestampKey);
+            if (cachedData && cachedTime && (Date.now() - parseInt(cachedTime, 10) < CACHE_EXPIRATION_MS)) {
+                window.analysisDataCache = JSON.parse(cachedData);
+                return true;
+            }
+        }
+        window.isFetchingAnalysis = true;
+        try {
+            const payload = { action: "getAnalysisCalls", user: { role: "admin", agency: "All" }, agency: agencyName };
+            const response = await fetch(window.API_URL, { method: 'POST', redirect: 'follow', body: JSON.stringify(payload) });
+            const result = await response.json();
+            if (result.status === "success" || result.status === true) {
+                window.analysisDataCache = result.data || [];
+                sessionStorage.setItem(cacheKey, JSON.stringify(window.analysisDataCache));
+                sessionStorage.setItem(cacheTimestampKey, Date.now().toString());
+                window.isFetchingAnalysis = false;
+                return true;
+            }
+        } catch (error) {
+            console.error("Backend Error:", error);
+        }
+        window.isFetchingAnalysis = false;
+        return false;
+    }
+
+    window.switchAnalysisTab = function(tabName) {
+        window.analysisCurrentTab = tabName;
+        const contractorTab = document.getElementById('tab-contractor');
+        const inspectorTab = document.getElementById('tab-inspector');
+        const activeClass = ['bg-blue-600', 'text-white', 'shadow-md'];
+        const inactiveClass = ['text-slate-500', 'hover:text-slate-800', 'hover:bg-slate-200'];
+
+        if (tabName === 'contractor') {
+            contractorTab.classList.add(...activeClass); contractorTab.classList.remove(...inactiveClass);
+            inspectorTab.classList.add(...inactiveClass); inspectorTab.classList.remove(...activeClass);
+            document.getElementById('view-contractor').classList.remove('hidden');
+            document.getElementById('view-inspector').classList.add('hidden');
+        } else {
+            inspectorTab.classList.add(...activeClass); inspectorTab.classList.remove(...inactiveClass);
+            contractorTab.classList.add(...inactiveClass); contractorTab.classList.remove(...activeClass);
+            document.getElementById('view-inspector').classList.remove('hidden');
+            document.getElementById('view-contractor').classList.add('hidden');
+        }
+    };
+
+    window.switchAnalysisAgency = async function(agencyName) {
+        if (window.analysisCurrentAgency === agencyName) return; 
+        window.analysisCurrentAgency = agencyName;
+        window.analysisDataCache = []; 
+        
+        const equalitasTab = document.getElementById('sum-tab-Equalitas');
+        const aMarkTab = document.getElementById('sum-tab-A-Mark');
+        const activeClass = ['bg-blue-600', 'text-white', 'shadow-md'];
+        const inactiveClass = ['text-slate-500', 'hover:text-slate-800', 'hover:bg-slate-200'];
+
+        if (agencyName === 'Equalitas') {
+            equalitasTab.classList.add(...activeClass); equalitasTab.classList.remove(...inactiveClass);
+            aMarkTab.classList.add(...inactiveClass); aMarkTab.classList.remove(...activeClass);
+        } else {
+            aMarkTab.classList.add(...activeClass); aMarkTab.classList.remove(...inactiveClass);
+            equalitasTab.classList.add(...inactiveClass); equalitasTab.classList.remove(...activeClass);
+        }
+        
+        window.clearAnalysisFilters(true); 
+        await window.loadAndRenderAnalysis();
+    };
+
+    window.syncAnalysisData = async function(event) {
+        const btn = event.currentTarget;
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> Syncing...`; 
+        btn.disabled = true;
+
+        sessionStorage.removeItem(`analysisData_${window.analysisCurrentAgency}_light`);
+        sessionStorage.removeItem(`analysisData_${window.analysisCurrentAgency}_light_timestamp`);
+        
+        await window.loadAndRenderAnalysis(true);
+        
+        btn.innerHTML = originalHTML; 
+        btn.disabled = false;
+        if (window.lucide) window.lucide.createIcons();
+    };
+
+    window.clearAnalysisFilters = function(skipRender = false) {
+        document.getElementById('filter-zone').value = 'ALL';
+        document.getElementById('filter-contractor').value = '';
+        document.getElementById('filter-inspector').value = 'ALL';
+        window.analysisFocusedTender = null; 
+        window.analysisStatusFilter = 'ALL';
+        if(window.updateStatusFilterUI) window.updateStatusFilterUI('ALL');
+        if(!skipRender) window.applyAnalysisFilters();
+    };
+
+    window.populateFilters = function() {
+        const zoneSelect = document.getElementById('filter-zone');
+        const contList = document.getElementById('analysis-contractor-list');
+        const inspSelect = document.getElementById('filter-inspector');
+        
+        const currentZone = zoneSelect.value;
+        const currentInsp = inspSelect.value;
+
+        const uniqueZones = new Set();
+        const uniqueContractors = new Set();
+        const uniqueInspectors = new Set();
+        
+        window.analysisDataCache.forEach(r => {
+            const z = String(getRowValue(r, 'zone') || '').trim();
+            const cNameRaw = getRowValue(r, 'contactor name') || getRowValue(r, 'contractor name');
+            const c = safeStr(cNameRaw);
+            const i = safeStr(getRowValue(r, 'inspecting engineer'));
+            
+            if(z) uniqueZones.add(z);
+            if(c !== 'Unassigned / N/A') uniqueContractors.add(c);
+            if(i !== 'Unassigned / N/A') uniqueInspectors.add(i);
+        });
+
+        let zoneOpts = `<option value="ALL">All Zones</option>`;
+        Array.from(uniqueZones).sort().forEach(z => { zoneOpts += `<option value="${z}">${z}</option>`; });
+        zoneSelect.innerHTML = zoneOpts;
+        if(Array.from(uniqueZones).includes(currentZone)) zoneSelect.value = currentZone;
+
+        let contOpts = '';
+        Array.from(uniqueContractors).sort().forEach(c => { contOpts += `<option value="${c.replace(/"/g, '&quot;')}">`; });
+        contList.innerHTML = contOpts;
+
+        let inspOpts = `<option value="ALL">All Inspectors</option>`;
+        Array.from(uniqueInspectors).sort().forEach(i => { inspOpts += `<option value="${i.replace(/"/g, '&quot;')}">${i}</option>`; });
+        inspSelect.innerHTML = inspOpts;
+        if(Array.from(uniqueInspectors).includes(currentInsp)) inspSelect.value = currentInsp;
+    };
+
+    window.loadAndRenderAnalysis = async function(forceRefresh = false) {
+        document.getElementById('loading-state').classList.remove('hidden');
+        document.getElementById('color-legend').classList.add('hidden');
+        document.getElementById('view-contractor').classList.add('hidden');
+        document.getElementById('view-inspector').classList.add('hidden');
+
+        const success = await fetchAnalysisData(window.analysisCurrentAgency, forceRefresh);
+        if (!success) {
+            document.getElementById('loading-state').innerHTML = `<span class="text-rose-500 font-bold">Error loading data.</span>`;
+            return;
+        }
+        window.populateFilters();
+        window.applyAnalysisFilters();
+    };
+
+    window.applyAnalysisFilters = function() {
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('color-legend').classList.remove('hidden');
+        document.getElementById('color-legend').classList.add('flex');
+        
+        const badge = document.getElementById('tender-focus-badge');
+        if (window.analysisFocusedTender) {
+            document.getElementById('focused-tender-text').textContent = window.analysisFocusedTender;
+            badge.classList.remove('hidden');
+            badge.classList.add('flex');
+        } else {
+            badge.classList.add('hidden');
+            badge.classList.remove('flex');
+        }
+
+        const contractorView = document.getElementById('view-contractor');
+        const inspectorView = document.getElementById('view-inspector');
+        
+        if(window.analysisCurrentTab === 'contractor') contractorView.classList.remove('hidden');
+        else inspectorView.classList.remove('hidden');
+
+        const filterZone = document.getElementById('filter-zone').value;
+        const filterCont = document.getElementById('filter-contractor').value.toLowerCase().trim();
+        const filterInsp = document.getElementById('filter-inspector').value;
+
+        const filteredData = window.analysisDataCache.filter(r => {
+            const z = String(getRowValue(r, 'zone') || '').trim();
+            const cNameRaw = getRowValue(r, 'contactor name') || getRowValue(r, 'contractor name');
+            const c = safeStr(cNameRaw).toLowerCase();
+            const i = safeStr(getRowValue(r, 'inspecting engineer'));
+            const t = safeStr(getRowValue(r, 'tender no'));
+            const rawStatus = String(getRowValue(r, 'call status') || '').trim().toLowerCase();
+
+            const matchZone = filterZone === "ALL" || z === filterZone;
+            const matchCont = filterCont === "" || c.includes(filterCont);
+            const matchInsp = filterInsp === "ALL" || i === filterInsp;
+            const matchFocus = !window.analysisFocusedTender || t === window.analysisFocusedTender;
+            
+            let matchStatus = true;
+            if (window.analysisStatusFilter !== 'ALL') {
+                if (window.analysisStatusFilter === 'other') {
+                    const known = ['pending', 'completed', 'cancelled', 'revised', 'duplicate', 'complete offline'];
+                    matchStatus = !known.includes(rawStatus);
+                } else {
+                    matchStatus = rawStatus === window.analysisStatusFilter;
+                }
+            }
+
+            return matchZone && matchCont && matchInsp && matchFocus && matchStatus;
+        });
+
+        const contMap = {};
+        const inspMap = {};
+
+        filteredData.forEach(row => {
+            const cNameRaw = getRowValue(row, 'contactor name') || getRowValue(row, 'contractor name');
+            const cName = safeStr(cNameRaw);
+            const tender = safeStr(getRowValue(row, 'tender no'));
+            const amount = safeStr(getRowValue(row, 'agreement amount'));
+            const inspector = safeStr(getRowValue(row, 'inspecting engineer'));
+            const code = safeStr(getRowValue(row, 'inspection code'));
+            const callStatusVal = safeStr(getRowValue(row, 'call status'));
+            const encodedRow = encodeURIComponent(JSON.stringify(row));
+            
+            // 🚀 Capture Date for "Latest Date" badge
+            const dateRaw = safeStr(getRowValue(row, 'date of inspection'));
+            const dateObj = window.extractLatestDate(dateRaw);
+            const timeMs = dateObj ? dateObj.getTime() : 0;
+            
+            const callMandays = extractTotalMandays(getRowValue(row, 'calculated mandays'));
+
+            if (!contMap[cName]) contMap[cName] = { rowSpan: 0, tenders: {} };
+            if (!contMap[cName].tenders[tender]) contMap[cName].tenders[tender] = { rowSpan: 0, amount: amount, insps: {} };
+            if (!contMap[cName].tenders[tender].insps[inspector]) {
+                contMap[cName].tenders[tender].insps[inspector] = { count: 0, totalMandays: 0, calls: [], rawRows: [] };
+                contMap[cName].rowSpan++;
+                contMap[cName].tenders[tender].rowSpan++;
+            }
+            contMap[cName].tenders[tender].insps[inspector].count++;
+            contMap[cName].tenders[tender].insps[inspector].totalMandays += callMandays;
+            contMap[cName].tenders[tender].insps[inspector].calls.push({ code, encodedRow, status: callStatusVal, dateStr: dateRaw, timeMs });
+            contMap[cName].tenders[tender].insps[inspector].rawRows.push(row);
+
+            if (!inspMap[inspector]) inspMap[inspector] = { rowSpan: 0, contractors: {} };
+            if (!inspMap[inspector].contractors[cName]) inspMap[inspector].contractors[cName] = { rowSpan: 0, tenders: {} };
+            if (!inspMap[inspector].contractors[cName].tenders[tender]) {
+                inspMap[inspector].contractors[cName].tenders[tender] = { amount: amount, count: 0, totalMandays: 0, calls: [], rawRows: [] };
+                inspMap[inspector].rowSpan++;
+                inspMap[inspector].contractors[cName].rowSpan++;
+            }
+            inspMap[inspector].contractors[cName].tenders[tender].count++;
+            inspMap[inspector].contractors[cName].tenders[tender].totalMandays += callMandays;
+            inspMap[inspector].contractors[cName].tenders[tender].calls.push({ code, encodedRow, status: callStatusVal, dateStr: dateRaw, timeMs });
+            inspMap[inspector].contractors[cName].tenders[tender].rawRows.push(row);
+        });
+
+        renderContractorTable(contMap);
+        renderInspectorTable(inspMap, contMap);
+
+        if(window.lucide) window.lucide.createIcons();
+    };
+
+    function renderContractorTable(map) {
+        const tbody = document.getElementById('contractor-tbody');
+        const mobileContainer = document.getElementById('contractor-mobile-container');
+        
+        if(Object.keys(map).length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="p-10 text-center text-slate-400 font-bold">No records found matching filters.</td></tr>`;
+            mobileContainer.innerHTML = `<div class="p-10 text-center text-slate-400 font-bold bg-white rounded-xl border border-slate-200 shadow-sm mx-4">No records found matching filters.</div>`;
+            return;
+        }
+
+        let html = ''; 
+        let mHtml = ''; 
+        let sno = 1;
+        
+        const openAttr = window.analysisFocusedTender ? 'open' : '';
+
+        if (window.analysisSortByTender && !window.analysisFocusedTender) {
+            let flatList = [];
+            Object.keys(map).forEach(cName => {
+                Object.keys(map[cName].tenders).forEach(tender => {
+                    const tData = map[cName].tenders[tender];
+                    const isPartial = Object.keys(tData.insps).length > 1;
+                    Object.keys(tData.insps).forEach(insp => {
+                        flatList.push({ cName, tender, amount: tData.amount, insp, data: tData.insps[insp], isPartial });
+                    });
+                });
+            });
+
+            flatList.sort((a, b) => {
+                const t = a.tender.localeCompare(b.tender);
+                if (t !== 0) return t;
+                return a.cName.localeCompare(b.cName);
+            });
+
+            flatList.forEach((item, idx) => {
+                const encodedGroupRows = encodeURIComponent(JSON.stringify(item.data.rawRows));
+                const partialBadge = item.isPartial ? `<span class="text-rose-500 font-black text-[9px] bg-rose-50 px-1 py-0.5 rounded border border-rose-200 ml-1 tracking-wider uppercase inline-block">(Partial)</span>` : '';
+
+                // 🚀 FIXED BUG: Uses item.insp instead of inspector
+                const pushData = {
+                    "LogID": window.generateDeterministicLogID(item.tender, item.insp),
+                    "Tender No": item.tender,
+                    "Complete or Partial": item.isPartial ? "Partial" : "Complete",
+                    "Count of Call": item.data.count,
+                    "Contactor Agreement Amount": item.amount,
+                    "Contractor Name": item.cName,
+                    "TPIA Inspector": item.insp,
+                    "List of Inspection Codes": item.data.calls.map(c => c.code).join(", ")
+                };
+                const encodedPushData = encodeURIComponent(JSON.stringify(pushData));
+                const chipsHtml = renderChipsWithLatestDate(item.data.calls);
+
+                html += `<tr class="hover:bg-slate-50 transition border-b border-slate-200">
+                    <td class="p-3 border-r border-slate-300 text-center font-bold align-top bg-white">${sno++}</td>
+                    <td class="p-3 border-r border-slate-300 font-black text-slate-900 align-top bg-white">${item.cName}</td>
+                    <td class="p-3 border-r border-slate-300 align-top bg-white">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <div class="font-bold text-slate-800">${item.tender}</div>
+                                <div class="text-[10px] font-black text-emerald-600 mt-1">${formatCurrency(item.amount)}</div>
+                            </div>
+                            ${buildFocusButton(item.tender)}
+                        </div>
+                    </td>
+                    <td class="p-3 border-r border-slate-300 align-top hover:bg-blue-50 cursor-pointer group" onclick="window.openWorkDetails('Work Info: ${item.insp} (${item.tender})', '${encodedGroupRows}')">
+                        <span class="text-blue-700 font-bold group-hover:underline">${item.insp}</span> ${partialBadge}
+                        <i data-lucide="info" class="w-3.5 h-3.5 inline text-blue-400 group-hover:text-blue-600 ml-1"></i>
+                    </td>
+                    <td class="p-3 border-r border-slate-300 text-center align-top bg-blue-50/30">
+                        <span class="text-blue-700 font-black cursor-pointer hover:underline text-sm" onclick="window.openCallsSummary('Summary of Calls: ${item.cName}', '${encodedGroupRows}')">${item.data.count}</span>
+                    </td>
+                    <td class="p-3 border-r border-slate-300 text-center font-mono font-black text-blue-800 align-top bg-blue-50/50">${item.data.totalMandays.toFixed(2)}</td>
+                    <td class="p-3 align-top">
+                        <div class="flex flex-wrap gap-1.5 mb-2">${chipsHtml}</div>
+                        <div class="pt-2 border-t border-slate-100 print:hidden mt-2">
+                            <button onclick="window.openPushFeeModal('${encodedPushData}')" class="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-[10px] font-black shadow-sm transition flex items-center gap-1.5 w-max">
+                                <i data-lucide="send" class="w-3 h-3"></i> Push to Fee Details
+                            </button>
+                        </div>
+                    </td>
+                </tr>`;
+
+                mHtml += `
+                <div class="bg-white border border-slate-200 rounded-xl shadow-sm mb-4 mx-2 sm:mx-0 overflow-hidden p-4">
+                    <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
+                        <div class="flex-1">
+                            <div class="text-[10px] uppercase font-black text-slate-400 mb-0.5">Tender No.</div>
+                            <div class="text-xs font-black text-slate-900">${item.tender}</div>
+                            <div class="text-[10px] font-black text-emerald-600">${formatCurrency(item.amount)}</div>
+                        </div>
+                        ${buildFocusButton(item.tender)}
+                    </div>
+                    <div class="text-xs font-bold text-slate-700 mb-3"><span class="text-[10px] uppercase font-black text-slate-400">Contractor:</span> ${item.cName}</div>
+                    
+                    <div class="flex justify-between items-center p-3 bg-blue-50/50 rounded-lg border border-blue-100 mb-3 cursor-pointer group" onclick="window.openWorkDetails('Work Info: ${item.insp} (${item.tender})', '${encodedGroupRows}')">
+                        <div>
+                            <div class="text-[10px] uppercase font-black text-slate-400 mb-0.5">Inspector</div>
+                            <div class="text-xs font-bold text-blue-700 group-hover:underline">${item.insp} ${partialBadge}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[10px] uppercase font-black text-slate-400 mb-0.5">Calls / Mandays</div>
+                            <div class="text-xs font-black text-blue-800 cursor-pointer hover:underline" onclick="event.stopPropagation(); window.openCallsSummary('Summary of Calls: ${item.cName}', '${encodedGroupRows}')">${item.data.count} / ${item.data.totalMandays.toFixed(2)}</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        ${chipsHtml}
+                    </div>
+                    <button onclick="window.openPushFeeModal('${encodedPushData}')" class="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-black shadow-sm transition flex items-center justify-center gap-2 print:hidden">
+                        <i data-lucide="send" class="w-3.5 h-3.5"></i> Push to Fee Details
+                    </button>
+                </div>`;
+            });
+        } else {
+            Object.keys(map).sort().forEach(cName => {
+                const cData = map[cName];
+                let isFirstContRow = true;
+                
+                let totalTenders = Object.keys(cData.tenders).length;
+                let totalCalls = 0; let totalMandays = 0;
+                Object.values(cData.tenders).forEach(t => {
+                    Object.values(t.insps).forEach(i => {
+                        totalCalls += i.count;
+                        totalMandays += i.totalMandays;
+                    });
+                });
+
+                mHtml += `<details class="bg-white border border-slate-200 rounded-xl shadow-sm mb-3 mx-2 sm:mx-0 overflow-hidden group" ${openAttr}>
+                    <summary class="p-3 font-black text-xs text-slate-900 bg-slate-50 cursor-pointer flex justify-between items-center group-open:border-b border-slate-200 transition">
+                        <div class="flex flex-col flex-1 pr-4">
+                            <span class="text-xs font-black text-slate-900 truncate">${cName}</span>
+                            <span class="text-[9px] font-bold text-slate-500 mt-1 uppercase tracking-wider flex flex-wrap gap-1.5">
+                                <span><span class="text-slate-700 font-black">${totalTenders}</span> Tenders</span> &bull; 
+                                <span><span class="text-blue-700 font-black">${totalCalls}</span> Calls</span> &bull; 
+                                <span><span class="text-blue-700 font-black">${totalMandays.toFixed(1)}</span> Days</span>
+                            </span>
+                        </div>
+                        <div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center shrink-0 group-open:bg-blue-100 group-open:text-blue-600 transition-colors shadow-inner">
+                            <i data-lucide="chevron-down" class="w-4 h-4 transition-transform group-open:rotate-180"></i>
+                        </div>
+                    </summary>
+                    <div class="p-3 bg-white space-y-3">`;
+
+                Object.keys(cData.tenders).sort().forEach(tender => {
+                    const tData = cData.tenders[tender];
+                    let isFirstTenderRow = true;
+                    const isPartial = Object.keys(tData.insps).length > 1;
+
+                    let tenderTotalCalls = 0; let tenderTotalMandays = 0;
+                    Object.values(tData.insps).forEach(i => {
+                        tenderTotalCalls += i.count;
+                        tenderTotalMandays += i.totalMandays;
+                    });
+
+                    mHtml += `<details class="bg-slate-50 border border-slate-200 rounded-lg group/tender shadow-sm" ${openAttr}>
+                        <summary class="p-3 font-bold text-xs text-slate-800 cursor-pointer flex justify-between items-center group-open/tender:border-b border-slate-200 transition">
+                            <div class="flex-1 pr-2">
+                                <div class="flex items-center justify-between gap-2 mb-1">
+                                    <span class="truncate">${tender}</span>
+                                    ${buildFocusButton(tender)}
+                                </div>
+                                <div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500 flex-wrap">
+                                    <span class="text-emerald-600">${formatCurrency(tData.amount)}</span> &bull; 
+                                    <span><span class="text-blue-600 font-black">${tenderTotalCalls}</span> Calls</span> &bull; 
+                                    <span><span class="text-blue-600 font-black">${tenderTotalMandays.toFixed(1)}</span> Days</span>
+                                </div>
+                            </div>
+                            <div class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center shrink-0 group-open/tender:bg-blue-100 transition-colors shadow-inner ml-2">
+                                <i data-lucide="chevron-down" class="w-3 h-3 transition-transform group-open/tender:rotate-180 text-slate-600 group-open/tender:text-blue-700"></i>
+                            </div>
+                        </summary>
+                        <div class="p-3 bg-white space-y-3">`;
+
+                    Object.keys(tData.insps).sort().forEach(insp => {
+                        const iData = tData.insps[insp];
+                        const partialBadge = isPartial ? `<span class="text-rose-500 font-black text-[9px] bg-rose-50 px-1 py-0.5 rounded border border-rose-200 ml-1 tracking-wider uppercase inline-block">(Partial)</span>` : '';
+                        const encodedGroupRows = encodeURIComponent(JSON.stringify(iData.rawRows));
+
+                        // 🚀 FIXED BUG: Uses insp instead of inspector
+                        const pushData = {
+                            "LogID": window.generateDeterministicLogID(tender, insp),
+                            "Tender No": tender,
+                            "Complete or Partial": isPartial ? "Partial" : "Complete",
+                            "Count of Call": iData.count,
+                            "Contactor Agreement Amount": tData.amount,
+                            "Contractor Name": cName,
+                            "TPIA Inspector": insp,
+                            "List of Inspection Codes": iData.calls.map(c => c.code).join(", ")
+                        };
+                        const encodedPushData = encodeURIComponent(JSON.stringify(pushData));
+                        const chipsHtml = renderChipsWithLatestDate(iData.calls);
+
+                        html += `<tr class="hover:bg-slate-50 transition border-b border-slate-200">`;
+                        if (isFirstContRow) {
+                            html += `<td rowspan="${cData.rowSpan}" class="p-3 border-r border-slate-300 text-center font-bold align-top bg-white">${sno++}</td>`;
+                            html += `<td rowspan="${cData.rowSpan}" class="p-3 border-r border-slate-300 font-black text-slate-900 align-top bg-white">${cName}</td>`;
+                            isFirstContRow = false;
+                        }
+                        if (isFirstTenderRow) {
+                            html += `<td rowspan="${tData.rowSpan}" class="p-3 border-r border-slate-300 align-top bg-white">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div>
+                                                <div class="font-bold text-slate-800">${tender}</div>
+                                                <div class="text-[10px] font-black text-emerald-600 mt-1">${formatCurrency(tData.amount)}</div>
+                                            </div>
+                                            ${buildFocusButton(tender)}
+                                        </div>
+                                     </td>`;
+                            isFirstTenderRow = false;
+                        }
+
+                        html += `<td class="p-3 border-r border-slate-300 align-top hover:bg-blue-50 cursor-pointer group" onclick="window.openWorkDetails('Work Info: ${insp} (${tender})', '${encodedGroupRows}')">
+                                    <span class="text-blue-700 font-bold group-hover:underline">${insp}</span> ${partialBadge}
+                                    <i data-lucide="info" class="w-3.5 h-3.5 inline text-blue-400 group-hover:text-blue-600 ml-1"></i>
+                                 </td>`;
+                                 
+                        html += `<td class="p-3 border-r border-slate-300 text-center align-top bg-blue-50/30">
+                                    <span class="text-blue-700 font-black cursor-pointer hover:underline text-sm" onclick="window.openCallsSummary('Summary of Calls: ${cName}', '${encodedGroupRows}')">${iData.count}</span>
+                                 </td>`;
+                                 
+                        html += `<td class="p-3 border-r border-slate-300 text-center font-mono font-black text-blue-800 align-top bg-blue-50/50">${iData.totalMandays.toFixed(2)}</td>`;
+                        
+                        html += `<td class="p-3 align-top">
+                                    <div class="flex flex-wrap gap-1.5 mb-2">${chipsHtml}</div>
+                                    <div class="pt-2 border-t border-slate-100 print:hidden mt-2">
+                                        <button onclick="window.openPushFeeModal('${encodedPushData}')" class="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-[10px] font-black shadow-sm transition flex items-center gap-1.5 w-max cursor-pointer">
+                                            <i data-lucide="send" class="w-3 h-3"></i> Push to Fee Details
+                                        </button>
+                                    </div>
+                                 </td>`;
+                        html += `</tr>`;
+
+                        mHtml += `<div class="p-3 border border-slate-100 rounded-lg bg-slate-50 shadow-sm">
+                            <div class="flex justify-between items-start mb-2 group/tender">
+                                <div class="cursor-pointer flex-1 pr-2" onclick="window.openWorkDetails('Work Info: ${tender}', '${encodedGroupRows}')">
+                                    <div class="text-[10px] uppercase font-black text-slate-400 mb-0.5">Tender No.</div>
+                                    <div class="text-xs font-bold text-blue-700 group-hover/tender:underline">${tender}</div>
+                                    <div class="text-[10px] text-emerald-600 font-black mt-0.5">${formatCurrency(tData.amount)}</div>
+                                    ${partialBadge}
+                                </div>
+                                <div class="flex flex-col items-end gap-2 shrink-0">
+                                    ${buildFocusButton(tender)}
+                                    <div class="text-right mt-1">
+                                        <div class="text-[10px] uppercase font-black text-slate-400 mb-0.5">Calls / Mandays</div>
+                                        <div class="text-xs font-black text-blue-800 cursor-pointer hover:underline" onclick="event.stopPropagation(); window.openCallsSummary('Summary of Calls: ${insp}', '${encodedGroupRows}')">${iData.count} / ${iData.totalMandays.toFixed(2)}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100 mt-2 mb-3">
+                                ${chipsHtml}
+                            </div>
+                            <button onclick="window.openPushFeeModal('${encodedPushData}')" class="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-black shadow-sm transition flex items-center justify-center gap-2 print:hidden cursor-pointer">
+                                <i data-lucide="send" class="w-3.5 h-3.5"></i> Push to Fee Details
+                            </button>
+                        </div>`;
+                    });
+                    
+                    mHtml += `</div></details>`; 
+                });
+                mHtml += `</div></details>`; 
+            });
+        }
+        
+        tbody.innerHTML = html;
+        mobileContainer.innerHTML = mHtml;
+    }
+
+    function renderInspectorTable(inspMap, globalContMap) {
+        const tbody = document.getElementById('inspector-tbody');
+        const mobileContainer = document.getElementById('inspector-mobile-container');
+        
+        if(Object.keys(inspMap).length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="p-10 text-center text-slate-400 font-bold">No records found matching filters.</td></tr>`;
+            mobileContainer.innerHTML = `<div class="p-10 text-center text-slate-400 font-bold bg-white rounded-xl border border-slate-200 shadow-sm mx-4">No records found matching filters.</div>`;
+            return;
+        }
+
+        let html = '';
+        let mHtml = '';
+        let sno = 1;
+
+        const openAttr = window.analysisFocusedTender ? 'open' : '';
+        
+        if (window.analysisSortByTender && !window.analysisFocusedTender) {
+            let flatList = [];
+            Object.keys(inspMap).forEach(inspector => {
+                Object.keys(inspMap[inspector].contractors).forEach(cName => {
+                    Object.keys(inspMap[inspector].contractors[cName].tenders).forEach(tender => {
+                        const tData = inspMap[inspector].contractors[cName].tenders[tender];
+                        let isPartial = false;
+                        if (globalContMap[cName] && globalContMap[cName].tenders[tender]) {
+                            isPartial = Object.keys(globalContMap[cName].tenders[tender].insps).length > 1;
+                        }
+                        flatList.push({ inspector, cName, tender, amount: tData.amount, data: tData, isPartial });
+                    });
+                });
+            });
+
+            flatList.sort((a, b) => {
+                const t = a.tender.localeCompare(b.tender);
+                if (t !== 0) return t;
+                return a.inspector.localeCompare(b.inspector);
+            });
+
+            flatList.forEach((item, idx) => {
+                const encodedGroupRows = encodeURIComponent(JSON.stringify(item.data.rawRows));
+                const partialBadge = item.isPartial ? `<div class="text-rose-500 font-black text-[9px] bg-rose-50 px-1 py-0.5 rounded border border-rose-200 mt-1 tracking-wider uppercase inline-block">(Shared/Partial Work)</div>` : '';
+                const partialBadgeInline = item.isPartial ? `<span class="text-rose-500 font-black text-[9px] bg-rose-50 px-1 py-0.5 rounded border border-rose-200 ml-1 tracking-wider uppercase inline-block">(Shared)</span>` : '';
+
+                const pushData = {
+                    "LogID": window.generateDeterministicLogID(item.tender, item.inspector),
+                    "Tender No": item.tender,
+                    "Complete or Partial": item.isPartial ? "Partial" : "Complete",
+                    "Count of Call": item.data.count,
+                    "Contactor Agreement Amount": item.amount,
+                    "Contractor Name": item.cName,
+                    "TPIA Inspector": item.inspector,
+                    "List of Inspection Codes": item.data.calls.map(c => c.code).join(", ")
+                };
+                const encodedPushData = encodeURIComponent(JSON.stringify(pushData));
+                const chipsHtml = renderChipsWithLatestDate(item.data.calls);
+
+                html += `<tr class="hover:bg-slate-50 transition border-b border-slate-200">
+                    <td class="p-3 border-r border-slate-300 text-center font-bold align-top bg-white">${sno++}</td>
+                    <td class="p-3 border-r border-slate-300 font-black text-slate-900 align-top bg-white">${item.inspector}</td>
+                    <td class="p-3 border-r border-slate-300 font-bold text-slate-800 align-top bg-white">${item.cName}</td>
+                    <td class="p-3 border-r border-slate-300 align-top bg-white group hover:bg-blue-50">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="cursor-pointer" onclick="window.openWorkDetails('Work Info: ${item.tender}', '${encodedGroupRows}')">
+                                <span class="font-bold text-blue-700 group-hover:underline">${item.tender}</span> <i data-lucide="info" class="w-3.5 h-3.5 inline text-blue-400 group-hover:text-blue-600 ml-0.5"></i>
+                                <div class="text-[10px] font-black text-emerald-600 mt-0.5">${formatCurrency(item.amount)}</div>
+                                ${partialBadge}
+                            </div>
+                            ${buildFocusButton(item.tender)}
+                        </div>
+                    </td>
+                    <td class="p-3 border-r border-slate-300 text-center text-blue-700 font-black align-top bg-blue-50/30">
+                        <span class="text-blue-700 font-black cursor-pointer hover:underline text-sm" onclick="window.openCallsSummary('Summary of Calls: ${item.inspector}', '${encodedGroupRows}')">${item.data.count}</span>
+                    </td>
+                    <td class="p-3 border-r border-slate-300 text-center font-mono font-black text-blue-800 align-top bg-blue-50/50">${item.data.totalMandays.toFixed(2)}</td>
+                    <td class="p-3 align-top">
+                        <div class="flex flex-wrap gap-1.5 mb-2">${chipsHtml}</div>
+                        <div class="pt-2 border-t border-slate-100 print:hidden mt-2">
+                            <button onclick="window.openPushFeeModal('${encodedPushData}')" class="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-[10px] font-black shadow-sm transition flex items-center gap-1.5 w-max cursor-pointer">
+                                <i data-lucide="send" class="w-3 h-3"></i> Push to Fee Details
+                            </button>
+                        </div>
+                    </td>
+                </tr>`;
+
+                mHtml += `
+                <div class="bg-white border border-slate-200 rounded-xl shadow-sm mb-4 mx-2 sm:mx-0 overflow-hidden p-4">
+                    <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-2">
+                        <div class="cursor-pointer group" onclick="window.openWorkDetails('Work Info: ${item.tender}', '${encodedGroupRows}')">
+                            <div class="text-[10px] uppercase font-black text-slate-400 mb-0.5">Tender No.</div>
+                            <div class="text-xs font-black text-slate-900 group-hover:text-blue-700">${item.tender}</div>
+                            <div class="text-[10px] font-black text-emerald-600">${formatCurrency(item.amount)}</div>
+                        </div>
+                        ${buildFocusButton(item.tender)}
+                    </div>
+                    <div class="flex flex-col gap-1.5 mb-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <div class="text-xs font-bold text-slate-700"><span class="text-[10px] uppercase font-black text-slate-400 block mb-0.5">Inspector</span> ${item.inspector}</div>
+                        <div class="text-xs font-bold text-slate-700 pt-1.5 border-t border-slate-200"><span class="text-[10px] uppercase font-black text-slate-400 block mb-0.5">Contractor</span> ${item.cName} ${partialBadgeInline}</div>
+                    </div>
+                    <div class="flex justify-between items-center mb-3 pb-3 border-b border-slate-100">
+                        <div class="text-[10px] uppercase font-black text-slate-500">Calls / Mandays</div>
+                        <div class="text-xs font-black text-blue-800 cursor-pointer hover:underline" onclick="window.openCallsSummary('Summary of Calls: ${item.inspector}', '${encodedGroupRows}')">${item.data.count} / ${item.data.totalMandays.toFixed(2)}</div>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        ${chipsHtml}
+                    </div>
+                    <button onclick="window.openPushFeeModal('${encodedPushData}')" class="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-black shadow-sm transition flex items-center justify-center gap-2 print:hidden cursor-pointer">
+                        <i data-lucide="send" class="w-3.5 h-3.5"></i> Push to Fee Details
+                    </button>
+                </div>`;
+            });
+        } else {
+            Object.keys(inspMap).sort().forEach(inspector => {
+                const inspData = inspMap[inspector];
+                let isFirstInspRow = true;
+                
+                let totalTendersSet = new Set();
+                let totalCalls = 0; let totalMandays = 0;
+                Object.keys(inspData.contractors).forEach(c => {
+                    Object.keys(inspData.contractors[c].tenders).forEach(t => {
+                        totalTendersSet.add(t);
+                        totalCalls += inspData.contractors[c].tenders[t].count;
+                        totalMandays += inspData.contractors[c].tenders[t].totalMandays;
+                    });
+                });
+                let totalTenders = totalTendersSet.size;
+
+                mHtml += `<details class="bg-white border border-slate-200 rounded-xl shadow-sm mb-3 mx-2 sm:mx-0 overflow-hidden group" ${openAttr}>
+                    <summary class="p-3 font-black text-xs text-slate-900 bg-slate-50 cursor-pointer flex justify-between items-center group-open:border-b border-slate-200 transition">
+                        <div class="flex flex-col flex-1 pr-4">
+                            <span class="text-xs font-black text-slate-900 truncate">${inspector}</span>
+                            <span class="text-[9px] font-bold text-slate-500 mt-1 uppercase tracking-wider flex flex-wrap gap-1.5">
+                                <span><span class="text-slate-700 font-black">${totalTenders}</span> Tenders</span> &bull; 
+                                <span><span class="text-blue-700 font-black">${totalCalls}</span> Calls</span> &bull; 
+                                <span><span class="text-blue-700 font-black">${totalMandays.toFixed(1)}</span> Days</span>
+                            </span>
+                        </div>
+                        <div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center shrink-0 group-open:bg-blue-100 group-open:text-blue-600 transition-colors shadow-inner">
+                            <i data-lucide="chevron-down" class="w-4 h-4 transition-transform group-open:rotate-180"></i>
+                        </div>
+                    </summary>
+                    <div class="p-3 bg-white space-y-3">`;
+
+                Object.keys(inspData.contractors).sort().forEach(cName => {
+                    const cData = inspData.contractors[cName];
+                    let isFirstContRow = true;
+                    
+                    let contTotalTenders = Object.keys(cData.tenders).length;
+                    let contTotalCalls = 0; let contTotalMandays = 0;
+                    Object.values(cData.tenders).forEach(t => {
+                        contTotalCalls += t.count;
+                        contTotalMandays += t.totalMandays;
+                    });
+
+                    mHtml += `<details class="bg-slate-50 border border-slate-200 rounded-lg group/cont shadow-sm" ${openAttr}>
+                        <summary class="p-3 font-bold text-xs text-slate-800 cursor-pointer flex justify-between items-center group-open/cont:border-b border-slate-200 transition">
+                            <div class="flex flex-col flex-1 pr-2">
+                                <span class="text-xs font-bold text-slate-800 truncate">${cName}</span>
+                                <span class="text-[9px] font-bold text-slate-500 mt-0.5 flex flex-wrap gap-1.5">
+                                    <span><span class="text-slate-600 font-black">${contTotalTenders}</span> T</span> &bull; 
+                                    <span><span class="text-blue-600 font-black">${contTotalCalls}</span> C</span> &bull; 
+                                    <span><span class="text-blue-600 font-black">${contTotalMandays.toFixed(1)}</span> D</span>
+                                </span>
+                            </div>
+                            <div class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center shrink-0 group-open/cont:bg-blue-100 transition-colors shadow-inner ml-2">
+                                <i data-lucide="chevron-down" class="w-3 h-3 transition-transform group-open/cont:rotate-180 text-slate-600 group-open/cont:text-blue-700"></i>
+                            </div>
+                        </summary>
+                        <div class="p-3 bg-white space-y-3">`;
+
+                    Object.keys(cData.tenders).sort().forEach(tender => {
+                        const tData = cData.tenders[tender];
+                        
+                        let isPartial = false;
+                        if (globalContMap[cName] && globalContMap[cName].tenders[tender]) {
+                            isPartial = Object.keys(globalContMap[cName].tenders[tender].insps).length > 1;
+                        }
+                        const partialBadge = isPartial ? `<div class="text-rose-500 font-black text-[9px] bg-rose-50 px-1 py-0.5 rounded border border-rose-200 mt-1 tracking-wider uppercase inline-block">(Shared/Partial Work)</div>` : '';
+                        const encodedGroupRows = encodeURIComponent(JSON.stringify(tData.rawRows));
+
+                        // 🚀 Generate Push Payload
+                        const pushData = {
+                            "LogID": window.generateDeterministicLogID(tender, inspector),
+                            "Tender No": tender,
+                            "Complete or Partial": isPartial ? "Partial" : "Complete",
+                            "Count of Call": tData.count,
+                            "Contactor Agreement Amount": tData.amount,
+                            "Contractor Name": cName,
+                            "TPIA Inspector": inspector,
+                            "List of Inspection Codes": tData.calls.map(c => c.code).join(", ")
+                        };
+                        const encodedPushData = encodeURIComponent(JSON.stringify(pushData));
+                        const chipsHtml = renderChipsWithLatestDate(tData.calls);
+
+                        html += `<tr class="hover:bg-slate-50 transition border-b border-slate-200">`;
+                        if (isFirstInspRow) {
+                            html += `<td rowspan="${inspData.rowSpan}" class="p-3 border-r border-slate-300 text-center font-bold align-top bg-white">${sno++}</td>`;
+                            html += `<td rowspan="${inspData.rowSpan}" class="p-3 border-r border-slate-300 font-black text-slate-900 align-top bg-white">${inspector}</td>`;
+                            isFirstInspRow = false;
+                        }
+                        if (isFirstContRow) {
+                            html += `<td rowspan="${cData.rowSpan}" class="p-3 border-r border-slate-300 font-bold text-slate-800 align-top bg-white">${cName}</td>`;
+                            isFirstContRow = false;
+                        }
+
+                        html += `<td class="p-3 border-r border-slate-300 align-top bg-white group hover:bg-blue-50">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="cursor-pointer" onclick="window.openWorkDetails('Work Info: ${tender}', '${encodedGroupRows}')">
+                                            <span class="font-bold text-blue-700 group-hover:underline">${tender}</span> <i data-lucide="info" class="w-3.5 h-3.5 inline text-blue-400 group-hover:text-blue-600 ml-0.5"></i>
+                                            <div class="text-[10px] font-black text-emerald-600 mt-0.5">${formatCurrency(tData.amount)}</div>
+                                            ${partialBadge}
+                                        </div>
+                                        ${buildFocusButton(tender)}
+                                    </div>
+                                 </td>`;
+                                 
+                        html += `<td class="p-3 border-r border-slate-300 text-center text-blue-700 font-black align-top bg-blue-50/30">
+                                    <span class="text-blue-700 font-black cursor-pointer hover:underline text-sm" onclick="window.openCallsSummary('Summary of Calls: ${inspector}', '${encodedGroupRows}')">${tData.count}</span>
+                                 </td>`;
+                                 
+                        html += `<td class="p-3 border-r border-slate-300 text-center font-mono font-black text-blue-800 align-top bg-blue-50/50">${tData.totalMandays.toFixed(2)}</td>`;
+                        
+                        html += `<td class="p-3 align-top">
+                                    <div class="flex flex-wrap gap-1.5 mb-2">${chipsHtml}</div>
+                                    <div class="pt-2 border-t border-slate-100 print:hidden mt-2">
+                                        <button onclick="window.openPushFeeModal('${encodedPushData}')" class="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-[10px] font-black shadow-sm transition flex items-center gap-1.5 w-max cursor-pointer">
+                                            <i data-lucide="send" class="w-3 h-3"></i> Push to Fee Details
+                                        </button>
+                                    </div>
+                                 </td>`;
+                        html += `</tr>`;
+
+                        mHtml += `<div class="p-3 border border-slate-100 rounded-lg bg-slate-50 shadow-sm">
+                            <div class="flex justify-between items-start mb-2 group/tender">
+                                <div class="cursor-pointer flex-1 pr-2" onclick="window.openWorkDetails('Work Info: ${tender}', '${encodedGroupRows}')">
+                                    <div class="text-[10px] uppercase font-black text-slate-400 mb-0.5">Tender No.</div>
+                                    <div class="text-xs font-bold text-blue-700 group-hover/tender:underline">${tender}</div>
+                                    <div class="text-[10px] text-emerald-600 font-black mt-0.5">${formatCurrency(tData.amount)}</div>
+                                    ${partialBadge}
+                                </div>
+                                <div class="flex flex-col items-end gap-2 shrink-0">
+                                    ${buildFocusButton(tender)}
+                                    <div class="text-right mt-1">
+                                        <div class="text-[10px] uppercase font-black text-slate-400 mb-0.5">Calls / Mandays</div>
+                                        <div class="text-xs font-black text-blue-800 cursor-pointer hover:underline" onclick="event.stopPropagation(); window.openCallsSummary('Summary of Calls: ${inspector}', '${encodedGroupRows}')">${tData.count} / ${tData.totalMandays.toFixed(2)}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100 mt-2 mb-3">
+                                ${chipsHtml}
+                            </div>
+                            <button onclick="window.openPushFeeModal('${encodedPushData}')" class="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-black shadow-sm transition flex items-center justify-center gap-2 print:hidden cursor-pointer">
+                                <i data-lucide="send" class="w-3.5 h-3.5"></i> Push to Fee Details
+                            </button>
+                        </div>`;
+                    });
+                    
+                    mHtml += `</div></details>`; 
+                });
+                mHtml += `</div></details>`; 
+            });
+        }
+        
+        tbody.innerHTML = html;
+        mobileContainer.innerHTML = mHtml;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        window.loadAndRenderAnalysis();
+    });
+</script>

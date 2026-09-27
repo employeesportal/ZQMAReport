@@ -1,0 +1,1564 @@
+<div class="space-y-6 animate-fade-in flex flex-col h-full relative pb-8">
+    
+    <!-- Header & Agency Switcher (Screen Only) -->
+    <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
+        <div>
+            <h2 class="font-black text-base sm:text-lg uppercase text-slate-900 text-center md:text-left">Summary & Daily Work Portal</h2>
+            <p class="text-[11px] sm:text-xs text-slate-500 font-bold text-center md:text-left">Admin & Coordinator Access Only</p>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+            <!-- View Mode Switcher -->
+            <div class="flex p-1 bg-slate-100 rounded-xl border border-slate-200 w-full sm:w-auto">
+                <button onclick="switchPortalTab('summary')" id="tab-summary" class="flex-1 sm:flex-none px-4 sm:px-5 py-2 rounded-lg text-xs font-black transition bg-blue-600 text-white shadow-md">
+                    Inspection Summary
+                </button>
+                <button onclick="switchPortalTab('daily')" id="tab-daily" class="flex-1 sm:flex-none px-4 sm:px-5 py-2 rounded-lg text-xs font-black transition text-slate-500 hover:text-slate-800 hover:bg-slate-200">
+                    Daily Work
+                </button>
+            </div>
+
+            <!-- Agency Switcher -->
+            <div class="flex p-1 bg-slate-100 rounded-xl border border-slate-200 w-full sm:w-auto">
+                <button onclick="switchSummaryAgency('Equalitas')" id="sum-tab-Equalitas" class="flex-1 sm:flex-none px-5 sm:px-6 py-2 rounded-lg text-xs font-black transition bg-blue-600 text-white shadow-md">
+                    Equalitas
+                </button>
+                <button onclick="switchSummaryAgency('A-Mark')" id="sum-tab-A-Mark" class="flex-1 sm:flex-none px-5 sm:px-6 py-2 rounded-lg text-xs font-black transition text-slate-500 hover:text-slate-800 hover:bg-slate-200">
+                    A-Mark
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📊 TAB 1: SUMMARY VIEW -->
+    <div id="portal-view-summary" class="space-y-6 flex flex-col">
+        
+        <!-- Summary Controls / Filters / Sync & Reset -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-3 shrink-0">
+            <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                <div class="relative w-full sm:w-60">
+                    <i data-lucide="filter" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 z-10"></i>
+                    <select id="filter-type" onchange="handleFilterTypeChange()" class="w-full pl-10 pr-8 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition cursor-pointer appearance-none">
+                        <option value="Received on Date">Month of Call Received</option>
+                        <option value="Date of Inspection">Month of Inspection</option>
+                        <option value="Report Prepared?">Month of Report Preparation</option>
+                        <option value="Report Submission Date">Month of Submission</option>
+                        <option value="Billed to DISCOM Date">Month of Billed</option>
+                    </select>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none"></i>
+                </div>
+                
+                <div class="relative w-full sm:w-52">
+                    <i data-lucide="calendar" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 z-10"></i>
+                    <select id="filter-value" onchange="window.handleFilterValueChange()" class="w-full pl-10 pr-8 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition cursor-pointer appearance-none">
+                        <option value="ALL">All Months / All Time</option>
+                    </select>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none"></i>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-end">
+                <button onclick="syncLivePortalData(event)" title="Sync Live Data" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Sync Live
+                </button>
+                <button onclick="resetPortalFilters()" title="Reset Filters" class="flex-1 sm:flex-none px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl transition border border-slate-300 flex items-center justify-center gap-2 cursor-pointer">
+                    <i data-lucide="list-restart" class="w-4 h-4"></i> Reset
+                </button>
+                <button onclick="window.downloadPDFReport('summary')" class="flex-1 sm:flex-none px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer">
+                    <i data-lucide="download-cloud" class="w-4 h-4"></i> PDF
+                </button>
+            </div>
+        </div>
+
+        <div id="active-filter-badge" class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-xs font-bold text-blue-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-sm">
+            <span><strong>Active Filter:</strong> <span id="filter-status-text">Date for Call Received — All</span></span>
+            <span class="text-[10px] text-blue-600 uppercase tracking-wider bg-blue-100 px-2 py-0.5 rounded">Live Report Context</span>
+        </div>
+
+        <!-- PRINTABLE WRAPPER -->
+        <div id="summary-printable-content" class="space-y-6 bg-white p-3 sm:p-4 rounded-2xl w-full">
+            
+            <div class="text-center pb-3 border-b-2 border-slate-900 mb-4">
+                <h1 class="text-sm sm:text-base font-black uppercase text-slate-900">Inspection Summary Report — <span id="summary-agency-title">Equalitas</span></h1>
+                <p class="text-[11px] sm:text-xs font-bold text-slate-600 mt-1">Report Generated Date: <span id="summary-report-date"></span></p>
+            </div>
+
+            <!-- TABLE 1: Agency-Level Summary Table -->
+            <div class="flex items-center justify-between px-1">
+                <h3 class="text-xs font-black uppercase text-slate-700 tracking-wider">Agency-Level Hierarchical Summary</h3>
+                <button onclick="window.toggleTableMobileView('agency-table-container')" id="agency-toggle-btn" class="sm:hidden px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-black border border-blue-200">
+                    📱 Switch to Card View
+                </button>
+            </div>
+
+            <div id="agency-table-container" class="bg-white border border-slate-400 rounded-xl shadow-sm flex flex-col overflow-hidden">
+                <div class="overflow-x-auto w-full relative">
+                    <table class="w-full text-left text-xs border-collapse min-w-[850px]">
+                        <thead class="sticky top-0 bg-slate-100 text-slate-900 uppercase text-[10px] font-black z-10 shadow-sm border-b-2 border-slate-400">
+                            <tr>
+                                <th class="p-3 border-r border-slate-300 text-center">S. no.</th>
+                                <th class="p-3 border-r border-slate-300 text-center">Zone</th>
+                                <th class="p-3 border-r border-slate-300 text-center">Circle</th>
+                                <th class="p-3 border-r border-slate-300">DIVISION</th>
+                                <th class="p-3 border-r border-slate-300 text-center">Total Calls</th>
+                                <th class="p-3 border-r border-slate-300 text-center">Completed</th>
+                                <th class="p-3 border-r border-slate-300 text-center">Prepared</th>
+                                <th class="p-3 border-r border-slate-300 text-center text-amber-700">Unprepared</th>
+                                <th class="p-3 border-r border-slate-300 text-center">Submitted</th>
+                                <th class="p-3 border-r border-slate-300 text-center text-amber-700">Unsubmitted</th>
+                                <th class="p-3 text-center">Billed</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summary-tbody" class="font-medium text-slate-800 align-middle">
+                            <tr>
+                                <td colspan="11" class="p-12 text-center text-slate-500 font-bold border-b border-slate-300">
+                                    <div class="flex flex-col items-center justify-center gap-2">
+                                        <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600"></i>
+                                        <span>Fetching data from Google Sheets...</span>
+                                        <span class="text-[10px] text-slate-400">Estimated countdown: <strong id="sum-timer">4</strong>s</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Page Break For PDF -->
+            <div class="pdf-page-break hidden"></div>
+
+            <!-- TABLE 2: Inspector-Level Summary Table -->
+            <div class="flex items-center justify-between px-1 pt-4">
+                <h3 class="text-xs font-black uppercase text-slate-700 tracking-wider">Inspector-Wise Summary (TPIA)</h3>
+                <button onclick="window.toggleTableMobileView('inspector-table-container')" id="inspector-toggle-btn" class="sm:hidden px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-black border border-blue-200">
+                    📱 Switch to Card View
+                </button>
+            </div>
+
+            <div id="inspector-table-container" class="bg-white border border-slate-400 rounded-xl shadow-sm flex flex-col overflow-hidden">
+                <div class="overflow-x-auto w-full relative">
+                    <table class="w-full text-left text-xs border-collapse min-w-[1000px]">
+                        <thead class="sticky top-0 bg-slate-100 text-slate-900 uppercase text-[10px] font-black z-10 shadow-sm border-b-2 border-slate-400">
+                            <tr>
+                                <th class="p-3 border-r border-slate-300 text-center">S. no.</th>
+                                <th class="p-3 border-r border-slate-300 text-center">Inspecting Engineer TPIA</th>
+                                <th class="p-3 border-r border-slate-300 text-center">Zone</th>
+                                <th class="p-3 border-r border-slate-300 text-center">Circle</th>
+                                <th class="p-3 border-r border-slate-300">DIVISION</th>
+                                <th class="p-3 border-r border-slate-300 text-center">Total Calls</th>
+                                <th class="p-3 border-r border-slate-300 text-center">Completed</th>
+                                <th class="p-3 border-r border-slate-300 text-center">Prepared</th>
+                                <th class="p-3 border-r border-slate-300 text-center text-amber-700">Unprepared</th>
+                                <th class="p-3 border-r border-slate-300 text-center">Submitted</th>
+                                <th class="p-3 border-r border-slate-300 text-center text-amber-700">Unsubmitted</th>
+                                <th class="p-3 border-r border-slate-300 text-center">Billed</th>
+                                <th class="p-3 text-center text-blue-700 bg-blue-50/50">Total Mandays</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inspector-summary-tbody" class="font-medium text-slate-800 align-middle">
+                            <tr><td colspan="13" class="p-12 text-center text-slate-500 font-bold border-b border-slate-300"><i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600 mx-auto"></i></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Page Break For PDF -->
+            <div class="pdf-page-break hidden"></div>
+
+            <!-- TABLE 3: Project Status Hierarchical Table -->
+            <div class="flex items-center justify-between px-1 pt-6">
+                <h3 class="text-xs font-black uppercase text-slate-700 tracking-wider">Project Status Summary (Part-A, Part-B, Part-C)</h3>
+                <button onclick="window.toggleTableMobileView('project-status-table-container')" id="project-status-toggle-btn" class="sm:hidden px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-black border border-blue-200">
+                    📱 Switch to Card View
+                </button>
+            </div>
+
+            <div id="project-status-table-container" class="bg-white border border-slate-400 rounded-xl shadow-sm flex flex-col overflow-hidden">
+                <div class="overflow-x-auto w-full relative">
+                    <table class="w-full text-left text-xs border-collapse min-w-[850px]">
+                        <thead class="sticky top-0 bg-slate-100 text-slate-900 uppercase text-[10px] font-black z-10 shadow-sm border-b-2 border-slate-400">
+                            <tr>
+                                <th class="p-3 border-r border-slate-300 text-center">S. no.</th>
+                                <th class="p-3 border-r border-slate-300 text-center">Zone</th>
+                                <th class="p-3 border-r border-slate-300 text-center">Circle</th>
+                                <th class="p-3 border-r border-slate-300">DIVISION</th>
+                                <th class="p-3 border-r border-slate-300 text-center text-blue-700">Part-A</th>
+                                <th class="p-3 border-r border-slate-300 text-center text-blue-700">Part-B</th>
+                                <th class="p-3 border-r border-slate-300 text-center text-blue-700">Part-C</th>
+                                <th class="p-3 text-center">Total Calls</th>
+                            </tr>
+                        </thead>
+                        <tbody id="project-status-summary-tbody" class="font-medium text-slate-800 align-middle">
+                            <tr><td colspan="8" class="p-12 text-center text-slate-500 font-bold border-b border-slate-300"><i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600 mx-auto"></i></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Page Break For PDF -->
+            <div class="pdf-page-break hidden"></div>
+
+            <!-- 🔥 TABLE 4: Call Status Hierarchical Table -->
+            <div class="flex items-center justify-between px-1 pt-6">
+                <h3 class="text-xs font-black uppercase text-slate-700 tracking-wider">Call Status Summary</h3>
+                <button onclick="window.toggleTableMobileView('call-status-table-container')" id="call-status-toggle-btn" class="sm:hidden px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-black border border-blue-200">
+                    📱 Switch to Card View
+                </button>
+            </div>
+
+            <div id="call-status-table-container" class="bg-white border border-slate-400 rounded-xl shadow-sm flex flex-col overflow-hidden">
+                <div class="overflow-x-auto w-full relative">
+                    <table class="w-full text-left text-xs border-collapse min-w-[850px]">
+                        <thead id="call-status-thead" class="sticky top-0 bg-slate-100 text-slate-900 uppercase text-[10px] font-black z-10 shadow-sm border-b-2 border-slate-400">
+                            <!-- Dynamically generated headers -->
+                        </thead>
+                        <tbody id="call-status-summary-tbody" class="font-medium text-slate-800 align-middle">
+                            <tr><td colspan="8" class="p-12 text-center text-slate-500 font-bold border-b border-slate-300"><i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600 mx-auto"></i></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 📝 TAB 2: DAILY WORK VIEW -->
+    <div id="portal-view-daily" class="space-y-6 hidden flex-col">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <div class="relative w-full sm:w-64">
+                    <i data-lucide="calendar" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 z-10"></i>
+                    <input type="date" id="filter-daily-date" onchange="window.renderDailyPortal()" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition cursor-pointer">
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+                <button onclick="window.syncLivePortalData(event)" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Sync Live
+                </button>
+                <button onclick="window.resetPortalFilters()" class="flex-1 sm:flex-none px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl transition border border-slate-300 flex items-center justify-center gap-2 cursor-pointer">
+                    <i data-lucide="list-restart" class="w-4 h-4"></i> Reset
+                </button>
+                <button onclick="window.downloadPDFReport('daily')" class="flex-1 sm:flex-none px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer">
+                    <i data-lucide="download-cloud" class="w-4 h-4"></i> PDF
+                </button>
+            </div>
+        </div>
+
+        <div id="daily-printable-content" class="space-y-6 bg-white p-3 sm:p-4 rounded-2xl w-full">
+            <div class="text-center pb-3 border-b-2 border-slate-900 mb-4">
+                <h1 class="text-sm sm:text-base font-black uppercase text-slate-900">Daily Work Activity Report — <span id="daily-agency-title">Equalitas</span></h1>
+                <p class="text-[11px] sm:text-xs font-bold text-slate-600 mt-1">Report Generated Date: <span id="daily-report-date"></span> | Activity Date: <span id="daily-activity-date-label"></span></p>
+            </div>
+
+            <div id="daily-summary-banner" class="hidden grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6 bg-slate-50 border border-slate-200 rounded-2xl p-4 break-inside-avoid">
+                <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm text-center">
+                    <span class="block text-[9px] font-black uppercase text-slate-400">Total Force</span>
+                    <span id="sum-total-emp" class="text-2xl font-black text-slate-700">0</span>
+                </div>
+                <div class="bg-white rounded-xl p-3 border border-emerald-200 bg-emerald-50 shadow-sm text-center">
+                    <span class="block text-[9px] font-black uppercase text-emerald-600">On Duty / Active</span>
+                    <span id="sum-active-emp" class="text-2xl font-black text-emerald-700">0</span>
+                </div>
+                <div class="bg-white rounded-xl p-3 border border-rose-200 bg-rose-50 shadow-sm text-center">
+                    <span class="block text-[9px] font-black uppercase text-rose-600">Leave / Absent</span>
+                    <span id="sum-leave-emp" class="text-2xl font-black text-rose-700">0</span>
+                </div>
+                <div class="bg-white rounded-xl p-3 border border-amber-200 bg-amber-50 shadow-sm text-center">
+                    <span class="block text-[9px] font-black uppercase text-amber-600">Idle / No Work</span>
+                    <span id="sum-idle-emp" class="text-2xl font-black text-amber-700">0</span>
+                </div>
+                <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm text-center">
+                    <span class="block text-[9px] font-black uppercase text-purple-500">Inspections Done</span>
+                    <span id="sum-insp-done" class="text-2xl font-black text-purple-600">0</span>
+                </div>
+                <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm text-center">
+                    <span class="block text-[9px] font-black uppercase text-blue-500">Reports Prepared</span>
+                    <span id="sum-rep-done" class="text-2xl font-black text-blue-600">0</span>
+                </div>
+            </div>
+
+            <div id="daily-inspectors-grid" class="space-y-6">
+                <div class="p-12 text-center text-slate-400 font-bold bg-white rounded-3xl border border-slate-200">Loading daily logs...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL POPUP -->
+<div id="summary-drilldown-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-fade-in">
+        <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <div>
+                <h3 id="drilldown-modal-title" class="font-black text-xs sm:text-sm text-slate-900 uppercase">Filtered Inspection Calls</h3>
+                <p id="drilldown-modal-subtitle" class="text-[11px] sm:text-xs text-slate-500 font-bold">List of related calls matching criteria</p>
+            </div>
+            <button onclick="window.closeDrilldownModal()" class="w-8 h-8 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-black flex items-center justify-center transition cursor-pointer">✕</button>
+        </div>
+        <div class="p-3 sm:p-5 overflow-y-auto flex-1 custom-scrollbar">
+            <div id="drilldown-modal-content" class="overflow-x-auto"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .print\:hidden { display: none !important; }
+        .print\:block { display: block !important; }
+        body { background: white !important; -webkit-print-color-adjust: exact; }
+    }
+    
+    .pdf-export-active { 
+        background: white !important; 
+        width: 100% !important; 
+        min-width: 100% !important;
+        padding: 10px !important;
+        margin: 0 !important; 
+        position: relative !important;
+        left: 0 !important;
+        top: 0 !important;
+        transform: none !important;
+    }
+    
+    .pdf-export-active .overflow-x-auto {
+        overflow: visible !important;
+        width: 100% !important;
+        display: block !important;
+    }
+    
+    .pdf-export-active .print\:hidden { display: none !important; }
+    .pdf-export-active .print\:block { display: block !important; }
+    
+    .pdf-export-active .pdf-page-break {
+        display: block !important;
+        page-break-before: always;
+        break-before: page;
+        height: 1px;
+        margin-top: 30px;
+    }
+    
+    .pdf-export-active tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .pdf-export-active table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+        font-size: 8px !important;
+    }
+    .pdf-export-active tr {
+        border: none !important;
+    }
+    .pdf-export-active th, .pdf-export-active td {
+        border: 1px solid #cbd5e1 !important; 
+    }
+    .pdf-export-active td[rowspan] {
+        background-color: #ffffff !important;
+        z-index: 10;
+        position: relative;
+    }
+
+    .mobile-card-view table { display: block; width: 100%; }
+    .mobile-card-view thead { display: none; }
+    .mobile-card-view tbody { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+    .mobile-card-view tr { display: flex; flex-direction: column; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 8px 12px; width: 100%; box-sizing: border-box; }
+    .mobile-card-view td { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border: none !important; text-align: right !important; font-size: 11px; }
+    .mobile-card-view td::before { font-weight: 900; text-transform: uppercase; font-size: 9px; color: #475569; content: attr(data-label); text-align: left; padding-right: 8px; }
+</style>
+
+<script>
+    window.API_URL = "https://script.google.com/macros/s/AKfycbwHMTvYmZabbGZyz2k4akt83VENCzLXpLJeAY52luzTVhlDOl2SpQbh7EiQPnt_H6Cr/exec";
+    
+    const activeSession = localStorage.getItem('portal_user');
+    window.currentUser = activeSession ? JSON.parse(activeSession) : { role: "admin", name: "Admin", agency: "All" };
+
+    window.currentAgency = "Equalitas";
+    window.cachedCallsData = []; 
+    window.agencyInspectorsCache = [];
+    window.isFetching = false;
+    window.dailyOpsCache = {}; 
+    window.drilldownCache = {}; 
+    const CACHE_EXPIRATION_MS = 10 * 60 * 1000; 
+
+    function storeDrilldown(arr) {
+        const id = 'dd_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+        window.drilldownCache[id] = arr;
+        return id;
+    }
+
+    window.downloadPDFReport = function(type) {
+        if (!confirm(`Are you sure you want to download the ${type.toUpperCase()} report as a PDF?\n\n(Note: Wide tables will automatically scale to fit the page)`)) return;
+        
+        document.body.style.cursor = 'wait';
+        
+        if (typeof window.html2pdf === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+            script.onload = () => executePDFGeneration(type);
+            script.onerror = () => { alert("Failed to load PDF library."); document.body.style.cursor = 'default'; };
+            document.head.appendChild(script);
+        } else {
+            executePDFGeneration(type);
+        }
+    };
+
+    function executePDFGeneration(type) {
+        const element = document.getElementById(type === 'summary' ? 'summary-printable-content' : 'daily-printable-content');
+        const filename = `${window.currentAgency}_${type}_report_${new Date().toISOString().split('T')[0]}.pdf`;
+        
+        element.classList.add('pdf-export-active');
+        
+        const opt = {
+            margin:       [0.2, 0.2, 0.2, 0.2],
+            filename:     filename,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { 
+                scale: 2, 
+                useCORS: true, 
+                scrollX: 0, 
+                scrollY: 0, 
+                x: 0,
+                windowWidth: element.scrollWidth 
+            },
+            jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' },
+            pagebreak:    { mode: ['css', 'legacy'] }
+        };
+
+        window.html2pdf().set(opt).from(element).save().then(() => { 
+            element.classList.remove('pdf-export-active');
+            document.body.style.cursor = 'default'; 
+        }).catch(err => {
+            console.error(err);
+            element.classList.remove('pdf-export-active');
+            document.body.style.cursor = 'default'; 
+        });
+    }
+
+    window.showToast = function(message, type = "success") {
+        const toast = document.createElement('div');
+        const colorClass = type === "success" ? "bg-emerald-600" : "bg-rose-600";
+        toast.className = `fixed bottom-6 right-6 px-5 py-3.5 rounded-2xl shadow-2xl font-black text-xs text-white z-[200] transition-opacity duration-300 flex items-center gap-3 ${colorClass}`;
+        toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i> ${message}`;
+        document.body.appendChild(toast);
+        if(window.lucide) lucide.createIcons();
+        setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
+    };
+
+    function startCountdownTimer(elementId, maxSeconds = 4) {
+        const timerEl = document.getElementById(elementId);
+        if (!timerEl) return null;
+        let secondsLeft = maxSeconds;
+        timerEl.textContent = secondsLeft;
+        const interval = setInterval(() => {
+            secondsLeft--;
+            if (secondsLeft > 0) {
+                timerEl.textContent = secondsLeft;
+            } else {
+                clearInterval(interval);
+                timerEl.textContent = "Finalizing...";
+            }
+        }, 1000);
+        return interval;
+    }
+
+    function getTodayIndianFormat() {
+        const today = new Date();
+        return `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+    }
+
+    function formatToIndianDisplayDate(yyyyMmDd) {
+        if (!yyyyMmDd) return '';
+        const parts = yyyyMmDd.split('-');
+        return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : yyyyMmDd;
+    }
+
+    async function fetchInspectorsList() {
+        if (window.agencyInspectorsCache.length > 0) return;
+        try {
+            const res = await fetch(window.API_URL, { 
+                method: 'POST', 
+                redirect: 'follow',
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ action: "getAgencyInspectors" }) 
+            });
+            const result = await res.json();
+            if (result.status === "success" || result.status === true) {
+                window.agencyInspectorsCache = result.data || [];
+            }
+        } catch (e) { 
+            console.error("Backend Fetch Error (Inspectors):", e); 
+            window.showToast("Failed to load inspectors list", "error"); 
+        }
+    }
+
+    async function fetchAgencyData(agencyName, forceRefresh = false) {
+        if (window.isFetching) return false;
+        const cacheKey = `agencyData_${agencyName}`;
+        const cacheTimestampKey = `agencyData_${agencyName}_timestamp`;
+
+        if (!forceRefresh) {
+            const cachedData = sessionStorage.getItem(cacheKey);
+            const cachedTime = sessionStorage.getItem(cacheTimestampKey);
+            if (cachedData && cachedTime && (Date.now() - parseInt(cachedTime, 10) < CACHE_EXPIRATION_MS)) {
+                window.cachedCallsData = JSON.parse(cachedData);
+                return true;
+            }
+        }
+
+        window.isFetching = true;
+        try {
+            // 🔥 Map payload to your custom backend function
+            const payload = { action: "getSummaryCalls", user: window.currentUser, agency: agencyName };
+            const response = await fetch(window.API_URL, { 
+                method: 'POST', 
+                redirect: 'follow', 
+                body: JSON.stringify(payload), 
+                headers: { "Content-Type": "text/plain;charset=utf-8" } 
+            });
+            const result = await response.json();
+            
+            if (result.status === "success" || result.status === true) {
+                window.cachedCallsData = result.data || [];
+                sessionStorage.setItem(cacheKey, JSON.stringify(window.cachedCallsData));
+                sessionStorage.setItem(cacheTimestampKey, Date.now().toString());
+                window.isFetching = false;
+                return true;
+            } else {
+                console.error("Backend returned error:", result.message);
+                window.showToast(result.message || "Failed to fetch data", "error");
+                window.isFetching = false;
+                return false;
+            }
+        } catch (error) {
+            console.error("Backend Fetch Error (Agency Data):", error);
+            window.showToast("Error connecting to database. See console.", "error");
+            window.isFetching = false;
+            return false;
+        }
+    }
+
+    window.toggleTableMobileView = function(containerId) {
+        const container = document.getElementById(containerId);
+        let btnId = 'agency-toggle-btn';
+        if (containerId === 'inspector-table-container') btnId = 'inspector-toggle-btn';
+        if (containerId === 'project-status-table-container') btnId = 'project-status-toggle-btn';
+        if (containerId === 'call-status-table-container') btnId = 'call-status-toggle-btn';
+
+        const btn = document.getElementById(btnId);
+        if (!container) return;
+        container.classList.toggle('mobile-card-view');
+        if(btn) btn.textContent = container.classList.contains('mobile-card-view') ? "📊 Switch to Table View" : "📱 Switch to Card View";
+    };
+
+    window.syncLivePortalData = async function(event) {
+        const btn = event ? event.currentTarget : null;
+        const originalHTML = btn ? btn.innerHTML : "";
+        if (btn) { btn.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> Syncing...`; btn.disabled = true; }
+
+        sessionStorage.clear(); 
+        window.dailyOpsCache = {}; 
+        window.isFetching = false;
+
+        await Promise.all([
+            fetchInspectorsList(),
+            fetchAgencyData(window.currentAgency, true)
+        ]);
+
+        const summaryView = document.getElementById('portal-view-summary');
+        if (summaryView && !summaryView.classList.contains('hidden')) {
+            await window.renderSummaryPortal(true); 
+        } else {
+            await window.renderDailyPortal(true);
+        }
+        window.showToast("Data successfully synchronized!", "success");
+        if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
+        if (window.lucide) window.lucide.createIcons();
+    };
+
+    // 🔥 Added Logic to Reset LocalStorage Cache on Button Click
+    window.resetPortalFilters = function() {
+        const summaryView = document.getElementById('portal-view-summary');
+        if (summaryView && !summaryView.classList.contains('hidden')) {
+            
+            // Clear keys for current agency
+            localStorage.removeItem(`summary_filter_type_${window.currentAgency}`);
+            localStorage.removeItem(`summary_filter_value_${window.currentAgency}`);
+
+            document.getElementById('filter-type').selectedIndex = 0;
+            document.getElementById('filter-value').value = "ALL";
+            window.renderSummaryPortal();
+        } else {
+            const dateInput = document.getElementById('filter-daily-date');
+            if (dateInput) {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                dateInput.value = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+            }
+            window.renderDailyPortal();
+        }
+    };
+
+    function isCompletedStatus(val) {
+        if (!val) return false;
+        const str = String(val).trim().toLowerCase();
+        return str !== "" && str !== "pending";
+    }
+
+    function parseIndianDateString(rawString) {
+        if (!rawString) return null;
+        const str = String(rawString).trim();
+        const isoRegex = /(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/;
+        let match = isoRegex.exec(str);
+        if (match) return new Date(parseInt(match[1], 10), parseInt(match[2], 10) - 1, parseInt(match[3], 10));
+
+        const inRegex = /(?:^|[^\d])(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})(?=[^\d]|$)/;
+        match = inRegex.exec(str);
+        if (match) {
+            let y = parseInt(match[3], 10);
+            if (y < 100) y += 2000;
+            return new Date(y, parseInt(match[2], 10) - 1, parseInt(match[1], 10));
+        }
+        return new Date(str);
+    }
+
+    function getYearMonth(rawString) {
+        const d = parseIndianDateString(rawString);
+        if (!d || isNaN(d)) return null;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    // 🔥 Added Logic to persist filter type selection
+    window.handleFilterTypeChange = function() {
+        const typeEl = document.getElementById('filter-type');
+        if (typeEl) {
+            localStorage.setItem(`summary_filter_type_${window.currentAgency}`, typeEl.value);
+        }
+        window.refreshFilterDropdown(false); 
+        window.renderSummaryPortal(); 
+    };
+
+    // 🔥 Added Logic to persist filter value selection
+    window.handleFilterValueChange = function() {
+        const valEl = document.getElementById('filter-value');
+        if (valEl) {
+            localStorage.setItem(`summary_filter_value_${window.currentAgency}`, valEl.value);
+        }
+        window.renderSummaryPortal();
+    };
+
+    // 🔥 Added param `preserveStored` to inject localstorage defaults dynamically
+    window.refreshFilterDropdown = function(preserveStored = false) {
+        const typeEl = document.getElementById('filter-type');
+        const valueEl = document.getElementById('filter-value');
+        if (!typeEl || !valueEl) return;
+
+        const targetColumn = typeEl.value;
+        const currentSelection = valueEl.value;
+        const uniqueMonths = new Set();
+
+        window.cachedCallsData.forEach(row => {
+            const rawValue = row[targetColumn];
+            if (isCompletedStatus(rawValue)) {
+                const ym = getYearMonth(rawValue);
+                if (ym) uniqueMonths.add(ym);
+            }
+        });
+
+        const sortedMonths = Array.from(uniqueMonths).sort().reverse();
+        let optionsHTML = '<option value="ALL">All Months / All Time</option>';
+        sortedMonths.forEach(ym => {
+            const [year, month] = ym.split('-');
+            const monthName = new Date(year, parseInt(month) - 1).toLocaleString('default', { month: 'long', year: 'numeric' });
+            optionsHTML += `<option value="${ym}">${monthName}</option>`;
+        });
+
+        valueEl.innerHTML = optionsHTML;
+
+        // Determine which value to set based on preservation flag
+        let storedVal = localStorage.getItem(`summary_filter_value_${window.currentAgency}`);
+        let valToSet = (preserveStored && storedVal && sortedMonths.includes(storedVal)) ? storedVal : currentSelection;
+
+        if (sortedMonths.includes(valToSet)) {
+            valueEl.value = valToSet;
+        } else {
+            valueEl.value = "ALL";
+        }
+        
+        // Sync final settled state
+        localStorage.setItem(`summary_filter_value_${window.currentAgency}`, valueEl.value);
+    };
+
+    function updateActiveFilterBadge() {
+        const typeEl = document.getElementById('filter-type');
+        const valueEl = document.getElementById('filter-value');
+        const statusTextSpan = document.getElementById('filter-status-text');
+        if (!typeEl || !valueEl || !statusTextSpan) return;
+        
+        let labelPrefix = "Date for Call Received";
+        const valType = typeEl.value;
+        if (valType === "Date of Inspection") labelPrefix = "Date for Inspection";
+        else if (valType === "Report Prepared?") labelPrefix = "Date for Report Preparation";
+        else if (valType === "Report Submission Date") labelPrefix = "Date for Report Submission";
+        else if (valType === "Billed to DISCOM Date") labelPrefix = "Date for Billing";
+
+        const selectedValueText = valueEl.value === "ALL" ? "All" : valueEl.options[valueEl.selectedIndex].text;
+        statusTextSpan.textContent = `${labelPrefix} — ${selectedValueText}`;
+    }
+
+    window.renderSummaryPortal = async function(forceRefresh = false) {
+        window.drilldownCache = {}; 
+
+        // 🔥 Apply LocalStorage states right before we refresh the lists (if data exists)
+        if (window.cachedCallsData.length > 0 && !forceRefresh) {
+            const storedType = localStorage.getItem(`summary_filter_type_${window.currentAgency}`);
+            const typeEl = document.getElementById('filter-type');
+            if (storedType && typeEl) {
+                let exists = Array.from(typeEl.options).some(opt => opt.value === storedType);
+                if (exists) typeEl.value = storedType;
+            }
+        }
+
+        const tbodyAgency = document.getElementById('summary-tbody');
+        const tbodyInspector = document.getElementById('inspector-summary-tbody');
+        const tbodyProjectStatus = document.getElementById('project-status-summary-tbody');
+        const tbodyCallStatus = document.getElementById('call-status-summary-tbody');
+        const theadCallStatus = document.getElementById('call-status-thead');
+        
+        document.getElementById('summary-report-date').textContent = getTodayIndianFormat();
+        document.getElementById('summary-agency-title').textContent = window.currentAgency;
+
+        if (!tbodyAgency || !tbodyInspector || !tbodyProjectStatus || !tbodyCallStatus) return;
+        
+        tbodyAgency.innerHTML = `<tr><td colspan="11" class="p-12 text-center text-slate-500 font-bold border-b border-slate-300">Loading summary...</td></tr>`;
+        tbodyInspector.innerHTML = `<tr><td colspan="13" class="p-12 text-center text-slate-500 font-bold border-b border-slate-300">Loading inspector metrics...</td></tr>`;
+        tbodyProjectStatus.innerHTML = `<tr><td colspan="8" class="p-12 text-center text-slate-500 font-bold border-b border-slate-300">Loading project status metrics...</td></tr>`;
+        tbodyCallStatus.innerHTML = `<tr><td colspan="10" class="p-12 text-center text-slate-500 font-bold border-b border-slate-300">Loading call status metrics...</td></tr>`;
+        if(window.lucide) window.lucide.createIcons();
+
+        const timerInterval = startCountdownTimer('sum-timer', 4);
+
+        if (window.cachedCallsData.length === 0 || forceRefresh) {
+            const success = await fetchAgencyData(window.currentAgency, forceRefresh);
+            clearInterval(timerInterval);
+            if (!success) return;
+
+            // Re-apply type after fetching if it wasn't there
+            const storedType = localStorage.getItem(`summary_filter_type_${window.currentAgency}`);
+            const typeEl = document.getElementById('filter-type');
+            if (storedType && typeEl && Array.from(typeEl.options).some(opt => opt.value === storedType)) {
+                typeEl.value = storedType;
+            }
+            // Ask dropdown function to preserve localstorage values on load
+            window.refreshFilterDropdown(true); 
+        } else {
+            clearInterval(timerInterval);
+            // Ask dropdown function to preserve localstorage values on load
+            window.refreshFilterDropdown(true);
+        }
+
+        updateActiveFilterBadge();
+        const targetColumn = document.getElementById('filter-type')?.value || "Received on Date";
+        const monthFilter = document.getElementById('filter-value')?.value || "ALL";
+        const data = window.cachedCallsData;
+
+        // Gather all unique Call Statuses dynamically from data sheet
+        const callStatusesSet = new Set();
+        data.forEach(row => {
+            const cs = String(row['Call Status'] || '').trim();
+            if (cs) callStatusesSet.add(cs);
+        });
+        const dynamicCallStatuses = Array.from(callStatusesSet).sort();
+
+        // Build Table 4 Header Dynamically
+        let theadHtml = `<tr>
+            <th class="p-3 border-r border-slate-300 text-center">S. no.</th>
+            <th class="p-3 border-r border-slate-300 text-center">Zone</th>
+            <th class="p-3 border-r border-slate-300 text-center">Circle</th>
+            <th class="p-3 border-r border-slate-300">DIVISION</th>
+            <th class="p-3 border-r border-slate-300 text-center text-blue-700 bg-blue-50/50">CALL MODE</th>`;
+        dynamicCallStatuses.forEach(st => {
+            theadHtml += `<th class="p-3 border-r border-slate-300 text-center text-slate-700">${st}</th>`;
+        });
+        theadHtml += `<th class="p-3 text-center">Total Calls</th></tr>`;
+        theadCallStatus.innerHTML = theadHtml;
+
+        requestAnimationFrame(() => {
+            const agencyGrouped = {};
+            const inspectorGrouped = {};
+            const inspectorMandaysSum = {}; 
+            const projectStatusGrouped = {};
+            const callStatusGrouped = {};
+
+            data.forEach(row => {
+                if (monthFilter !== "ALL") {
+                    const rawVal = row[targetColumn];
+                    if (!isCompletedStatus(rawVal) || getYearMonth(rawVal) !== monthFilter) return; 
+                }
+                
+                const z = String(row['Zone'] || '').trim() || 'Unassigned Zone';
+                const c = String(row['Circle'] || '').trim() || 'Unassigned Circle';
+                const d = String(row['Division'] || '').trim() || 'Unassigned Division';
+                const inspector = String(row['Inspecting Engineer TPIA'] || '').trim() || 'Unassigned Inspector';
+                const pStatus = String(row['Project Status'] || '').trim().toUpperCase();
+                const callStatusVal = String(row['Call Status'] || '').trim();
+                const callModeVal = String(row['Call Mode'] || 'Unassigned').trim();
+
+                const mandaysStr = String(row['Calculated Mandays'] || '');
+                const match = mandaysStr.match(/total\s*[:=]\s*([0-9.]+)/i);
+                const callMandays = match ? parseFloat(match[1]) || 0 : 0;
+                
+                // 1. Agency Grouping
+                if (!agencyGrouped[z]) agencyGrouped[z] = {};
+                if (!agencyGrouped[z][c]) agencyGrouped[z][c] = {};
+                if (!agencyGrouped[z][c][d]) agencyGrouped[z][c][d] = { total: 0, completed: 0, prepared: 0, unprepared: 0, submitted: 0, unsubmitted: 0, billed: 0, rows: [] };
+                const agBucket = agencyGrouped[z][c][d];
+                agBucket.total++;
+                if (isCompletedStatus(row['Inspection Completed?'])) agBucket.completed++;
+                if (isCompletedStatus(row['Report Prepared?'])) agBucket.prepared++; else agBucket.unprepared++;
+                if (isCompletedStatus(row['Report Submission Date'])) agBucket.submitted++; else agBucket.unsubmitted++;
+                if (isCompletedStatus(row['Billed to DISCOM Date'])) agBucket.billed++;
+                agBucket.rows.push(row);
+
+                // 2. Inspector Grouping
+                inspectorMandaysSum[inspector] = (inspectorMandaysSum[inspector] || 0) + callMandays;
+                if (!inspectorGrouped[inspector]) inspectorGrouped[inspector] = {};
+                if (!inspectorGrouped[inspector][z]) inspectorGrouped[inspector][z] = {};
+                if (!inspectorGrouped[inspector][z][c]) inspectorGrouped[inspector][z][c] = {};
+                if (!inspectorGrouped[inspector][z][c][d]) inspectorGrouped[inspector][z][c][d] = { total: 0, completed: 0, prepared: 0, unprepared: 0, submitted: 0, unsubmitted: 0, billed: 0, rows: [] };
+                const inBucket = inspectorGrouped[inspector][z][c][d];
+                inBucket.total++;
+                if (isCompletedStatus(row['Inspection Completed?'])) inBucket.completed++;
+                if (isCompletedStatus(row['Report Prepared?'])) inBucket.prepared++; else inBucket.unprepared++;
+                if (isCompletedStatus(row['Report Submission Date'])) inBucket.submitted++; else inBucket.unsubmitted++;
+                if (isCompletedStatus(row['Billed to DISCOM Date'])) inBucket.billed++;
+                inBucket.rows.push(row);
+
+                // 3. Project Status Grouping
+                if (!projectStatusGrouped[z]) projectStatusGrouped[z] = {};
+                if (!projectStatusGrouped[z][c]) projectStatusGrouped[z][c] = {};
+                if (!projectStatusGrouped[z][c][d]) projectStatusGrouped[z][c][d] = { partA: 0, partB: 0, partC: 0, total: 0, rowsA: [], rowsB: [], rowsC: [], rowsTotal: [] };
+                const psBucket = projectStatusGrouped[z][c][d];
+                psBucket.total++;
+                psBucket.rowsTotal.push(row);
+                if (pStatus.includes('PART-A')) { psBucket.partA++; psBucket.rowsA.push(row); }
+                else if (pStatus.includes('PART-B')) { psBucket.partB++; psBucket.rowsB.push(row); }
+                else if (pStatus.includes('PART-C')) { psBucket.partC++; psBucket.rowsC.push(row); }
+
+                // 4. Call Status Grouping
+                const d_mode = d + `|#|` + callModeVal; 
+                if (!callStatusGrouped[z]) callStatusGrouped[z] = {};
+                if (!callStatusGrouped[z][c]) callStatusGrouped[z][c] = {};
+                if (!callStatusGrouped[z][c][d_mode]) {
+                    const obj = { total: 0, rowsTotal: [], division: d, callMode: callModeVal };
+                    dynamicCallStatuses.forEach(st => { obj[st] = 0; obj[`rows_${st}`] = []; });
+                    callStatusGrouped[z][c][d_mode] = obj;
+                }
+                const csBucket = callStatusGrouped[z][c][d_mode];
+                csBucket.total++;
+                csBucket.rowsTotal.push(row);
+                if (dynamicCallStatuses.includes(callStatusVal)) {
+                    csBucket[callStatusVal]++;
+                    csBucket[`rows_${callStatusVal}`].push(row);
+                }
+            });
+            
+            renderHierarchicalTableWithTotals(tbodyAgency, agencyGrouped, window.currentAgency);
+            renderInspectorTableWithTotals(tbodyInspector, inspectorGrouped, inspectorMandaysSum);
+            renderProjectStatusHierarchicalTableWithTotals(tbodyProjectStatus, projectStatusGrouped, window.currentAgency);
+            renderCallStatusHierarchicalTableWithTotals(tbodyCallStatus, callStatusGrouped, dynamicCallStatuses);
+        });
+    };
+
+    // 🎯 TABLE 1 RENDER (Agency)
+    function renderHierarchicalTableWithTotals(tbody, groupedData, primaryLabel) {
+        const flatRows = [];
+        let sno = 1;
+        let grandTotals = { total: 0, completed: 0, prepared: 0, unprepared: 0, submitted: 0, unsubmitted: 0, billed: 0, rows: [] };
+
+        for (const z of Object.keys(groupedData).sort()) {
+            const circles = groupedData[z];
+            const zKey = flatRows.length;
+            let zCount = 0;
+            let zoneTotals = { total: 0, completed: 0, prepared: 0, unprepared: 0, submitted: 0, unsubmitted: 0, billed: 0, rows: [] };
+
+            for (const c of Object.keys(circles).sort()) {
+                const divs = circles[c];
+                const cKey = flatRows.length;
+                let cCount = 0;
+
+                for (const d of Object.keys(divs).sort()) {
+                    const m = divs[d];
+                    flatRows.push({ type: 'data', zone: z, circle: c, division: d, metrics: m, zRowspan: 0, cRowspan: 0, sno: null });
+                    zCount++; cCount++;
+
+                    ['total', 'completed', 'prepared', 'unprepared', 'submitted', 'unsubmitted', 'billed'].forEach(k => {
+                        zoneTotals[k] += m[k];
+                        grandTotals[k] += m[k];
+                    });
+                    zoneTotals.rows = zoneTotals.rows.concat(m.rows);
+                    grandTotals.rows = grandTotals.rows.concat(m.rows);
+                }
+                flatRows[cKey].cRowspan = cCount;
+            }
+            
+            flatRows.push({ type: 'zoneTotal', zone: z, metrics: zoneTotals });
+            zCount++; 
+            flatRows[zKey].zRowspan = zCount;
+            flatRows[zKey].sno = sno++;
+        }
+
+        if (flatRows.length > 0) flatRows.push({ type: 'grandTotal', metrics: grandTotals });
+
+        if (flatRows.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="11" class="p-12 text-center text-slate-400 font-bold border-b border-slate-300">No data found.</td></tr>';
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        flatRows.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            let html = '';
+
+            if (row.type === 'grandTotal') {
+                tr.className = "bg-blue-100 font-bold break-inside-avoid";
+                const m = row.metrics;
+                html += `<td colspan="4" class="p-3 border-r border-b border-slate-300 text-right font-black text-blue-900 uppercase tracking-wider">Grand Total</td>`;
+                html += `
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Total Calls', '${storeDrilldown(m.rows)}')">${m.total}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Completed', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Inspection Completed?'])))}')">${m.completed}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Prepared', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Report Prepared?'])))}')">${m.prepared}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Unprepared', '${storeDrilldown(m.rows.filter(r => !isCompletedStatus(r['Report Prepared?'])))}')">${m.unprepared}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Submitted', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Report Submission Date'])))}')">${m.submitted}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Unsubmitted', '${storeDrilldown(m.rows.filter(r => !isCompletedStatus(r['Report Submission Date'])))}')">${m.unsubmitted}</td>
+                    <td class="p-3 border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Billed', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Billed to DISCOM Date'])))}')">${m.billed}</td>`;
+                tr.innerHTML = html; fragment.appendChild(tr); return;
+            }
+
+            tr.className = row.type === 'data' ? "hover:bg-slate-50 transition break-inside-avoid" : "bg-blue-50 transition break-inside-avoid";
+            
+            if (row.zRowspan > 0) {
+                html += `<td rowspan="${row.zRowspan}" class="p-3 border-r border-b border-slate-300 text-center font-bold bg-white">${row.sno}</td>`;
+                html += `<td rowspan="${row.zRowspan}" class="p-3 border-r border-b border-slate-300 text-center font-bold bg-white">${row.zone}</td>`;
+            }
+
+            if (row.type === 'zoneTotal') {
+                const m = row.metrics;
+                html += `<td colspan="2" class="p-3 border-r border-b border-slate-300 text-right font-black text-blue-800 uppercase tracking-wider">Zone Total (${row.zone})</td>`;
+                html += `
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Total Calls', '${storeDrilldown(m.rows)}')">${m.total}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Completed', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Inspection Completed?'])))}')">${m.completed}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Prepared', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Report Prepared?'])))}')">${m.prepared}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Unprepared', '${storeDrilldown(m.rows.filter(r => !isCompletedStatus(r['Report Prepared?'])))}')">${m.unprepared}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Submitted', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Report Submission Date'])))}')">${m.submitted}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Unsubmitted', '${storeDrilldown(m.rows.filter(r => !isCompletedStatus(r['Report Submission Date'])))}')">${m.unsubmitted}</td>
+                    <td class="p-3 border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Billed', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Billed to DISCOM Date'])))}')">${m.billed}</td>`;
+            } else {
+                if (row.cRowspan > 0) html += `<td rowspan="${row.cRowspan}" class="p-3 border-r border-b border-slate-300 text-center bg-white">${row.circle}</td>`;
+                const m = row.metrics;
+                html += `
+                    <td class="p-3 border-r border-b border-slate-300">${row.division}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Total Calls', '${storeDrilldown(m.rows)}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m.total}</span></td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Completed Calls', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Inspection Completed?'])))}')" class="cursor-pointer text-green-600 hover:underline font-bold">${m.completed}</span></td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Prepared Reports', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Report Prepared?'])))}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m.prepared}</span></td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Unprepared Reports', '${storeDrilldown(m.rows.filter(r => !isCompletedStatus(r['Report Prepared?'])))}')" class="cursor-pointer text-amber-600 hover:underline font-bold">${m.unprepared}</span></td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Submitted Reports', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Report Submission Date'])))}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m.submitted}</span></td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Unsubmitted Reports', '${storeDrilldown(m.rows.filter(r => !isCompletedStatus(r['Report Submission Date'])))}')" class="cursor-pointer text-amber-600 hover:underline font-bold">${m.unsubmitted}</span></td>
+                    <td class="p-3 border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Billed Calls', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Billed to DISCOM Date'])))}')" class="cursor-pointer text-purple-600 hover:underline font-bold">${m.billed}</span></td>
+                `;
+            }
+            tr.innerHTML = html; fragment.appendChild(tr);
+        });
+        tbody.innerHTML = ''; tbody.appendChild(fragment);
+    }
+
+    // 🎯 TABLE 2 RENDER (Inspector)
+    function renderInspectorTableWithTotals(tbody, groupedData, inspectorMandaysSum) {
+        const flatRows = [];
+        let sno = 1;
+        let grandTotals = { total: 0, completed: 0, prepared: 0, unprepared: 0, submitted: 0, unsubmitted: 0, billed: 0, rows: [], totalMandays: 0 };
+
+        for (const inspector of Object.keys(groupedData).sort()) {
+            const zones = groupedData[inspector];
+            const inspKey = flatRows.length;
+            let inspTotalCount = 0;
+            let inspTotals = { total: 0, completed: 0, prepared: 0, unprepared: 0, submitted: 0, unsubmitted: 0, billed: 0, rows: [], totalMandays: inspectorMandaysSum[inspector] || 0 };
+
+            for (const z of Object.keys(zones).sort()) {
+                const circles = zones[z];
+                const zKey = flatRows.length;
+                let zCount = 0;
+                let zoneTotals = { total: 0, completed: 0, prepared: 0, unprepared: 0, submitted: 0, unsubmitted: 0, billed: 0, rows: [] };
+
+                for (const c of Object.keys(circles).sort()) {
+                    const divs = circles[c];
+                    const cKey = flatRows.length;
+                    let cCount = 0;
+
+                    for (const d of Object.keys(divs).sort()) {
+                        const m = divs[d];
+                        flatRows.push({ type: 'data', inspector, zone: z, circle: c, division: d, metrics: m, inspRowspan: 0, zRowspan: 0, cRowspan: 0, sno: null, totalMandays: inspTotals.totalMandays });
+                        inspTotalCount++; zCount++; cCount++;
+
+                        ['total', 'completed', 'prepared', 'unprepared', 'submitted', 'unsubmitted', 'billed'].forEach(k => {
+                            zoneTotals[k] += m[k]; inspTotals[k] += m[k]; grandTotals[k] += m[k];
+                        });
+                        zoneTotals.rows = zoneTotals.rows.concat(m.rows);
+                        inspTotals.rows = inspTotals.rows.concat(m.rows);
+                        grandTotals.rows = grandTotals.rows.concat(m.rows);
+                    }
+                    flatRows[cKey].cRowspan = cCount;
+                }
+                flatRows.push({ type: 'zoneTotal', zone: z, metrics: zoneTotals });
+                zCount++; inspTotalCount++;
+                flatRows[zKey].zRowspan = zCount;
+            }
+            
+            grandTotals.totalMandays += inspTotals.totalMandays;
+            flatRows[inspKey].inspRowspan = inspTotalCount;
+            flatRows[inspKey].sno = sno++;
+        }
+
+        if (flatRows.length > 0) flatRows.push({ type: 'grandTotal', metrics: grandTotals });
+
+        if (flatRows.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="13" class="p-12 text-center text-slate-400 font-bold border-b border-slate-300">No inspector data found.</td></tr>'; return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        flatRows.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            let html = '';
+
+            if (row.type === 'grandTotal') {
+                tr.className = "bg-blue-100 font-bold break-inside-avoid";
+                const m = row.metrics;
+                html += `<td colspan="5" class="p-3 border-r border-b border-slate-300 text-right font-black text-blue-900 uppercase tracking-wider">Grand Total</td>`;
+                html += `
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total Calls', '${storeDrilldown(m.rows)}')">${m.total}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total Completed', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Inspection Completed?'])))}')">${m.completed}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total Prepared', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Report Prepared?'])))}')">${m.prepared}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total Unprepared', '${storeDrilldown(m.rows.filter(r => !isCompletedStatus(r['Report Prepared?'])))}')">${m.unprepared}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total Submitted', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Report Submission Date'])))}')">${m.submitted}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total Unsubmitted', '${storeDrilldown(m.rows.filter(r => !isCompletedStatus(r['Report Submission Date'])))}')">${m.unsubmitted}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total Billed', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Billed to DISCOM Date'])))}')">${m.billed}</td>
+                    <td class="p-3 border-b border-slate-300 text-center font-mono font-black text-blue-900">${m.totalMandays.toFixed(2)}</td>`;
+                tr.innerHTML = html; fragment.appendChild(tr); return;
+            }
+
+            tr.className = row.type === 'data' ? "hover:bg-slate-50 transition break-inside-avoid" : "bg-blue-50 transition break-inside-avoid";
+            
+            if (row.inspRowspan > 0) {
+                html += `<td rowspan="${row.inspRowspan}" class="p-3 border-r border-b border-slate-300 text-center font-bold bg-white">${row.sno}</td>`;
+                html += `<td rowspan="${row.inspRowspan}" class="p-3 border-r border-b border-slate-300 text-center font-black bg-white">${row.inspector}</td>`;
+            }
+            if (row.zRowspan > 0) {
+                html += `<td rowspan="${row.zRowspan}" class="p-3 border-r border-b border-slate-300 text-center font-bold bg-white">${row.zone}</td>`;
+            }
+
+            if (row.type === 'zoneTotal') {
+                const m = row.metrics;
+                html += `<td colspan="2" class="p-3 border-r border-b border-slate-300 text-right font-black text-blue-800 uppercase tracking-wider">Zone Total (${row.zone})</td>`;
+                html += `
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Total Calls', '${storeDrilldown(m.rows)}')">${m.total}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Completed', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Inspection Completed?'])))}')">${m.completed}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Prepared', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Report Prepared?'])))}')">${m.prepared}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Unprepared', '${storeDrilldown(m.rows.filter(r => !isCompletedStatus(r['Report Prepared?'])))}')">${m.unprepared}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Submitted', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Report Submission Date'])))}')">${m.submitted}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Unsubmitted', '${storeDrilldown(m.rows.filter(r => !isCompletedStatus(r['Report Submission Date'])))}')">${m.unsubmitted}</td>
+                    <td class="p-3 border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Billed', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Billed to DISCOM Date'])))}')">${m.billed}</td>`;
+            } else {
+                if (row.cRowspan > 0) html += `<td rowspan="${row.cRowspan}" class="p-3 border-r border-b border-slate-300 text-center bg-white">${row.circle}</td>`;
+                const m = row.metrics;
+                html += `
+                    <td class="p-3 border-r border-b border-slate-300">${row.division}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Total Calls', '${storeDrilldown(m.rows)}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m.total}</span></td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Completed Calls', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Inspection Completed?'])))}')" class="cursor-pointer text-green-600 hover:underline font-bold">${m.completed}</span></td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Prepared Reports', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Report Prepared?'])))}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m.prepared}</span></td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Unprepared Reports', '${storeDrilldown(m.rows.filter(r => !isCompletedStatus(r['Report Prepared?'])))}')" class="cursor-pointer text-amber-600 hover:underline font-bold">${m.unprepared}</span></td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Submitted Reports', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Report Submission Date'])))}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m.submitted}</span></td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Unsubmitted Reports', '${storeDrilldown(m.rows.filter(r => !isCompletedStatus(r['Report Submission Date'])))}')" class="cursor-pointer text-amber-600 hover:underline font-bold">${m.unsubmitted}</span></td>
+                    <td class="p-3 border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Billed Calls', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(r['Billed to DISCOM Date'])))}')" class="cursor-pointer text-purple-600 hover:underline font-bold">${m.billed}</span></td>
+                `;
+            }
+
+            if (row.inspRowspan > 0) {
+                html += `<td rowspan="${row.inspRowspan}" class="p-3 border-b border-slate-300 text-center font-mono font-black text-blue-700 bg-blue-50/50">${row.totalMandays.toFixed(2)}</td>`;
+            }
+
+            tr.innerHTML = html; fragment.appendChild(tr);
+        });
+        tbody.innerHTML = ''; tbody.appendChild(fragment);
+    }
+
+    // 🎯 TABLE 3 RENDER (Project Status)
+    function renderProjectStatusHierarchicalTableWithTotals(tbody, groupedData, primaryLabel) {
+        const flatRows = [];
+        let sno = 1;
+        let grandTotals = { partA: 0, partB: 0, partC: 0, total: 0, rowsA: [], rowsB: [], rowsC: [], rowsTotal: [] };
+
+        for (const z of Object.keys(groupedData).sort()) {
+            const circles = groupedData[z];
+            const zKey = flatRows.length;
+            let zCount = 0;
+            let zoneTotals = { partA: 0, partB: 0, partC: 0, total: 0, rowsA: [], rowsB: [], rowsC: [], rowsTotal: [] };
+
+            for (const c of Object.keys(circles).sort()) {
+                const divs = circles[c];
+                const cKey = flatRows.length;
+                let cCount = 0;
+
+                for (const d of Object.keys(divs).sort()) {
+                    const m = divs[d];
+                    flatRows.push({ type: 'data', zone: z, circle: c, division: d, metrics: m, zRowspan: 0, cRowspan: 0, sno: null });
+                    zCount++; cCount++;
+
+                    ['partA', 'partB', 'partC', 'total'].forEach(k => { zoneTotals[k] += m[k]; grandTotals[k] += m[k]; });
+                    zoneTotals.rowsA = zoneTotals.rowsA.concat(m.rowsA); zoneTotals.rowsB = zoneTotals.rowsB.concat(m.rowsB); zoneTotals.rowsC = zoneTotals.rowsC.concat(m.rowsC); zoneTotals.rowsTotal = zoneTotals.rowsTotal.concat(m.rowsTotal);
+                    grandTotals.rowsA = grandTotals.rowsA.concat(m.rowsA); grandTotals.rowsB = grandTotals.rowsB.concat(m.rowsB); grandTotals.rowsC = grandTotals.rowsC.concat(m.rowsC); grandTotals.rowsTotal = grandTotals.rowsTotal.concat(m.rowsTotal);
+                }
+                flatRows[cKey].cRowspan = cCount;
+            }
+            
+            flatRows.push({ type: 'zoneTotal', zone: z, metrics: zoneTotals });
+            zCount++; flatRows[zKey].zRowspan = zCount; flatRows[zKey].sno = sno++;
+        }
+
+        if (flatRows.length > 0) flatRows.push({ type: 'grandTotal', metrics: grandTotals });
+
+        if (flatRows.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="p-12 text-center text-slate-400 font-bold border-b border-slate-300">No project status records found.</td></tr>'; return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        flatRows.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            let html = '';
+
+            if (row.type === 'grandTotal') {
+                tr.className = "bg-blue-100 font-bold break-inside-avoid";
+                const m = row.metrics;
+                html += `<td colspan="4" class="p-3 border-r border-b border-slate-300 text-right font-black text-blue-900 uppercase tracking-wider">Grand Total</td>`;
+                html += `
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Part-A', '${storeDrilldown(m.rowsA)}')">${m.partA}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Part-B', '${storeDrilldown(m.rowsB)}')">${m.partB}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Part-C', '${storeDrilldown(m.rowsC)}')">${m.partC}</td>
+                    <td class="p-3 border-b border-slate-300 text-center font-black text-slate-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Total Calls', '${storeDrilldown(m.rowsTotal)}')">${m.total}</td>`;
+                tr.innerHTML = html; fragment.appendChild(tr); return;
+            }
+
+            tr.className = row.type === 'data' ? "hover:bg-slate-50 transition break-inside-avoid" : "bg-blue-50 transition break-inside-avoid";
+            
+            if (row.zRowspan > 0) {
+                html += `<td rowspan="${row.zRowspan}" class="p-3 border-r border-b border-slate-300 text-center font-bold bg-white">${row.sno}</td>`;
+                html += `<td rowspan="${row.zRowspan}" class="p-3 border-r border-b border-slate-300 text-center font-bold bg-white">${row.zone}</td>`;
+            }
+
+            if (row.type === 'zoneTotal') {
+                const m = row.metrics;
+                html += `<td colspan="2" class="p-3 border-r border-b border-slate-300 text-right font-black text-blue-800 uppercase tracking-wider">Zone Total (${row.zone})</td>`;
+                html += `
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Part-A', '${storeDrilldown(m.rowsA)}')">${m.partA}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Part-B', '${storeDrilldown(m.rowsB)}')">${m.partB}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Part-C', '${storeDrilldown(m.rowsC)}')">${m.partC}</td>
+                    <td class="p-3 border-b border-slate-300 text-center font-black text-slate-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Total Calls', '${storeDrilldown(m.rowsTotal)}')">${m.total}</td>`;
+            } else {
+                if (row.cRowspan > 0) html += `<td rowspan="${row.cRowspan}" class="p-3 border-r border-b border-slate-300 text-center bg-white">${row.circle}</td>`;
+                const m = row.metrics;
+                html += `
+                    <td class="p-3 border-r border-b border-slate-300">${row.division}</td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Part-A', '${storeDrilldown(m.rowsA)}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m.partA}</span></td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Part-B', '${storeDrilldown(m.rowsB)}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m.partB}</span></td>
+                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Part-C', '${storeDrilldown(m.rowsC)}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m.partC}</span></td>
+                    <td class="p-3 border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Total Calls', '${storeDrilldown(m.rowsTotal)}')" class="cursor-pointer text-slate-800 hover:underline font-black">${m.total}</span></td>
+                `;
+            }
+            tr.innerHTML = html; fragment.appendChild(tr);
+        });
+        tbody.innerHTML = ''; tbody.appendChild(fragment);
+    }
+
+    // 🎯 TABLE 4 RENDER (Call Status & Call Mode)
+    function renderCallStatusHierarchicalTableWithTotals(tbody, groupedData, callStatusesList) {
+        const flatRows = [];
+        let sno = 1;
+        let grandTotals = { total: 0, rowsTotal: [] };
+        callStatusesList.forEach(st => { grandTotals[st] = 0; grandTotals[`rows_${st}`] = []; });
+
+        for (const z of Object.keys(groupedData).sort()) {
+            const circles = groupedData[z];
+            const zKey = flatRows.length;
+            let zCount = 0;
+            let zoneTotals = { total: 0, rowsTotal: [] };
+            callStatusesList.forEach(st => { zoneTotals[st] = 0; zoneTotals[`rows_${st}`] = []; });
+
+            for (const c of Object.keys(circles).sort()) {
+                const divs = circles[c];
+                const cKey = flatRows.length;
+                let cCount = 0;
+
+                for (const d_mode of Object.keys(divs).sort()) {
+                    const m = divs[d_mode];
+                    flatRows.push({ type: 'data', zone: z, circle: c, division: m.division, callMode: m.callMode, metrics: m, zRowspan: 0, cRowspan: 0, sno: null });
+                    zCount++; cCount++;
+
+                    zoneTotals.total += m.total; grandTotals.total += m.total;
+                    zoneTotals.rowsTotal = zoneTotals.rowsTotal.concat(m.rowsTotal); grandTotals.rowsTotal = grandTotals.rowsTotal.concat(m.rowsTotal);
+
+                    callStatusesList.forEach(st => {
+                        zoneTotals[st] += (m[st] || 0);
+                        grandTotals[st] += (m[st] || 0);
+                        zoneTotals[`rows_${st}`] = zoneTotals[`rows_${st}`].concat(m[`rows_${st}`] || []);
+                        grandTotals[`rows_${st}`] = grandTotals[`rows_${st}`].concat(m[`rows_${st}`] || []);
+                    });
+                }
+                flatRows[cKey].cRowspan = cCount;
+            }
+            
+            flatRows.push({ type: 'zoneTotal', zone: z, metrics: zoneTotals });
+            zCount++; flatRows[zKey].zRowspan = zCount; flatRows[zKey].sno = sno++;
+        }
+
+        if (flatRows.length > 0) flatRows.push({ type: 'grandTotal', metrics: grandTotals });
+
+        if (flatRows.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="${5 + callStatusesList.length + 1}" class="p-12 text-center text-slate-400 font-bold border-b border-slate-300">No call status records found.</td></tr>`; return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        flatRows.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            let html = '';
+
+            if (row.type === 'grandTotal') {
+                tr.className = "bg-blue-100 font-bold break-inside-avoid";
+                const m = row.metrics;
+                html += `<td colspan="5" class="p-3 border-r border-b border-slate-300 text-right font-black text-blue-900 uppercase tracking-wider">Grand Total</td>`;
+                callStatusesList.forEach(st => {
+                    html += `<td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - ${st}', '${storeDrilldown(m[`rows_${st}`] || [])}')">${m[st] || 0}</td>`;
+                });
+                html += `<td class="p-3 border-b border-slate-300 text-center font-black text-slate-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Total Calls', '${storeDrilldown(m.rowsTotal)}')">${m.total}</td>`;
+                tr.innerHTML = html; fragment.appendChild(tr); return;
+            }
+
+            tr.className = row.type === 'data' ? "hover:bg-slate-50 transition break-inside-avoid" : "bg-blue-50 transition break-inside-avoid";
+            
+            if (row.zRowspan > 0) {
+                html += `<td rowspan="${row.zRowspan}" class="p-3 border-r border-b border-slate-300 text-center font-bold bg-white">${row.sno}</td>`;
+                html += `<td rowspan="${row.zRowspan}" class="p-3 border-r border-b border-slate-300 text-center font-bold bg-white">${row.zone}</td>`;
+            }
+
+            if (row.type === 'zoneTotal') {
+                const m = row.metrics;
+                html += `<td colspan="3" class="p-3 border-r border-b border-slate-300 text-right font-black text-blue-800 uppercase tracking-wider">Zone Total (${row.zone})</td>`;
+                callStatusesList.forEach(st => {
+                    html += `<td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - ${st}', '${storeDrilldown(m[`rows_${st}`] || [])}')">${m[st] || 0}</td>`;
+                });
+                html += `<td class="p-3 border-b border-slate-300 text-center font-black text-slate-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Total Calls', '${storeDrilldown(m.rowsTotal)}')">${m.total}</td>`;
+            } else {
+                if (row.cRowspan > 0) html += `<td rowspan="${row.cRowspan}" class="p-3 border-r border-b border-slate-300 text-center bg-white">${row.circle}</td>`;
+                const m = row.metrics;
+                html += `<td class="p-3 border-r border-b border-slate-300">${row.division}</td>`;
+                
+                let modeColor = row.callMode === 'Online' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : (row.callMode === 'Offline' ? 'text-slate-700 bg-slate-100 border-slate-300' : 'text-slate-500 bg-slate-50 border-slate-200');
+                html += `<td class="p-3 border-r border-b border-slate-300 text-center"><span class="px-2 py-1 rounded text-[9px] font-black uppercase border shadow-sm ${modeColor}">${row.callMode}</span></td>`;
+
+                callStatusesList.forEach(st => {
+                    html += `<td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - ${st}', '${storeDrilldown(m[`rows_${st}`] || [])}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m[st] || 0}</span></td>`;
+                });
+                html += `<td class="p-3 border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Total Calls', '${storeDrilldown(m.rowsTotal)}')" class="cursor-pointer text-slate-800 hover:underline font-black">${m.total}</span></td>`;
+            }
+            tr.innerHTML = html; fragment.appendChild(tr);
+        });
+        tbody.innerHTML = ''; tbody.appendChild(fragment);
+    }
+
+    window.openDrilldownModal = function(title, cacheId) {
+        let rows = window.drilldownCache[cacheId] || [];
+        
+        if (typeof cacheId === 'string' && cacheId.startsWith('%5B')) {
+            try { rows = JSON.parse(decodeURIComponent(cacheId)); } catch(e) {}
+        }
+        
+        const modal = document.getElementById('summary-drilldown-modal');
+        document.getElementById('drilldown-modal-title').textContent = title;
+        document.getElementById('drilldown-modal-subtitle').textContent = `Total Records Found: ${rows.length}`;
+        const contentEl = document.getElementById('drilldown-modal-content');
+
+        if (rows.length === 0) {
+            contentEl.innerHTML = `<p class="text-xs text-slate-400 font-bold text-center py-8">No records available for this metric.</p>`;
+        } else {
+            let tableHTML = `<table class="w-full text-left text-xs border-collapse">
+                <thead class="bg-slate-100 text-slate-700 uppercase text-[10px] font-black border-b border-slate-200">
+                    <tr>
+                        <th class="p-3 border-r border-slate-200">Inspection Code</th>
+                        <th class="p-3 border-r border-slate-200">Inspector (TPIA)</th>
+                        <th class="p-3 border-r border-slate-200">Division</th>
+                        <th class="p-3 border-r border-slate-200">Work Description</th>
+                        <th class="p-3 text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="font-medium text-slate-700">`;
+
+            rows.forEach(r => {
+                const encodedR = encodeURIComponent(JSON.stringify(r));
+                tableHTML += `<tr>
+                    <td class="p-3 border-r border-b border-slate-100 font-bold text-blue-600 cursor-pointer hover:underline" onclick="window.openSingleInspectionDetails('${encodedR}')">${r['Inspection Code'] || 'N/A'}</td>
+                    <td class="p-3 border-r border-b border-slate-100 font-bold">${r['Inspecting Engineer TPIA'] || 'Unassigned'}</td>
+                    <td class="p-3 border-r border-b border-slate-100">${r['Division'] || '-'}</td>
+                    <td class="p-3 border-r border-b border-slate-100">${r['Description of Work'] || '-'}</td>
+                    <td class="p-3 border-b border-slate-100 text-center"><button onclick="window.openSingleInspectionDetails('${encodedR}')" class="px-3 py-1 bg-slate-900 text-white rounded-lg text-[10px] font-bold cursor-pointer">View</button></td>
+                </tr>`;
+            });
+            contentEl.innerHTML = tableHTML + `</tbody></table>`;
+        }
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    };
+
+    window.openSingleInspectionDetails = function(rowDataStr) {
+        let rowData = typeof rowDataStr === 'string' ? JSON.parse(decodeURIComponent(rowDataStr)) : rowDataStr;
+        const modal = document.getElementById('summary-drilldown-modal');
+        document.getElementById('drilldown-modal-title').textContent = `Inspection Details: ${rowData['Inspection Code'] || 'N/A'}`;
+        document.getElementById('drilldown-modal-subtitle').textContent = `Inspecting Engineer: ${rowData['Inspecting Engineer TPIA'] || 'Unassigned'}`;
+        
+        let detailsHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">`;
+        for (const [key, val] of Object.entries(rowData)) {
+            if (key === "Agency_Source") continue;
+            detailsHTML += `<div class="p-3 bg-slate-50 border border-slate-200 rounded-xl"><span class="block text-[10px] font-black uppercase text-slate-400">${key}</span><span class="font-bold text-slate-800">${val || '-'}</span></div>`;
+        }
+        document.getElementById('drilldown-modal-content').innerHTML = detailsHTML + `</div>`;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    };
+
+    window.closeDrilldownModal = function() { 
+        const m = document.getElementById('summary-drilldown-modal');
+        m.classList.add('hidden');
+        m.classList.remove('flex'); 
+    };
+
+    window.updateDailyStatus = function(dateKey, inspector, field, value) {
+        if (!window.dailyOpsCache[dateKey]) window.dailyOpsCache[dateKey] = {};
+        if (!window.dailyOpsCache[dateKey][inspector]) window.dailyOpsCache[dateKey][inspector] = { status: '', code: '', comment: '' };
+        window.dailyOpsCache[dateKey][inspector][field] = value;
+        if (field === 'status') window.renderDailyPortal(false);
+    };
+
+    window.renderDailyPortal = async function(forceRefresh = false) {
+        const container = document.getElementById('daily-inspectors-grid');
+        const dateInput = document.getElementById('filter-daily-date');
+        if (!container || !dateInput) return;
+
+        if (!dateInput.value) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            dateInput.value = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+        }
+        
+        const selectedDate = dateInput.value;
+        document.getElementById('daily-report-date').textContent = getTodayIndianFormat();
+        document.getElementById('daily-agency-title').textContent = window.currentAgency;
+        document.getElementById('daily-activity-date-label').textContent = formatToIndianDisplayDate(selectedDate);
+
+        container.innerHTML = '<div class="p-12 text-center text-slate-500 font-bold bg-white rounded-3xl border border-slate-200 col-span-full"><span class="animate-pulse">Loading daily schedules...</span></div>';
+
+        if (window.cachedCallsData.length === 0 || forceRefresh) await fetchAgencyData(window.currentAgency, forceRefresh);
+        if (!window.agencyInspectorsCache || window.agencyInspectorsCache.length === 0 || forceRefresh) await fetchInspectorsList();
+
+        const data = window.cachedCallsData;
+        const agencyInspectors = window.agencyInspectorsCache.filter(i => i.agency.toLowerCase() === window.currentAgency.toLowerCase()).map(i => i.name).sort();
+
+        const inspectorMap = {};
+        agencyInspectors.forEach(insp => { inspectorMap[insp] = { completedTasks: [], preparedTasks: [] }; });
+
+        data.forEach(row => {
+            const inspector = String(row['Inspecting Engineer TPIA'] || 'Unassigned').trim();
+            if (!inspectorMap[inspector]) inspectorMap[inspector] = { completedTasks: [], preparedTasks: [] };
+
+            if (isCompletedStatus(row['Inspection Completed?']) && parseAllIndianDates(row['Inspection Completed?']).some(dt => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}` === selectedDate)) {
+                inspectorMap[inspector].completedTasks.push(row);
+            }
+            if (isCompletedStatus(row['Report Prepared?']) && parseAllIndianDates(row['Report Prepared?']).some(dt => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}` === selectedDate)) {
+                inspectorMap[inspector].preparedTasks.push(row);
+            }
+        });
+
+        const opsCache = window.dailyOpsCache[selectedDate] || {};
+        let stats = { total: agencyInspectors.length, active: 0, leave: 0, idle: 0, insp: 0, rep: 0 };
+        const fragment = document.createDocumentFragment();
+
+        let tableWrapper = document.createElement('div');
+        tableWrapper.className = "overflow-x-auto bg-white shadow-sm w-full";
+        tableWrapper.innerHTML = `
+            <table class="w-full text-left text-xs border-collapse border border-slate-300 min-w-[900px]">
+                <thead class="bg-slate-100 text-slate-700 uppercase text-[10px] font-black border-b border-slate-300">
+                    <tr>
+                        <th class="p-4 border border-slate-300 w-1/5">Inspector Name</th>
+                        <th class="p-4 border border-slate-300 w-1/4">Inspections Completed</th>
+                        <th class="p-4 border border-slate-300 w-1/4">Reports Prepared</th>
+                        <th class="p-4 border border-slate-300 w-1/4">Daily Status & Remarks</th>
+                    </tr>
+                </thead>
+                <tbody class="font-medium text-slate-700" id="daily-tbody-rows"></tbody>
+            </table>`;
+        fragment.appendChild(tableWrapper);
+        container.innerHTML = '';
+        container.appendChild(fragment);
+
+        const tbodyRows = document.getElementById('daily-tbody-rows');
+        const rowsFrag = document.createDocumentFragment();
+
+        function parseAllIndianDates(rawStr) {
+            if (!rawStr) return [];
+            const results = [];
+            const str = String(rawStr).replace(/Yes\s+at/gi, '').trim();
+            const words = str.split(/[\s,]+/);
+            words.forEach(w => {
+                const d = parseIndianDateString(w);
+                if (d && !isNaN(d)) results.push(d);
+            });
+            if (results.length === 0) {
+                const d = parseIndianDateString(str);
+                if (d && !isNaN(d)) results.push(d);
+            }
+            return results;
+        }
+        
+        function extractTotalMandays(rawVal) {
+            if (!rawVal) return '0.00';
+            const str = String(rawVal);
+            const totalMatch = str.match(/total\s*[:=]\s*([0-9.]+)/i);
+            if (totalMatch) return parseFloat(totalMatch[1]).toFixed(2);
+            const numRegex = /\b\d+(?:\.\d+)?\b/g;
+            let match, sum = 0, found = false;
+            while ((match = numRegex.exec(str)) !== null) {
+                const num = parseFloat(match[0]);
+                if (num < 100) { sum += num; found = true; }
+            }
+            return found ? sum.toFixed(2) : '0.00';
+        }
+
+        Object.keys(inspectorMap).sort().forEach(inspector => {
+            const info = inspectorMap[inspector];
+            const hasWork = info.completedTasks.length > 0 || info.preparedTasks.length > 0;
+            if (!hasWork && inspector === 'Unassigned') return;
+
+            let savedState = opsCache[inspector] || { status: '', code: '', comment: '' };
+            const safeInspector = inspector.replace(/'/g, "\\'");
+            const safeStatus = savedState.status || "";
+            const safeComment = (savedState.comment || "").replace(/"/g, '&quot;');
+
+            if (hasWork || safeStatus === 'Site Inspection' || safeStatus === 'Office Work') {
+                stats.active++;
+                if (hasWork) { stats.insp += info.completedTasks.length; stats.rep += info.preparedTasks.length; }
+            } else if (safeStatus === 'On Leave' || safeStatus === 'Absent') { stats.leave++; } 
+            else { stats.idle++; }
+
+            let badgeHtml = hasWork || safeStatus === 'Site Inspection' || safeStatus === 'Office Work' 
+                ? `<span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md text-[9px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 mt-1"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div> ${hasWork ? "Active / On Duty" : safeStatus}</span>`
+                : (safeStatus === 'On Leave' || safeStatus === 'Absent' ? `<span class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-md text-[9px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 mt-1"> ${safeStatus}</span>` : `<span class="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-md text-[9px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 mt-1"> Idle / No Work</span>`);
+
+            let completedHtml = `<div class="text-[10px] font-black uppercase text-emerald-800 mb-2 border-b border-emerald-200 pb-1">Inspections Completed - ${info.completedTasks.length.toString().padStart(2, '0')}</div>`;
+            completedHtml += info.completedTasks.length > 0 ? `<ul class="space-y-3">` + info.completedTasks.map(t => `<li class="leading-snug"><span class="font-bold text-blue-600 cursor-pointer hover:underline text-[11px]" onclick="window.openSingleInspectionDetails('${encodeURIComponent(JSON.stringify(t))}')">${t['Inspection Code'] || 'N/A'}</span><br><span class="text-[10px] text-slate-500">${t['Zone'] || '-'} - ${t['Inspector Order Ref No'] || '-'}</span></li>`).join('') + `</ul>` : `<span class="text-[10px] text-slate-400 italic">None</span>`;
+
+            let preparedHtml = `<div class="text-[10px] font-black uppercase text-blue-800 mb-2 border-b border-emerald-200 pb-1">Reports Prepared - ${info.preparedTasks.length.toString().padStart(2, '0')}</div>`;
+            preparedHtml += info.preparedTasks.length > 0 ? `<ul class="space-y-3">` + info.preparedTasks.map(t => `<li class="leading-snug"><span class="font-bold text-blue-600 cursor-pointer hover:underline text-[11px]" onclick="window.openSingleInspectionDetails('${encodeURIComponent(JSON.stringify(t))}')">${t['Inspection Code'] || 'N/A'}</span><br><span class="text-[10px] text-slate-500">${t['Zone'] || '-'} - <strong class="text-blue-700 font-mono">${extractTotalMandays(t['Calculated Mandays'])} MD</strong></span></li>`).join('') + `</ul>` : `<span class="text-[10px] text-slate-400 italic">None</span>`;
+
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-50 transition break-inside-avoid align-top";
+            tr.innerHTML = `
+                <td class="p-4 border border-b border-slate-300">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <div class="w-6 h-6 rounded-full ${hasWork || safeStatus === 'Site Inspection' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'} font-black flex items-center justify-center text-[10px] shrink-0">${inspector.charAt(0).toUpperCase()}</div>
+                        <h3 class="font-black text-slate-900 text-[11px]">${inspector}</h3>
+                    </div>
+                    ${badgeHtml}
+                </td>
+                <td class="p-4 border border-b border-slate-300 bg-emerald-50/20">${completedHtml}</td>
+                <td class="p-4 border border-b border-slate-300 bg-blue-50/20">${preparedHtml}</td>
+                <td class="p-4 border border-b border-slate-300">
+                    <div class="print:hidden space-y-2">
+                        <select onchange="window.updateDailyStatus('${selectedDate}', '${safeInspector}', 'status', this.value)" class="w-full p-2 text-[10px] border border-slate-200 rounded-lg outline-none bg-slate-50 font-bold cursor-pointer">
+                            <option value="" ${safeStatus === '' ? 'selected' : ''}>- Select Status -</option>
+                            <option value="Site Inspection" ${safeStatus === 'Site Inspection' ? 'selected' : ''}>Site Inspection</option>
+                            <option value="Office Work" ${safeStatus === 'Office Work' ? 'selected' : ''}>Office Work</option>
+                            <option value="On Leave" ${safeStatus === 'On Leave' ? 'selected' : ''}>On Leave</option>
+                            <option value="Absent" ${safeStatus === 'Absent' ? 'selected' : ''}>Absent</option>
+                        </select>
+                        <textarea oninput="window.updateDailyStatus('${selectedDate}', '${safeInspector}', 'comment', this.value)" placeholder="Coordinator remark..." class="w-full p-2.5 text-[10px] border border-slate-200 rounded-lg outline-none bg-slate-50 font-bold resize-none leading-snug">${safeComment}</textarea>
+                    </div>
+                </td>`;
+            rowsFrag.appendChild(tr);
+        });
+
+        tbodyRows.appendChild(rowsFrag);
+        document.getElementById('sum-total-emp').innerText = stats.total;
+        document.getElementById('sum-active-emp').innerText = stats.active;
+        document.getElementById('sum-leave-emp').innerText = stats.leave;
+        document.getElementById('sum-idle-emp').innerText = stats.idle;
+        document.getElementById('sum-insp-done').innerText = stats.insp;
+        document.getElementById('sum-rep-done').innerText = stats.rep;
+        document.getElementById('daily-summary-banner').classList.remove('hidden');
+        if(window.lucide) window.lucide.createIcons();
+    };
+
+    window.switchSummaryAgency = async function(agencyName) {
+        if (window.currentAgency === agencyName) return; 
+        window.currentAgency = agencyName;
+        window.cachedCallsData = []; 
+        
+        const equalitasTab = document.getElementById('sum-tab-Equalitas');
+        const aMarkTab = document.getElementById('sum-tab-A-Mark');
+        const activeClass = ['bg-blue-600', 'text-white', 'shadow-md'];
+        const inactiveClass = ['text-slate-500', 'hover:text-slate-800', 'hover:bg-slate-200'];
+
+        if (agencyName === 'Equalitas') {
+            equalitasTab.classList.add(...activeClass); equalitasTab.classList.remove(...inactiveClass);
+            aMarkTab.classList.add(...inactiveClass); aMarkTab.classList.remove(...activeClass);
+        } else {
+            aMarkTab.classList.add(...activeClass); aMarkTab.classList.remove(...inactiveClass);
+            equalitasTab.classList.add(...inactiveClass); equalitasTab.classList.remove(...activeClass);
+        }
+        
+        if (!document.getElementById('portal-view-summary').classList.contains('hidden')) {
+            await window.renderSummaryPortal();
+        } else {
+            await window.renderDailyPortal();
+        }
+    };
+
+    window.switchPortalTab = function(tabName) {
+        const summaryView = document.getElementById('portal-view-summary');
+        const dailyView = document.getElementById('portal-view-daily');
+        const summaryTabs = document.querySelectorAll('#tab-summary');
+        const dailyTabs = document.querySelectorAll('#tab-daily');
+        const activeClass = ['bg-blue-600', 'text-white', 'shadow-md'];
+        const inactiveClass = ['text-slate-500', 'hover:text-slate-800', 'hover:bg-slate-200'];
+
+        if (tabName === 'summary') {
+            summaryView.classList.remove('hidden'); summaryView.classList.add('flex');
+            dailyView.classList.add('hidden'); dailyView.classList.remove('flex');
+            summaryTabs.forEach(b => { b.classList.add(...activeClass); b.classList.remove(...inactiveClass); });
+            dailyTabs.forEach(b => { b.classList.add(...inactiveClass); b.classList.remove(...activeClass); });
+            window.renderSummaryPortal();
+        } else {
+            summaryView.classList.add('hidden'); summaryView.classList.remove('flex');
+            dailyView.classList.remove('hidden'); dailyView.classList.add('flex');
+            dailyTabs.forEach(b => { b.classList.add(...activeClass); b.classList.remove(...inactiveClass); });
+            summaryTabs.forEach(b => { b.classList.add(...inactiveClass); b.classList.remove(...activeClass); });
+            window.renderDailyPortal();
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        window.dailyOpsCache = {}; 
+        const dateInput = document.getElementById('filter-daily-date');
+        if (dateInput && !dateInput.value) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            dateInput.value = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+        }
+        fetchInspectorsList().then(() => { window.renderSummaryPortal(); });
+    });
+</script>
