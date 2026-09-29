@@ -38,47 +38,59 @@
         let currentView = null;
 
        // 🎯 PORTAL MODULES REGISTRY (Points to external HTML files)
-       const PORTAL_MODULES = {
-    "inspections": {
-        id: "inspections", label: "Manage Inspections", icon: "clipboard-list",
-        file: "inspectionCalls.html", roles: ["admin", "coordinator"]
-    },
-    
-    // 🚀 SEPARATED: Inspection Summary Portal
-    "summary": {
-        id: "summary", label: "Inspection Summary", icon: "bar-chart-3",
-        file: "summary.html", roles: ["admin", "coordinator"]
-    },
-    // 🚀 SEPARATED: Daily Work Portal
-    "daily_work": {
-        id: "daily_work", label: "Daily Work", icon: "calendar-clock",
-        file: "dailyWork.html", roles: ["admin", "coordinator"]
-    },
-    // 🚀 NEW: Analysis Portal (Strictly Admin Only)
-    "analysis": {
-        id: "analysis", label: "Analysis Portal", icon: "pie-chart",
-        file: "analysisPortal.html", roles: ["admin"]
-    },
-    "report_analysis": {
-        id: "report_analysis", label: "Report Analysis", icon: "calendar-search",
-        file: "reportAnalysis.html", roles: ["admin"]
-    },
-    // 💰 NEW: Fee Details Portal
-    "fee_details": {
-        id: "fee_details", label: "Fee Details", icon: "receipt", // 'receipt', 'wallet', or 'banknote' work well here
-        file: "feeDetails.html", roles: ["admin"] // Remove "coordinator" if it should be Admin only
-    },
-    // 🚀 MODULE FOR INSPECTORS (USERS)
-    "my_inspections": {
-        id: "my_inspections", label: "My Inspections", icon: "clipboard-check",
-        file: "userPortal.html", roles: ["user"]
-    },
-    // 🚀 CREDENTIALS
-    "change_credentials": {
-        id: "change_credentials", label: "Change Credentials", icon: "key-round",
-        file: "changeCredentials.html", roles: ["user"] 
-    }
-};
+      const PORTAL_MODULES = {
+            "inspections": {
+                id: "inspections", label: "Manage Inspections", icon: "clipboard-list",
+                file: "inspectionCalls.html", roles: ["admin", "coordinator"]
+            },
+
+            // 🚀 SEPARATED: Inspection Summary Portal
+            "summary": {
+                id: "summary", label: "Inspection Summary", icon: "bar-chart-3",
+                file: "summary.html", roles: ["admin", "coordinator"]
+            },
+
+            // 🚀 SEPARATED: Daily Work Portal
+            "daily_work": {
+                id: "daily_work", label: "Daily Work", icon: "calendar-clock",
+                file: "dailyWork.html", roles: ["admin", "coordinator"]
+            },
+
+            // 📁 NEW: Report Archive Portal
+            "report_archive": {
+                id: "report_archive", label: "Report Archive", icon: "folder-open",
+                file: "ReportArchive.html", roles: ["admin", "coordinator"]
+            },
+
+            // 🚀 NEW: Analysis Portal (Strictly Admin Only)
+            "analysis": {
+                id: "analysis", label: "Analysis Portal", icon: "pie-chart",
+                file: "analysisPortal.html", roles: ["admin"]
+            },
+
+            "report_analysis": {
+                id: "report_analysis", label: "Report Analysis", icon: "calendar-search",
+                file: "reportAnalysis.html", roles: ["admin"]
+            },
+
+            // 💰 NEW: Fee Details Portal
+            "fee_details": {
+                id: "fee_details", label: "Fee Details", icon: "receipt", // 'receipt', 'wallet', or 'banknote' work well here
+                file: "feeDetails.html", roles: ["admin"] // Remove "coordinator" if it should be Admin only
+            },
+
+            // 🚀 MODULE FOR INSPECTORS (USERS)
+            "my_inspections": {
+                id: "my_inspections", label: "My Inspections", icon: "clipboard-check",
+                file: "userPortal.html", roles: ["user"]
+            },
+
+            // 🚀 CREDENTIALS
+            "change_credentials": {
+                id: "change_credentials", label: "Change Credentials", icon: "key-round",
+                file: "changeCredentials.html", roles: ["user"]
+            }
+        };
 
     </script>
 
