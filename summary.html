@@ -1,121 +1,162 @@
 <div class="space-y-6 animate-fade-in flex flex-col h-full relative pb-8">
-    
-    <!-- Header & Agency Switcher -->
-    <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
+
+    <!-- Header & Dynamic Agency Switcher -->
+    <div
+        class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
         <div>
-            <h2 class="font-black text-base sm:text-lg uppercase text-slate-900 text-center md:text-left">Inspection Summary Portal</h2>
-            <p class="text-[11px] sm:text-xs text-slate-500 font-bold text-center md:text-left">Admin & Coordinator Access Only</p>
+            <h2 class="font-black text-base sm:text-lg uppercase text-slate-900 text-center md:text-left">Inspection
+                Summary Portal</h2>
+            <p class="text-[11px] sm:text-xs text-slate-500 font-bold text-center md:text-left">Admin & Coordinator
+                Access Only</p>
         </div>
-        
+
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-            <!-- Agency Switcher -->
-            <div class="flex p-1 bg-slate-100 rounded-xl border border-slate-200 w-full sm:w-auto">
-                <button onclick="switchSummaryAgency('Equalitas')" id="sum-tab-Equalitas" class="flex-1 sm:flex-none px-5 sm:px-6 py-2 rounded-lg text-xs font-black transition bg-blue-600 text-white shadow-md">
-                    Equalitas
-                </button>
-                <button onclick="switchSummaryAgency('A-Mark')" id="sum-tab-A-Mark" class="flex-1 sm:flex-none px-5 sm:px-6 py-2 rounded-lg text-xs font-black transition text-slate-500 hover:text-slate-800 hover:bg-slate-200">
-                    A-Mark
-                </button>
+            <!-- 🚀 DYNAMIC TABS CONTAINER -->
+            <div id="summary-agency-tabs-container"
+                class="flex p-1 bg-slate-100 rounded-xl border border-slate-200 w-full sm:w-auto overflow-x-auto custom-scrollbar">
+                <!-- Buttons injected via JS -->
             </div>
         </div>
     </div>
 
     <!-- 📊 SUMMARY VIEW -->
     <div id="portal-view-summary" class="space-y-6 flex flex-col">
-        
+
         <!-- Summary Controls / Filters / Sync & Reset -->
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-3 shrink-0">
+        <div
+            class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-3 shrink-0">
             <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
                 <div class="relative w-full sm:w-60">
                     <i data-lucide="filter" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 z-10"></i>
-                    <select id="filter-type" onchange="handleFilterTypeChange()" class="w-full pl-10 pr-8 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition cursor-pointer appearance-none">
+                    <select id="filter-type" onchange="handleFilterTypeChange()"
+                        class="w-full pl-10 pr-8 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition cursor-pointer appearance-none">
                         <option value="Received on Date">Month of Call Received</option>
                         <option value="Date of Inspection">Month of Inspection</option>
                         <option value="Report Prepared?">Month of Report Preparation</option>
                         <option value="Report Submission Date">Month of Submission</option>
                         <option value="Billed to DISCOM Date">Month of Billed</option>
                     </select>
-                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none"></i>
+                    <i data-lucide="chevron-down"
+                        class="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none"></i>
                 </div>
-                
+
                 <div class="relative w-full sm:w-52">
                     <i data-lucide="calendar" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 z-10"></i>
-                    <select id="filter-value" onchange="window.handleFilterValueChange()" class="w-full pl-10 pr-8 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition cursor-pointer appearance-none">
+                    <select id="filter-value" onchange="window.handleFilterValueChange()"
+                        class="w-full pl-10 pr-8 py-2.5 border border-slate-300 rounded-xl text-xs font-bold outline-none bg-slate-50 focus:bg-white transition cursor-pointer appearance-none">
                         <option value="ALL">All Months / All Time</option>
                     </select>
-                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none"></i>
+                    <i data-lucide="chevron-down"
+                        class="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none"></i>
                 </div>
             </div>
 
             <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-end">
-                <button onclick="syncLivePortalData(event)" title="Sync Live Data" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer">
+                <button onclick="syncLivePortalData(event)" title="Sync Live Data"
+                    class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer">
                     <i data-lucide="refresh-cw" class="w-4 h-4"></i> Sync Live
                 </button>
-                <button onclick="resetPortalFilters()" title="Reset Filters" class="flex-1 sm:flex-none px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl transition border border-slate-300 flex items-center justify-center gap-2 cursor-pointer">
+                <button onclick="resetPortalFilters()" title="Reset Filters"
+                    class="flex-1 sm:flex-none px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl transition border border-slate-300 flex items-center justify-center gap-2 cursor-pointer">
                     <i data-lucide="list-restart" class="w-4 h-4"></i> Reset
                 </button>
-                
+
                 <!-- ⚡ NEW BUTTON: Export ALL Tables -->
-                <button onclick="window.downloadAllPDFReport()" class="flex-1 sm:flex-none px-5 py-2.5 bg-blue-800 hover:bg-blue-900 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer" title="Export All Tables to a Multi-Page PDF">
+                <button onclick="window.downloadAllPDFReport()"
+                    class="flex-1 sm:flex-none px-5 py-2.5 bg-blue-800 hover:bg-blue-900 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                    title="Export All Tables to a Multi-Page PDF">
                     <i data-lucide="layers" class="w-4 h-4"></i> Export All
                 </button>
 
                 <!-- EXISTING BUTTON: Export Active Table Only -->
-                <button onclick="window.downloadPDFReport()" class="flex-1 sm:flex-none px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer" title="Export Only the Visible Table">
+                <button onclick="window.downloadPDFReport()"
+                    class="flex-1 sm:flex-none px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-black rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                    title="Export Only the Visible Table">
                     <i data-lucide="download-cloud" class="w-4 h-4"></i> PDF
                 </button>
             </div>
         </div>
 
-        <div id="active-filter-badge" class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-xs font-bold text-blue-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-sm">
-            <span><strong>Active Filter:</strong> <span id="filter-status-text">Date for Call Received — All</span></span>
-            <span class="text-[10px] text-blue-600 uppercase tracking-wider bg-blue-100 px-2 py-0.5 rounded">Live Report Context</span>
+        <div id="active-filter-badge"
+            class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-xs font-bold text-blue-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-sm">
+            <span><strong>Active Filter:</strong> <span id="filter-status-text">Date for Call Received —
+                    All</span></span>
+            <span class="text-[10px] text-blue-600 uppercase tracking-wider bg-blue-100 px-2 py-0.5 rounded">Live Report
+                Context</span>
         </div>
 
         <!-- PRINTABLE WRAPPER -->
         <div id="summary-printable-content" class="space-y-6 bg-white p-3 sm:p-4 rounded-2xl w-full">
-            
+
             <div class="text-center pb-3 border-b-2 border-slate-900 mb-4">
-                <h1 class="text-sm sm:text-base font-black uppercase text-slate-900">Inspection Summary Report — <span id="summary-agency-title">Equalitas</span></h1>
-                <p class="text-[11px] sm:text-xs font-bold text-slate-600 mt-1">Report Generated Date: <span id="summary-report-date"></span></p>
+                <h1 class="text-sm sm:text-base font-black uppercase text-slate-900">Inspection Summary Report — <span
+                        id="summary-agency-title">Agency</span></h1>
+                <p class="text-[11px] sm:text-xs font-bold text-slate-600 mt-1">Report Generated Date: <span
+                        id="summary-report-date"></span></p>
             </div>
 
-            <!-- ⚡ NEW: FAST TABLE TABS -->
+            <!-- ⚡ FAST TABLE TABS -->
             <div class="flex flex-wrap gap-2 justify-center mb-6 print:hidden border-b border-slate-100 pb-4">
-                <button onclick="switchSummaryTable('agency')" id="tab-btn-agency" class="px-4 py-2 rounded-lg text-xs font-black transition bg-blue-600 text-white shadow-md">Agency Level</button>
-                <button onclick="switchSummaryTable('inspector')" id="tab-btn-inspector" class="px-4 py-2 rounded-lg text-xs font-black transition bg-slate-50 text-slate-600 hover:bg-slate-200 border border-slate-200">Inspector Level</button>
-                <button onclick="switchSummaryTable('project')" id="tab-btn-project" class="px-4 py-2 rounded-lg text-xs font-black transition bg-slate-50 text-slate-600 hover:bg-slate-200 border border-slate-200">Project Status</button>
-                <button onclick="switchSummaryTable('call')" id="tab-btn-call" class="px-4 py-2 rounded-lg text-xs font-black transition bg-slate-50 text-slate-600 hover:bg-slate-200 border border-slate-200">Call Status</button>
+                <button onclick="switchSummaryTable('agency')" id="tab-btn-agency"
+                    class="px-4 py-2 rounded-lg text-xs font-black transition bg-blue-600 text-white shadow-md">Agency
+                    Level</button>
+                <button onclick="switchSummaryTable('inspector')" id="tab-btn-inspector"
+                    class="px-4 py-2 rounded-lg text-xs font-black transition bg-slate-50 text-slate-600 hover:bg-slate-200 border border-slate-200">Inspector
+                    Level</button>
+                <button onclick="switchSummaryTable('project')" id="tab-btn-project"
+                    class="px-4 py-2 rounded-lg text-xs font-black transition bg-slate-50 text-slate-600 hover:bg-slate-200 border border-slate-200">Project
+                    Status</button>
+                <button onclick="switchSummaryTable('call')" id="tab-btn-call"
+                    class="px-4 py-2 rounded-lg text-xs font-black transition bg-slate-50 text-slate-600 hover:bg-slate-200 border border-slate-200">Call
+                    Status</button>
             </div>
 
             <!-- TABLE 1: Agency-Level Summary Table -->
             <div id="section-agency" class="block animate-fade-in">
                 <div class="flex items-center justify-between px-1 mb-2">
-                    <h3 class="text-xs font-black uppercase text-slate-700 tracking-wider">Agency-Level Hierarchical Summary</h3>
-                    <button onclick="window.toggleTableMobileView('agency-table-container')" id="agency-toggle-btn" class="sm:hidden px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-black border border-blue-200">
+                    <h3 class="text-xs font-black uppercase text-slate-700 tracking-wider">Agency-Level Hierarchical
+                        Summary</h3>
+                    <button onclick="window.toggleTableMobileView('agency-table-container')" id="agency-toggle-btn"
+                        class="sm:hidden px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-black border border-blue-200">
                         📱 Switch to Card View
                     </button>
                 </div>
-                <div id="agency-table-container" class="bg-white border border-slate-400 rounded-xl shadow-sm flex flex-col overflow-hidden">
+                <div id="agency-table-container"
+                    class="bg-white border border-slate-400 rounded-xl shadow-sm flex flex-col overflow-hidden">
                     <div class="overflow-x-auto w-full relative">
-                        <table class="w-full text-left text-xs border-collapse min-w-[850px]">
-                            <thead class="sticky top-0 bg-slate-100 text-slate-900 uppercase text-[10px] font-black z-10 shadow-sm border-b-2 border-slate-400">
+                        <table class="w-full text-left text-[10px] border-collapse min-w-[1000px]">
+                            <thead
+                                class="sticky top-0 bg-slate-100 text-slate-900 uppercase text-[9px] font-black z-10 shadow-sm border-b-2 border-slate-400">
                                 <tr>
-                                    <th class="p-3 border-r border-slate-300 text-center">S. no.</th>
-                                    <th class="p-3 border-r border-slate-300 text-center">Zone</th>
-                                    <th class="p-3 border-r border-slate-300 text-center">Circle</th>
-                                    <th class="p-3 border-r border-slate-300">DIVISION</th>
-                                    <th class="p-3 border-r border-slate-300 text-center">Total Calls</th>
-                                    <th class="p-3 border-r border-slate-300 text-center">Completed</th>
-                                    <th class="p-3 border-r border-slate-300 text-center">Prepared</th>
-                                    <th class="p-3 border-r border-slate-300 text-center text-amber-700">Unprepared</th>
-                                    <th class="p-3 border-r border-slate-300 text-center">Submitted</th>
-                                    <th class="p-3 border-r border-slate-300 text-center text-amber-700">Unsubmitted</th>
-                                    <th class="p-3 text-center">Billed</th>
+                                    <th class="p-2 border-r border-slate-300 text-center w-10">S.No</th>
+                                    <th class="p-2 border-r border-slate-300 text-center">Zone</th>
+                                    <th class="p-2 border-r border-slate-300 text-center">Circle</th>
+                                    <th class="p-2 border-r border-slate-300">Division</th>
+                                    <th class="p-2 border-r border-slate-300 text-center font-black">Tot. Calls</th>
+                                    <th class="p-2 border-r border-slate-300 text-center font-black text-emerald-700">
+                                        Valid</th>
+                                    <th
+                                        class="p-2 border-r border-slate-300 text-center font-black text-rose-700 leading-tight">
+                                        Invalid<br><span
+                                            class="text-[8px] font-bold text-rose-500">(Canc/Rev/Dup/Oth)</span></th>
+                                    <th
+                                        class="p-2 border-r border-slate-300 text-center font-black text-blue-700 leading-tight">
+                                        Completed<br><span
+                                            class="text-[8px] font-bold text-blue-500">(On/Off/Prev)</span></th>
+                                    <th class="p-2 border-r border-slate-300 text-center">Prep.</th>
+                                    <th class="p-2 border-r border-slate-300 text-center text-amber-700">Unprep.</th>
+                                    <th class="p-2 border-r border-slate-300 text-center">Subm.</th>
+                                    <th class="p-2 border-r border-slate-300 text-center text-amber-700">Unsubm.</th>
+                                    <th class="p-2 text-center text-purple-700">Billed</th>
                                 </tr>
                             </thead>
                             <tbody id="summary-tbody" class="font-medium text-slate-800 align-middle">
-                                <tr><td colspan="11" class="p-12 text-center text-slate-500 font-bold border-b border-slate-300"><i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600 mx-auto"></i></td></tr>
+                                <tr>
+                                    <td colspan="13"
+                                        class="p-12 text-center text-slate-500 font-bold border-b border-slate-300"><i
+                                            data-lucide="loader-2"
+                                            class="w-6 h-6 animate-spin text-blue-600 mx-auto"></i></td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -128,33 +169,52 @@
             <!-- TABLE 2: Inspector-Level Summary Table -->
             <div id="section-inspector" class="hidden animate-fade-in">
                 <div class="flex items-center justify-between px-1 mb-2">
-                    <h3 class="text-xs font-black uppercase text-slate-700 tracking-wider">Inspector-Wise Summary (TPIA)</h3>
-                    <button onclick="window.toggleTableMobileView('inspector-table-container')" id="inspector-toggle-btn" class="sm:hidden px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-black border border-blue-200">
+                    <h3 class="text-xs font-black uppercase text-slate-700 tracking-wider">Inspector-Wise Summary (TPIA)
+                    </h3>
+                    <button onclick="window.toggleTableMobileView('inspector-table-container')"
+                        id="inspector-toggle-btn"
+                        class="sm:hidden px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-black border border-blue-200">
                         📱 Switch to Card View
                     </button>
                 </div>
-                <div id="inspector-table-container" class="bg-white border border-slate-400 rounded-xl shadow-sm flex flex-col overflow-hidden">
+                <div id="inspector-table-container"
+                    class="bg-white border border-slate-400 rounded-xl shadow-sm flex flex-col overflow-hidden">
                     <div class="overflow-x-auto w-full relative">
-                        <table class="w-full text-left text-xs border-collapse min-w-[1000px]">
-                            <thead class="sticky top-0 bg-slate-100 text-slate-900 uppercase text-[10px] font-black z-10 shadow-sm border-b-2 border-slate-400">
+                        <table class="w-full text-left text-[10px] border-collapse min-w-[1100px]">
+                            <thead
+                                class="sticky top-0 bg-slate-100 text-slate-900 uppercase text-[9px] font-black z-10 shadow-sm border-b-2 border-slate-400">
                                 <tr>
-                                    <th class="p-3 border-r border-slate-300 text-center">S. no.</th>
-                                    <th class="p-3 border-r border-slate-300 text-center">Inspecting Engineer TPIA</th>
-                                    <th class="p-3 border-r border-slate-300 text-center">Zone</th>
-                                    <th class="p-3 border-r border-slate-300 text-center">Circle</th>
-                                    <th class="p-3 border-r border-slate-300">DIVISION</th>
-                                    <th class="p-3 border-r border-slate-300 text-center">Total Calls</th>
-                                    <th class="p-3 border-r border-slate-300 text-center">Completed</th>
-                                    <th class="p-3 border-r border-slate-300 text-center">Prepared</th>
-                                    <th class="p-3 border-r border-slate-300 text-center text-amber-700">Unprepared</th>
-                                    <th class="p-3 border-r border-slate-300 text-center">Submitted</th>
-                                    <th class="p-3 border-r border-slate-300 text-center text-amber-700">Unsubmitted</th>
-                                    <th class="p-3 border-r border-slate-300 text-center">Billed</th>
-                                    <th class="p-3 text-center text-blue-700 bg-blue-50/50">Total Mandays</th>
+                                    <th class="p-2 border-r border-slate-300 text-center w-10">S.No</th>
+                                    <th class="p-2 border-r border-slate-300 text-center w-24">Inspector (TPIA)</th>
+                                    <th class="p-2 border-r border-slate-300 text-center">Zone</th>
+                                    <th class="p-2 border-r border-slate-300 text-center">Circle</th>
+                                    <th class="p-2 border-r border-slate-300">Division</th>
+                                    <th class="p-2 border-r border-slate-300 text-center font-black">Tot. Calls</th>
+                                    <th class="p-2 border-r border-slate-300 text-center font-black text-emerald-700">
+                                        Valid</th>
+                                    <th
+                                        class="p-2 border-r border-slate-300 text-center font-black text-rose-700 leading-tight">
+                                        Invalid<br><span
+                                            class="text-[8px] font-bold text-rose-500">(Canc/Rev/Dup/Oth)</span></th>
+                                    <th
+                                        class="p-2 border-r border-slate-300 text-center font-black text-blue-700 leading-tight">
+                                        Completed<br><span
+                                            class="text-[8px] font-bold text-blue-500">(On/Off/Prev)</span></th>
+                                    <th class="p-2 border-r border-slate-300 text-center">Prep.</th>
+                                    <th class="p-2 border-r border-slate-300 text-center text-amber-700">Unprep.</th>
+                                    <th class="p-2 border-r border-slate-300 text-center">Subm.</th>
+                                    <th class="p-2 border-r border-slate-300 text-center text-amber-700">Unsubm.</th>
+                                    <th class="p-2 border-r border-slate-300 text-center text-purple-700">Billed</th>
+                                    <th class="p-2 text-center text-blue-700 bg-blue-50/50">Mandays</th>
                                 </tr>
                             </thead>
                             <tbody id="inspector-summary-tbody" class="font-medium text-slate-800 align-middle">
-                                <tr><td colspan="13" class="p-12 text-center text-slate-500 font-bold border-b border-slate-300"><i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600 mx-auto"></i></td></tr>
+                                <tr>
+                                    <td colspan="15"
+                                        class="p-12 text-center text-slate-500 font-bold border-b border-slate-300"><i
+                                            data-lucide="loader-2"
+                                            class="w-6 h-6 animate-spin text-blue-600 mx-auto"></i></td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -167,17 +227,22 @@
             <!-- TABLE 3: Project Status Hierarchical Table -->
             <div id="section-project" class="hidden animate-fade-in">
                 <div class="flex items-center justify-between px-1 mb-2">
-                    <h3 class="text-xs font-black uppercase text-slate-700 tracking-wider">Project Status Summary (Part-A, Part-B, Part-C)</h3>
-                    <button onclick="window.toggleTableMobileView('project-status-table-container')" id="project-status-toggle-btn" class="sm:hidden px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-black border border-blue-200">
+                    <h3 class="text-xs font-black uppercase text-slate-700 tracking-wider">Project Status Summary
+                        (Part-A, Part-B, Part-C)</h3>
+                    <button onclick="window.toggleTableMobileView('project-status-table-container')"
+                        id="project-status-toggle-btn"
+                        class="sm:hidden px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-black border border-blue-200">
                         📱 Switch to Card View
                     </button>
                 </div>
-                <div id="project-status-table-container" class="bg-white border border-slate-400 rounded-xl shadow-sm flex flex-col overflow-hidden">
+                <div id="project-status-table-container"
+                    class="bg-white border border-slate-400 rounded-xl shadow-sm flex flex-col overflow-hidden">
                     <div class="overflow-x-auto w-full relative">
-                        <table class="w-full text-left text-xs border-collapse min-w-[850px]">
-                            <thead class="sticky top-0 bg-slate-100 text-slate-900 uppercase text-[10px] font-black z-10 shadow-sm border-b-2 border-slate-400">
+                        <table class="w-full text-left text-[10px] border-collapse min-w-[850px]">
+                            <thead
+                                class="sticky top-0 bg-slate-100 text-slate-900 uppercase text-[9px] font-black z-10 shadow-sm border-b-2 border-slate-400">
                                 <tr>
-                                    <th class="p-3 border-r border-slate-300 text-center">S. no.</th>
+                                    <th class="p-3 border-r border-slate-300 text-center w-10">S. no.</th>
                                     <th class="p-3 border-r border-slate-300 text-center">Zone</th>
                                     <th class="p-3 border-r border-slate-300 text-center">Circle</th>
                                     <th class="p-3 border-r border-slate-300">DIVISION</th>
@@ -188,7 +253,12 @@
                                 </tr>
                             </thead>
                             <tbody id="project-status-summary-tbody" class="font-medium text-slate-800 align-middle">
-                                <tr><td colspan="8" class="p-12 text-center text-slate-500 font-bold border-b border-slate-300"><i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600 mx-auto"></i></td></tr>
+                                <tr>
+                                    <td colspan="8"
+                                        class="p-12 text-center text-slate-500 font-bold border-b border-slate-300"><i
+                                            data-lucide="loader-2"
+                                            class="w-6 h-6 animate-spin text-blue-600 mx-auto"></i></td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -202,18 +272,27 @@
             <div id="section-call" class="hidden animate-fade-in">
                 <div class="flex items-center justify-between px-1 mb-2">
                     <h3 class="text-xs font-black uppercase text-slate-700 tracking-wider">Call Status Summary</h3>
-                    <button onclick="window.toggleTableMobileView('call-status-table-container')" id="call-status-toggle-btn" class="sm:hidden px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-black border border-blue-200">
+                    <button onclick="window.toggleTableMobileView('call-status-table-container')"
+                        id="call-status-toggle-btn"
+                        class="sm:hidden px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-black border border-blue-200">
                         📱 Switch to Card View
                     </button>
                 </div>
-                <div id="call-status-table-container" class="bg-white border border-slate-400 rounded-xl shadow-sm flex flex-col overflow-hidden">
+                <div id="call-status-table-container"
+                    class="bg-white border border-slate-400 rounded-xl shadow-sm flex flex-col overflow-hidden">
                     <div class="overflow-x-auto w-full relative">
-                        <table class="w-full text-left text-xs border-collapse min-w-[850px]">
-                            <thead id="call-status-thead" class="sticky top-0 bg-slate-100 text-slate-900 uppercase text-[10px] font-black z-10 shadow-sm border-b-2 border-slate-400">
+                        <table class="w-full text-left text-[10px] border-collapse min-w-[850px]">
+                            <thead id="call-status-thead"
+                                class="sticky top-0 bg-slate-100 text-slate-900 uppercase text-[9px] font-black z-10 shadow-sm border-b-2 border-slate-400">
                                 <!-- Dynamically generated headers -->
                             </thead>
                             <tbody id="call-status-summary-tbody" class="font-medium text-slate-800 align-middle">
-                                <tr><td colspan="8" class="p-12 text-center text-slate-500 font-bold border-b border-slate-300"><i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600 mx-auto"></i></td></tr>
+                                <tr>
+                                    <td colspan="8"
+                                        class="p-12 text-center text-slate-500 font-bold border-b border-slate-300"><i
+                                            data-lucide="loader-2"
+                                            class="w-6 h-6 animate-spin text-blue-600 mx-auto"></i></td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -225,14 +304,19 @@
 </div>
 
 <!-- MODAL POPUP -->
-<div id="summary-drilldown-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-3 sm:p-4">
-    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-fade-in">
+<div id="summary-drilldown-modal"
+    class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-3 sm:p-4">
+    <div
+        class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-fade-in">
         <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
             <div>
-                <h3 id="drilldown-modal-title" class="font-black text-xs sm:text-sm text-slate-900 uppercase">Filtered Inspection Calls</h3>
-                <p id="drilldown-modal-subtitle" class="text-[11px] sm:text-xs text-slate-500 font-bold">List of related calls matching criteria</p>
+                <h3 id="drilldown-modal-title" class="font-black text-xs sm:text-sm text-slate-900 uppercase">Filtered
+                    Inspection Calls</h3>
+                <p id="drilldown-modal-subtitle" class="text-[11px] sm:text-xs text-slate-500 font-bold">List of related
+                    calls matching criteria</p>
             </div>
-            <button onclick="window.closeDrilldownModal()" class="w-8 h-8 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-black flex items-center justify-center transition cursor-pointer">✕</button>
+            <button onclick="window.closeDrilldownModal()"
+                class="w-8 h-8 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-black flex items-center justify-center transition cursor-pointer">✕</button>
         </div>
         <div class="p-3 sm:p-5 overflow-y-auto flex-1 custom-scrollbar">
             <div id="drilldown-modal-content" class="overflow-x-auto"></div>
@@ -242,94 +326,264 @@
 
 <style>
     @media print {
-        .print\:hidden { display: none !important; }
-        .print\:block { display: block !important; }
-        body { background: white !important; -webkit-print-color-adjust: exact; }
-    }
-    
-    .pdf-export-active { 
-        background: white !important; 
-        width: 100% !important; 
-        min-width: 100% !important;
-        padding: 10px !important;
-        margin: 0 !important; 
-        position: relative !important;
-        left: 0 !important;
-        top: 0 !important;
-        transform: none !important;
-    }
-    
-    .pdf-export-active .overflow-x-auto { overflow: visible !important; width: 100% !important; display: block !important; }
-    .pdf-export-active .print\:hidden { display: none !important; }
-    .pdf-export-active .print\:block { display: block !important; }
-    
-    /* Forces page breaks between sections when ALL tables are exported */
-    .pdf-export-active .pdf-page-break { display: block !important; page-break-before: always; break-before: page; height: 1px; margin-top: 30px; }
-    
-    .pdf-export-active tr { page-break-inside: avoid !important; break-inside: avoid !important; }
-    
-    .pdf-export-active table { 
-        border-collapse: collapse !important; 
-        width: 100% !important; 
-        font-size: 11px !important; /* Increase/decrease this for PDF table font size */
-    }
-    
-    .pdf-export-active tr { border: none !important; }
-    .pdf-export-active th, .pdf-export-active td { 
-        border: 1px solid #cbd5e1 !important; 
-        padding: 6px !important; /* Spacing inside cells for PDF */
-    }
-    
-    .pdf-export-active td[rowspan] { background-color: #ffffff !important; z-index: 10; position: relative; }
+        .print\:hidden {
+            display: none !important;
+        }
 
-    .mobile-card-view table { display: block; width: 100%; }
-    .mobile-card-view thead { display: none; }
-    .mobile-card-view tbody { display: flex; flex-direction: column; gap: 8px; width: 100%; }
-    .mobile-card-view tr { display: flex; flex-direction: column; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 8px 12px; width: 100%; box-sizing: border-box; }
-    .mobile-card-view td { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border: none !important; text-align: right !important; font-size: 11px; }
-    .mobile-card-view td::before { font-weight: 900; text-transform: uppercase; font-size: 9px; color: #475569; content: attr(data-label); text-align: left; padding-right: 8px; }
+        .print\:block {
+            display: block !important;
+        }
+
+        body {
+            background: white !important;
+            -webkit-print-color-adjust: exact;
+        }
+    }
+
+    .pdf-export-active {
+        background: white !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .pdf-export-active .overflow-x-auto {
+        overflow: visible !important;
+        width: 100% !important;
+        display: block !important;
+    }
+
+    .pdf-export-active .print\:hidden {
+        display: none !important;
+    }
+
+    .pdf-export-active .print\:block {
+        display: block !important;
+    }
+
+    .pdf-export-active .pdf-page-break {
+        display: block !important;
+        page-break-before: always;
+        break-before: page;
+        height: 1px;
+        margin-top: 30px;
+    }
+
+    .pdf-export-active tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    /* 🚀 CRITICAL PDF EXPORT FIXES FOR CROPPING */
+    .pdf-export-active table,
+    .pdf-export-active .min-w-\[850px\],
+    .pdf-export-active .min-w-\[900px\],
+    .pdf-export-active .min-w-\[1000px\],
+    .pdf-export-active .min-w-\[1100px\],
+    .pdf-export-active .min-w-\[1250px\] {
+        border-collapse: collapse !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        font-size: 11px !important;
+        /* 👈 INCREASE THIS VALUE (e.g., 9px, 10px, 11px) */
+        table-layout: auto !important;
+    }
+
+    .pdf-export-active tr {
+        border: none !important;
+    }
+
+    .pdf-export-active th,
+    .pdf-export-active td {
+        border: 1px solid #cbd5e1 !important;
+        padding: 3px 2px !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+
+    /* Force any remaining tailwind nowrap classes to stack */
+    .pdf-export-active .whitespace-nowrap {
+        white-space: normal !important;
+    }
+
+    .pdf-export-active td[rowspan] {
+        background-color: #ffffff !important;
+        z-index: 10;
+        position: relative;
+    }
+
+    .mobile-card-view table {
+        display: block;
+        width: 100%;
+    }
+
+    .mobile-card-view thead {
+        display: none;
+    }
+
+    .mobile-card-view tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .mobile-card-view tr {
+        display: flex;
+        flex-direction: column;
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 8px 12px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .mobile-card-view td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 0;
+        border: none !important;
+        text-align: right !important;
+        font-size: 11px;
+    }
+
+    .mobile-card-view td::before {
+        font-weight: 900;
+        text-transform: uppercase;
+        font-size: 9px;
+        color: #475569;
+        content: attr(data-label);
+        text-align: left;
+        padding-right: 8px;
+    }
+
+
+    /* 1. TABLE COLUMN HEADERS */
+    .pdf-export-active th {
+        font-size: 11 px !important;
+        /* 👈 Increase this for larger column names */
+    }
+
+    /* 2. SUB-TEXT INSIDE HEADERS (e.g., "(Canc/Rev/Dup/Oth)") */
+    .pdf-export-active th span {
+        font-size: 10px !important;
+        /* 👈 Adjust this for the bracketed text */
+    }
+
+    /* 3. TABLE BODY DATA (The actual numbers/text) */
+    .pdf-export-active td {
+        font-size: 11px !important;
+        /* 👈 Adjust the main data rows here */
+    }
+
+    /* 4. MAIN REPORT TITLE & SECTION TITLES */
+    .pdf-export-active h1 {
+        font-size: 16px !important;
+        /* 👈 "INSPECTION SUMMARY REPORT" */
+    }
+
+    .pdf-export-active h3 {
+        font-size: 12px !important;
+        /* 👈 "Agency-Level Hierarchical Summary" */
+    }
 </style>
 
 <script>
-    window.API_URL = "https://script.google.com/macros/s/AKfycbxYMiv0JkwTGb0HAc-K6mBF5C9iXYdchW44GUmgmnLc7YHUDmJEU6LIyPtCFnF0H3l7/exec";
+    // 🚀 GLOBAL & USER STATE
     const activeSession = localStorage.getItem('portal_user');
     window.currentUser = activeSession ? JSON.parse(activeSession) : { role: "admin", name: "Admin", agency: "All" };
 
-    window.currentAgency = "Equalitas";
-    window.cachedCallsData = []; 
-    window.isFetching = false;
-    window.drilldownCache = {}; 
-    window.activeSummaryTab = 'agency'; 
-    const CACHE_EXPIRATION_MS = 10 * 60 * 1000; 
+    window.allowedAgencies = window.AVAILABLE_AGENCIES;
+    if (window.currentUser.role === 'coordinator' && Array.isArray(window.currentUser.agency)) {
+        window.allowedAgencies = window.AVAILABLE_AGENCIES.filter(agency => window.currentUser.agency.includes(agency));
+    } else if (window.currentUser.role === 'user' && window.currentUser.agency && window.currentUser.agency !== "All") {
+        window.allowedAgencies = [window.currentUser.agency];
+    }
 
-    // ⚡ FIX: Super resilient row extractor that ignores ?, spaces, and case differences
-    window.getRowValue = function(row, keyword) {
+    const defaultAgency = (window.allowedAgencies && window.allowedAgencies.length > 0) ? window.allowedAgencies[0] : "Equalitas";
+
+    window.currentAgency = defaultAgency;
+    window.cachedCallsData = [];
+    window.isFetching = false;
+    window.drilldownCache = {};
+    window.activeSummaryTab = 'agency';
+    const CACHE_EXPIRATION_MS = 10 * 60 * 1000;
+
+    window.renderSummaryAgencyTabs = function () {
+        const container = document.getElementById('summary-agency-tabs-container');
+        if (!container || !window.allowedAgencies) return;
+
+        let html = '';
+        window.allowedAgencies.forEach(agency => {
+            html += `<button onclick="switchSummaryAgency('${agency}')" id="sum-tab-${agency}" class="flex-1 sm:flex-none px-5 sm:px-6 py-2 rounded-lg text-xs font-black transition text-slate-500 hover:text-slate-800 hover:bg-slate-200 whitespace-nowrap cursor-pointer">
+                        ${agency}
+                     </button>`;
+        });
+        container.innerHTML = html;
+    };
+
+    window.switchSummaryAgency = async function (agencyName) {
+        if (window.currentAgency === agencyName) return;
+        window.currentAgency = agencyName;
+        window.cachedCallsData = [];
+
+        const activeClass = "flex-1 sm:flex-none px-5 sm:px-6 py-2 rounded-lg text-xs font-black transition bg-blue-600 text-white shadow-md whitespace-nowrap";
+        const inactiveClass = "flex-1 sm:flex-none px-5 sm:px-6 py-2 rounded-lg text-xs font-black transition text-slate-500 hover:text-slate-800 hover:bg-slate-200 whitespace-nowrap cursor-pointer";
+
+        window.allowedAgencies.forEach(agency => {
+            const btn = document.getElementById(`sum-tab-${agency}`);
+            if (btn) {
+                btn.className = (agency === agencyName) ? activeClass : inactiveClass;
+            }
+        });
+
+        await window.renderSummaryPortal();
+    };
+
+    window.getRowValue = function (row, keyword) {
         if (!row) return null;
         let cleanKeyword = keyword.toLowerCase().replace(/\?/g, '').trim();
-        
-        // Exact match first
         let exactKey = Object.keys(row).find(k => k.toLowerCase().replace(/\?/g, '').trim() === cleanKeyword);
         if (exactKey) return row[exactKey];
-        
-        // Fallback to partial match
         let includesKey = Object.keys(row).find(k => k.toLowerCase().replace(/\?/g, '').includes(cleanKeyword));
         return includesKey ? row[includesKey] : null;
     };
 
-    window.extractLatestDate = function(rawStr) {
-        if (!rawStr || String(rawStr).trim() === '-' || String(rawStr).trim().toLowerCase() === 'none' || String(rawStr).trim() === '') return null;
+    window.extractLatestDate = function (rawStr) {
+        if (!rawStr) return null;
+        const str = String(rawStr).trim();
+        if (str === '-' || str.toLowerCase() === 'none' || str === '') return null;
+
+        // Regex safely captures DD/MM/YYYY, DD-MM-YYYY, and DD.MM.YYYY formats
         const regex = /(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})/g;
+
         let match;
         let latestDate = null;
-        while ((match = regex.exec(String(rawStr))) !== null) {
+
+        // Loop through every date found in the text (e.g., "24-09-2026 to 26-09-2026")
+        while ((match = regex.exec(str)) !== null) {
             let d = parseInt(match[1], 10);
-            let m = parseInt(match[2], 10) - 1;
+            let m = parseInt(match[2], 10) - 1; // JavaScript months are 0-indexed (8 = September)
             let y = parseInt(match[3], 10);
+
+            // Convert 2-digit years to 4-digit (e.g., '26' becomes '2026')
             if (y < 100) y += 2000;
+
             let currentDate = new Date(y, m, d);
-            if (!latestDate || currentDate > latestDate) latestDate = currentDate;
+
+            // Ensure it's a valid date, then keep the chronologically highest (last) date
+            if (!isNaN(currentDate.getTime())) {
+                if (!latestDate || currentDate > latestDate) {
+                    latestDate = currentDate;
+                }
+            }
         }
-        return latestDate;
+
+        return latestDate; // Returns the final date of the sequence for the month filter
     };
 
     function getYearMonth(rawString) {
@@ -338,34 +592,72 @@
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     }
 
-    function isCompletedStatus(val) {
+    // 🚀 NEW CLASSIFICATION HELPERS
+    window.getCallStatus = function (row) {
+        if (!row) return 'Pending';
+        const s = String(window.getRowValue(row, 'Call Status') || '').trim();
+        if (s === '' || s.toLowerCase() === 'null') return 'Pending';
+        // Capitalize the first letter for clean display in dynamic tabs
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    };
+
+    window.isCompletedStatus = function (val) {
         if (!val) return false;
         const str = String(val).trim().toLowerCase();
         return str !== "" && str !== "pending";
-    }
-    
-    // ⚡ FIX: Bulletproof Logic Rules
-    window.isCallCompleted = function(row) {
-        if (!row) return false;
-        const inspCompleted = String(window.getRowValue(row, 'Inspection Completed') || '').trim().toLowerCase();
-        const inspLog = String(window.getRowValue(row, 'Inspection Completion Log') || '').trim().toLowerCase();
-        const callStatus = String(window.getRowValue(row, 'Call Status') || '').trim().toLowerCase();
-        
-        return inspCompleted.startsWith('yes') && 
-               inspLog !== "" && inspLog !== "pending" && 
-               callStatus === 'completed';
     };
 
-    window.isCallPrepared = function(row) {
+    window.isInvalidCall = function (row) {
+        const s = window.getCallStatus(row).toLowerCase();
+        return ['cancelled', 'revised', 'revisied', 'duplicate', 'duplication', 'completed by other agency'].includes(s);
+    };
+
+    window.isCancelledCall = function (row) {
+        return window.getCallStatus(row).toLowerCase() === 'cancelled';
+    };
+
+    window.isRevisedCall = function (row) {
+        const s = window.getCallStatus(row).toLowerCase();
+        return s === 'revised' || s === 'revisied';
+    };
+
+    window.isDuplicateCall = function (row) {
+        const s = window.getCallStatus(row).toLowerCase();
+        return s === 'duplicate' || s === 'duplication';
+    };
+
+    window.isOtherAgencyCall = function (row) {
+        return window.getCallStatus(row).toLowerCase() === 'completed by other agency';
+    };
+
+    window.isCallCompleted = function (row) {
+        if (!row) return false;
+        const callStatus = window.getCallStatus(row).toLowerCase();
+        return ['completed', 'completed offline', 'previously completed offline'].includes(callStatus);
+    };
+
+    window.isCompOnlineCall = function (row) {
+        return window.isCallCompleted(row) && window.getCallStatus(row).toLowerCase() === 'completed';
+    };
+
+    window.isCompOfflineCall = function (row) {
+        return window.isCallCompleted(row) && window.getCallStatus(row).toLowerCase() === 'completed offline';
+    };
+
+    window.isPrevOfflineCall = function (row) {
+        return window.isCallCompleted(row) && window.getCallStatus(row).toLowerCase() === 'previously completed offline';
+    };
+
+    window.isCallPrepared = function (row) {
         if (!row) return false;
         const val = String(window.getRowValue(row, 'Report Prepared') || '').trim().toLowerCase();
         return val !== "" && val !== "pending";
     };
 
-    window.isCallSubmitted = function(row) {
+    window.isCallSubmitted = function (row) {
         if (!row) return false;
         const subDate = window.getRowValue(row, 'Report Submission Date');
-        return subDate && window.extractLatestDate(subDate) !== null; 
+        return subDate && window.extractLatestDate(subDate) !== null;
     };
 
     function storeDrilldown(arr) {
@@ -374,34 +666,23 @@
         return id;
     }
 
-    // ⚡ NEW: Dynamic Color Palette Generator for ANY Call Mode
-    window.getDynamicBadgeStyle = function(text) {
+    // Dynamic Color Palette
+    window.getDynamicBadgeStyle = function (text) {
         if (!text || text === 'Unassigned') return 'text-slate-500 bg-slate-50 border-slate-200';
-        
         const str = text.toLowerCase();
         if (str === 'online') return 'text-emerald-700 bg-emerald-50 border-emerald-200';
         if (str === 'offline') return 'text-slate-700 bg-slate-100 border-slate-300';
-        
-        // If a new mode is added, automatically assign it a beautiful color based on its name
         const palettes = [
-            'text-blue-700 bg-blue-50 border-blue-200',
-            'text-purple-700 bg-purple-50 border-purple-200',
-            'text-amber-700 bg-amber-50 border-amber-200',
-            'text-rose-700 bg-rose-50 border-rose-200',
-            'text-cyan-700 bg-cyan-50 border-cyan-200',
-            'text-indigo-700 bg-indigo-50 border-indigo-200',
+            'text-blue-700 bg-blue-50 border-blue-200', 'text-purple-700 bg-purple-50 border-purple-200',
+            'text-amber-700 bg-amber-50 border-amber-200', 'text-rose-700 bg-rose-50 border-rose-200',
+            'text-cyan-700 bg-cyan-50 border-cyan-200', 'text-indigo-700 bg-indigo-50 border-indigo-200',
             'text-orange-700 bg-orange-50 border-orange-200'
         ];
-        
-        // Generate a consistent hash from the string so the same mode always gets the same color
-        let hash = 0;
-        for (let i = 0; i < text.length; i++) {
-            hash = text.charCodeAt(i) + ((hash << 5) - hash);
-        }
+        let hash = 0; for (let i = 0; i < text.length; i++) hash = text.charCodeAt(i) + ((hash << 5) - hash);
         return palettes[Math.abs(hash) % palettes.length];
     };
 
-    window.switchSummaryTable = function(tabId) {
+    window.switchSummaryTable = function (tabId) {
         window.activeSummaryTab = tabId;
         ['agency', 'inspector', 'project', 'call'].forEach(t => {
             const btn = document.getElementById(`tab-btn-${t}`);
@@ -417,10 +698,10 @@
         window.renderSummaryPortal();
     };
 
-    window.downloadPDFReport = function() {
+    window.downloadPDFReport = function () {
         if (!confirm(`Are you sure you want to download the SUMMARY report as a PDF?\n\n(Note: This will download ONLY the currently active tab)`)) return;
         document.body.style.cursor = 'wait';
-        
+
         if (typeof window.html2pdf === 'undefined') {
             const script = document.createElement('script');
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
@@ -435,31 +716,30 @@
     function executePDFGeneration() {
         const element = document.getElementById('summary-printable-content');
         const filename = `${window.currentAgency}_${window.activeSummaryTab}_summary_${new Date().toISOString().split('T')[0]}.pdf`;
-        
+
         element.classList.add('pdf-export-active');
-        
         const opt = {
-            margin:       [0.4, 0.2, 0.3, 0.2], 
-            filename:     filename,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, scrollX: 0, scrollY: 0, x: 0, windowWidth: element.scrollWidth },
-            jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' },
-            pagebreak:    { mode: ['css', 'legacy'] }
+            margin: [0.3, 0.2, 0.3, 0.2],
+            filename: filename,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'in', format: 'a2', orientation: 'landscape' }, // 👈 CHANGE 'a3' TO 'a2'
+            pagebreak: { mode: ['css', 'legacy'] }
         };
 
-        window.html2pdf().set(opt).from(element).save().then(() => { 
+        window.html2pdf().set(opt).from(element).save().then(() => {
             element.classList.remove('pdf-export-active');
-            document.body.style.cursor = 'default'; 
+            document.body.style.cursor = 'default';
         }).catch(err => {
             element.classList.remove('pdf-export-active');
-            document.body.style.cursor = 'default'; 
+            document.body.style.cursor = 'default';
         });
     }
 
-    window.downloadAllPDFReport = function() {
+    window.downloadAllPDFReport = function () {
         if (!confirm(`Are you sure you want to download ALL summary tables in one PDF?\n\n(Note: This may take a few moments to generate all pages.)`)) return;
         document.body.style.cursor = 'wait';
-        
+
         if (typeof window.html2pdf === 'undefined') {
             const script = document.createElement('script');
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
@@ -474,25 +754,21 @@
     function executeAllPDFGeneration() {
         const element = document.getElementById('summary-printable-content');
         const filename = `${window.currentAgency}_Full_Summary_Report_${new Date().toISOString().split('T')[0]}.pdf`;
-        
+
         const sections = ['agency', 'inspector', 'project', 'call'];
         sections.forEach(t => {
             const section = document.getElementById(`section-${t}`);
-            if (section) {
-                section.classList.remove('hidden');
-                section.classList.add('block');
-            }
+            if (section) { section.classList.remove('hidden'); section.classList.add('block'); }
         });
 
         element.classList.add('pdf-export-active');
-        
         const opt = {
-            margin:       [0.4, 0.2, 0.3, 0.2],
-            filename:     filename,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, scrollX: 0, scrollY: 0, x: 0, windowWidth: element.scrollWidth },
-            jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' },
-            pagebreak:    { mode: ['css', 'legacy'] }
+            margin: [0.3, 0.2, 0.3, 0.2],
+            filename: filename,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' },
+            pagebreak: { mode: ['css', 'legacy'] }
         };
 
         const restoreView = () => {
@@ -500,31 +776,25 @@
             sections.forEach(t => {
                 const section = document.getElementById(`section-${t}`);
                 if (section) {
-                    if (t === window.activeSummaryTab) {
-                        section.classList.remove('hidden');
-                        section.classList.add('block');
-                    } else {
-                        section.classList.add('hidden');
-                        section.classList.remove('block');
-                    }
+                    if (t === window.activeSummaryTab) { section.classList.remove('hidden'); section.classList.add('block'); }
+                    else { section.classList.add('hidden'); section.classList.remove('block'); }
                 }
             });
             document.body.style.cursor = 'default';
         };
 
         window.html2pdf().set(opt).from(element).save().then(restoreView).catch(err => {
-            console.error(err);
-            restoreView();
+            console.error(err); restoreView();
         });
     }
 
-    window.showToast = function(message, type = "success") {
+    window.showToast = function (message, type = "success") {
         const toast = document.createElement('div');
         const colorClass = type === "success" ? "bg-emerald-600" : "bg-rose-600";
         toast.className = `fixed bottom-6 right-6 px-5 py-3.5 rounded-2xl shadow-2xl font-black text-xs text-white z-[200] transition-opacity duration-300 flex items-center gap-3 ${colorClass}`;
         toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i> ${message}`;
         document.body.appendChild(toast);
-        if(window.lucide) lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
         setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
     };
 
@@ -534,7 +804,9 @@
     }
 
     async function fetchAgencyData(agencyName, forceRefresh = false) {
+        if (!window.API_URL) return false;
         if (window.isFetching) return false;
+
         const cacheKey = `agencyData_${agencyName}`;
         const cacheTimestampKey = `agencyData_${agencyName}_timestamp`;
 
@@ -550,11 +822,11 @@
         window.isFetching = true;
         try {
             const payload = { action: "getSummaryPortalCalls", user: window.currentUser, agency: agencyName };
-            const response = await fetch(window.API_URL, { 
-                method: 'POST', redirect: 'follow', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } 
+            const response = await fetch(window.API_URL, {
+                method: 'POST', redirect: 'follow', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }
             });
             const result = await response.json();
-            
+
             if (result.status === "success" || result.status === true) {
                 window.cachedCallsData = result.data || [];
                 sessionStorage.setItem(cacheKey, JSON.stringify(window.cachedCallsData));
@@ -571,7 +843,7 @@
         }
     }
 
-    window.toggleTableMobileView = function(containerId) {
+    window.toggleTableMobileView = function (containerId) {
         const container = document.getElementById(containerId);
         let btnId = 'agency-toggle-btn';
         if (containerId === 'inspector-table-container') btnId = 'inspector-toggle-btn';
@@ -581,24 +853,24 @@
         const btn = document.getElementById(btnId);
         if (!container) return;
         container.classList.toggle('mobile-card-view');
-        if(btn) btn.textContent = container.classList.contains('mobile-card-view') ? "📊 Switch to Table View" : "📱 Switch to Card View";
+        if (btn) btn.textContent = container.classList.contains('mobile-card-view') ? "📊 Switch to Table View" : "📱 Switch to Card View";
     };
 
-    window.syncLivePortalData = async function(event) {
+    window.syncLivePortalData = async function (event) {
         const btn = event ? event.currentTarget : null;
         const originalHTML = btn ? btn.innerHTML : "";
         if (btn) { btn.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> Syncing...`; btn.disabled = true; }
 
-        sessionStorage.clear(); 
+        sessionStorage.clear();
         window.isFetching = false;
         await fetchAgencyData(window.currentAgency, true);
-        await window.renderSummaryPortal(true); 
+        await window.renderSummaryPortal(true);
         window.showToast("Data successfully synchronized!", "success");
         if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
         if (window.lucide) window.lucide.createIcons();
     };
 
-    window.resetPortalFilters = function() {
+    window.resetPortalFilters = function () {
         localStorage.removeItem(`summary_filter_type_${window.currentAgency}`);
         localStorage.removeItem(`summary_filter_value_${window.currentAgency}`);
         document.getElementById('filter-type').selectedIndex = 0;
@@ -606,20 +878,20 @@
         window.renderSummaryPortal();
     };
 
-    window.handleFilterTypeChange = function() {
+    window.handleFilterTypeChange = function () {
         const typeEl = document.getElementById('filter-type');
         if (typeEl) localStorage.setItem(`summary_filter_type_${window.currentAgency}`, typeEl.value);
-        window.refreshFilterDropdown(false); 
-        window.renderSummaryPortal(); 
+        window.refreshFilterDropdown(false);
+        window.renderSummaryPortal();
     };
 
-    window.handleFilterValueChange = function() {
+    window.handleFilterValueChange = function () {
         const valEl = document.getElementById('filter-value');
         if (valEl) localStorage.setItem(`summary_filter_value_${window.currentAgency}`, valEl.value);
         window.renderSummaryPortal();
     };
 
-    window.refreshFilterDropdown = function(preserveStored = false) {
+    window.refreshFilterDropdown = function (preserveStored = false) {
         const typeEl = document.getElementById('filter-type');
         const valueEl = document.getElementById('filter-value');
         if (!typeEl || !valueEl) return;
@@ -630,7 +902,7 @@
 
         window.cachedCallsData.forEach(row => {
             const rawValue = window.getRowValue(row, targetColumn);
-            if (isCompletedStatus(rawValue)) {
+            if (window.isCompletedStatus(rawValue)) {
                 const ym = getYearMonth(rawValue);
                 if (ym) uniqueMonths.add(ym);
             }
@@ -648,7 +920,7 @@
         let storedVal = localStorage.getItem(`summary_filter_value_${window.currentAgency}`);
         let valToSet = (preserveStored && storedVal && sortedMonths.includes(storedVal)) ? storedVal : currentSelection;
 
-        if (sortedMonths.includes(valToSet)) { valueEl.value = valToSet; } 
+        if (sortedMonths.includes(valToSet)) { valueEl.value = valToSet; }
         else { valueEl.value = "ALL"; }
         localStorage.setItem(`summary_filter_value_${window.currentAgency}`, valueEl.value);
     };
@@ -658,7 +930,7 @@
         const valueEl = document.getElementById('filter-value');
         const statusTextSpan = document.getElementById('filter-status-text');
         if (!typeEl || !valueEl || !statusTextSpan) return;
-        
+
         let labelPrefix = "Date for Call Received";
         const valType = typeEl.value;
         if (valType === "Date of Inspection") labelPrefix = "Date for Inspection";
@@ -670,8 +942,9 @@
         statusTextSpan.textContent = `${labelPrefix} — ${selectedValueText}`;
     }
 
-    window.renderSummaryPortal = async function(forceRefresh = false) {
-        window.drilldownCache = {}; 
+    // 🚀 MASTER RENDER FUNCTION
+    window.renderSummaryPortal = async function (forceRefresh = false) {
+        window.drilldownCache = {};
 
         if (window.cachedCallsData.length > 0 && !forceRefresh) {
             const storedType = localStorage.getItem(`summary_filter_type_${window.currentAgency}`);
@@ -687,9 +960,9 @@
 
         ['summary-tbody', 'inspector-summary-tbody', 'project-status-summary-tbody', 'call-status-summary-tbody'].forEach(id => {
             const tbody = document.getElementById(id);
-            if (tbody) tbody.innerHTML = `<tr><td colspan="15" class="p-12 text-center text-slate-500 font-bold border-b border-slate-300"><i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600 mx-auto"></i></td></tr>`;
+            if (tbody) tbody.innerHTML = `<tr><td colspan="22" class="p-12 text-center text-slate-500 font-bold border-b border-slate-300"><i data-lucide="loader-2" class="w-6 h-6 animate-spin text-blue-600 mx-auto"></i></td></tr>`;
         });
-        if(window.lucide) window.lucide.createIcons();
+        if (window.lucide) window.lucide.createIcons();
 
         if (window.cachedCallsData.length === 0 || forceRefresh) {
             const success = await fetchAgencyData(window.currentAgency, forceRefresh);
@@ -700,7 +973,7 @@
             if (storedType && typeEl && Array.from(typeEl.options).some(opt => opt.value === storedType)) {
                 typeEl.value = storedType;
             }
-            window.refreshFilterDropdown(true); 
+            window.refreshFilterDropdown(true);
         } else {
             window.refreshFilterDropdown(true);
         }
@@ -711,68 +984,118 @@
         const data = window.cachedCallsData;
 
         const callStatusesSet = new Set();
-        data.forEach(row => { const cs = String(window.getRowValue(row, 'Call Status') || '').trim(); if (cs) callStatusesSet.add(cs); });
+        data.forEach(row => { const cs = window.getCallStatus(row); callStatusesSet.add(cs); });
         const dynamicCallStatuses = Array.from(callStatusesSet).sort();
 
         let theadHtml = `<tr>
-            <th class="p-3 border-r border-slate-300 text-center">S. no.</th><th class="p-3 border-r border-slate-300 text-center">Zone</th>
-            <th class="p-3 border-r border-slate-300 text-center">Circle</th><th class="p-3 border-r border-slate-300">DIVISION</th>
-            <th class="p-3 border-r border-slate-300 text-center text-blue-700 bg-blue-50/50">CALL MODE</th>`;
+            <th class="p-3 border-r border-slate-300 text-center col-sno">S. no.</th><th class="p-3 border-r border-slate-300 text-center col-zone">Zone</th>
+            <th class="p-3 border-r border-slate-300 text-center col-circle">Circle</th><th class="p-3 border-r border-slate-300 col-division">DIVISION</th>
+            <th class="p-3 border-r border-slate-300 text-center text-blue-700 bg-blue-50/50 col-mode">CALL MODE</th>`;
         dynamicCallStatuses.forEach(st => { theadHtml += `<th class="p-3 border-r border-slate-300 text-center text-slate-700">${st}</th>`; });
         theadHtml += `<th class="p-3 text-center">Total Calls</th></tr>`;
         document.getElementById('call-status-thead').innerHTML = theadHtml;
 
         requestAnimationFrame(() => {
-            const agencyGrouped = {}; const inspectorGrouped = {}; const inspectorMandaysSum = {}; 
+            const agencyGrouped = {}; const inspectorGrouped = {}; const inspectorMandaysSum = {};
             const projectStatusGrouped = {}; const callStatusGrouped = {};
+
+            const initBucket = () => ({
+                total: 0, valid: 0, invalid: 0, cancelled: 0, revised: 0, duplicate: 0, otherAgency: 0,
+                completed: 0, compOnline: 0, compOffline: 0, prevOffline: 0,
+                prepared: 0, unprepared: 0, submitted: 0, unsubmitted: 0, billed: 0, rows: []
+            });
 
             data.forEach(row => {
                 if (monthFilter !== "ALL") {
                     const rawVal = window.getRowValue(row, targetColumn);
-                    if (!isCompletedStatus(rawVal) || getYearMonth(rawVal) !== monthFilter) return; 
+                    if (!window.isCompletedStatus(rawVal) || getYearMonth(rawVal) !== monthFilter) return;
                 }
-                
+
                 const z = String(window.getRowValue(row, 'Zone') || '').trim() || 'Unassigned Zone';
                 const c = String(window.getRowValue(row, 'Circle') || '').trim() || 'Unassigned Circle';
                 const d = String(window.getRowValue(row, 'Division') || '').trim() || 'Unassigned Division';
                 const inspector = String(window.getRowValue(row, 'Inspecting Engineer TPIA') || '').trim() || 'Unassigned Inspector';
-                
+
+                // --- AGENCY LOGIC ---
                 if (!agencyGrouped[z]) agencyGrouped[z] = {};
                 if (!agencyGrouped[z][c]) agencyGrouped[z][c] = {};
-                if (!agencyGrouped[z][c][d]) agencyGrouped[z][c][d] = { total: 0, completed: 0, prepared: 0, unprepared: 0, submitted: 0, unsubmitted: 0, billed: 0, rows: [] };
+                if (!agencyGrouped[z][c][d]) agencyGrouped[z][c][d] = initBucket();
                 const agBucket = agencyGrouped[z][c][d];
+
                 agBucket.total++;
-                
-                if (window.isCallCompleted(row)) agBucket.completed++;
-                if (window.isCallPrepared(row)) agBucket.prepared++;
-                if (window.isCallSubmitted(row)) agBucket.submitted++;
-                if (isCompletedStatus(window.getRowValue(row, 'Billed to DISCOM Date'))) agBucket.billed++;
-                
-                agBucket.unprepared = Math.max(0, agBucket.completed - agBucket.prepared);
-                agBucket.unsubmitted = Math.max(0, agBucket.prepared - agBucket.submitted);
                 agBucket.rows.push(row);
 
+                if (window.isInvalidCall(row)) agBucket.invalid++;
+                if (window.isCancelledCall(row)) agBucket.cancelled++;
+                if (window.isRevisedCall(row)) agBucket.revised++;
+                if (window.isDuplicateCall(row)) agBucket.duplicate++;
+                if (window.isOtherAgencyCall(row)) agBucket.otherAgency++;
+
+                agBucket.valid = agBucket.total - agBucket.invalid;
+
+                if (window.isCallCompleted(row)) {
+                    agBucket.completed++;
+                    if (window.isCompOfflineCall(row)) agBucket.compOffline++;
+                    else if (window.isPrevOfflineCall(row)) agBucket.prevOffline++;
+                    else agBucket.compOnline++;
+                }
+
+                if (window.isCallPrepared(row)) agBucket.prepared++;
+                if (window.isCallSubmitted(row)) agBucket.submitted++;
+                if (window.isCompletedStatus(window.getRowValue(row, 'Billed to DISCOM Date'))) agBucket.billed++;
+
+                agBucket.unprepared = Math.max(0, agBucket.completed - agBucket.prepared);
+                agBucket.unsubmitted = Math.max(0, agBucket.prepared - agBucket.submitted);
+
+                // --- INSPECTOR LOGIC ---
                 const mandaysStr = String(window.getRowValue(row, 'Calculated Mandays') || '');
                 const match = mandaysStr.match(/total\s*[:=]\s*([0-9.]+)/i);
                 const callMandays = match ? parseFloat(match[1]) || 0 : 0;
-                
-                inspectorMandaysSum[inspector] = (inspectorMandaysSum[inspector] || 0) + callMandays;
+
+                const isCompletedCall = window.isCallCompleted(row);
+                const dateOfInspection = String(window.getRowValue(row, 'Date of Inspection') || '').trim();
+                const hasDateOfInspection = dateOfInspection !== '' && dateOfInspection.toLowerCase() !== 'pending' && dateOfInspection !== '-';
+
+                // Sum mandays only if completed AND has valid date of inspection
+                if (isCompletedCall && hasDateOfInspection) {
+                    inspectorMandaysSum[inspector] = (inspectorMandaysSum[inspector] || 0) + callMandays;
+                } else {
+                    // Ensure inspector exists in the tracking object, but add 0 mandays
+                    inspectorMandaysSum[inspector] = inspectorMandaysSum[inspector] || 0;
+                }
+
                 if (!inspectorGrouped[inspector]) inspectorGrouped[inspector] = {};
                 if (!inspectorGrouped[inspector][z]) inspectorGrouped[inspector][z] = {};
                 if (!inspectorGrouped[inspector][z][c]) inspectorGrouped[inspector][z][c] = {};
-                if (!inspectorGrouped[inspector][z][c][d]) inspectorGrouped[inspector][z][c][d] = { total: 0, completed: 0, prepared: 0, unprepared: 0, submitted: 0, unsubmitted: 0, billed: 0, rows: [] };
+                if (!inspectorGrouped[inspector][z][c][d]) inspectorGrouped[inspector][z][c][d] = initBucket();
                 const inBucket = inspectorGrouped[inspector][z][c][d];
-                inBucket.total++;
 
-                if (window.isCallCompleted(row)) inBucket.completed++;
-                if (window.isCallPrepared(row)) inBucket.prepared++;
-                if (window.isCallSubmitted(row)) inBucket.submitted++;
-                if (isCompletedStatus(window.getRowValue(row, 'Billed to DISCOM Date'))) inBucket.billed++;
-                
-                inBucket.unprepared = Math.max(0, inBucket.completed - inBucket.prepared);
-                inBucket.unsubmitted = Math.max(0, inBucket.prepared - inBucket.submitted);
+                inBucket.total++;
                 inBucket.rows.push(row);
 
+                if (window.isInvalidCall(row)) inBucket.invalid++;
+                if (window.isCancelledCall(row)) inBucket.cancelled++;
+                if (window.isRevisedCall(row)) inBucket.revised++;
+                if (window.isDuplicateCall(row)) inBucket.duplicate++;
+                if (window.isOtherAgencyCall(row)) inBucket.otherAgency++;
+
+                inBucket.valid = inBucket.total - inBucket.invalid;
+
+                if (window.isCallCompleted(row)) {
+                    inBucket.completed++;
+                    if (window.isCompOfflineCall(row)) inBucket.compOffline++;
+                    else if (window.isPrevOfflineCall(row)) inBucket.prevOffline++;
+                    else inBucket.compOnline++;
+                }
+
+                if (window.isCallPrepared(row)) inBucket.prepared++;
+                if (window.isCallSubmitted(row)) inBucket.submitted++;
+                if (window.isCompletedStatus(window.getRowValue(row, 'Billed to DISCOM Date'))) inBucket.billed++;
+
+                inBucket.unprepared = Math.max(0, inBucket.completed - inBucket.prepared);
+                inBucket.unsubmitted = Math.max(0, inBucket.prepared - inBucket.submitted);
+
+                // --- PROJECT LOGIC ---
                 const pStatus = String(window.getRowValue(row, 'Project Status') || '').trim().toUpperCase();
                 if (!projectStatusGrouped[z]) projectStatusGrouped[z] = {};
                 if (!projectStatusGrouped[z][c]) projectStatusGrouped[z][c] = {};
@@ -784,9 +1107,10 @@
                 else if (pStatus.includes('PART-B')) { psBucket.partB++; psBucket.rowsB.push(row); }
                 else if (pStatus.includes('PART-C')) { psBucket.partC++; psBucket.rowsC.push(row); }
 
-                const callStatusVal = String(window.getRowValue(row, 'Call Status') || '').trim();
+                // --- CALL STATUS LOGIC ---
+                const callStatusVal = window.getCallStatus(row);
                 const callModeVal = String(window.getRowValue(row, 'Call Mode') || 'Unassigned').trim();
-                const d_mode = d + `|#|` + callModeVal; 
+                const d_mode = d + `|#|` + callModeVal;
                 if (!callStatusGrouped[z]) callStatusGrouped[z] = {};
                 if (!callStatusGrouped[z][c]) callStatusGrouped[z][c] = {};
                 if (!callStatusGrouped[z][c][d_mode]) {
@@ -802,25 +1126,49 @@
                     csBucket[`rows_${callStatusVal}`].push(row);
                 }
             });
-            
-            renderHierarchicalTableWithTotals(document.getElementById('summary-tbody'), agencyGrouped, window.currentAgency);
+
+            renderHierarchicalTableWithTotals(document.getElementById('summary-tbody'), agencyGrouped);
             renderInspectorTableWithTotals(document.getElementById('inspector-summary-tbody'), inspectorGrouped, inspectorMandaysSum);
-            renderProjectStatusHierarchicalTableWithTotals(document.getElementById('project-status-summary-tbody'), projectStatusGrouped, window.currentAgency);
+            renderProjectStatusHierarchicalTableWithTotals(document.getElementById('project-status-summary-tbody'), projectStatusGrouped);
             renderCallStatusHierarchicalTableWithTotals(document.getElementById('call-status-summary-tbody'), callStatusGrouped, dynamicCallStatuses);
         });
     };
 
-    function renderHierarchicalTableWithTotals(tbody, groupedData, primaryLabel) {
-        const flatRows = []; let sno = 1; let grandTotals = { total: 0, completed: 0, prepared: 0, unprepared: 0, submitted: 0, unsubmitted: 0, billed: 0, rows: [] };
+    // 🚀 NEW HELPER TO AVOID CODE DUPLICATION
+    const buildCells = (m, r, prefix, isGrandTotal = false) => {
+        const mainColor = isGrandTotal ? 'text-blue-900' : 'text-blue-800';
+        return `
+            <td class="p-2 border-r border-b border-slate-300 text-center font-bold ${mainColor} cursor-pointer hover:underline" onclick="window.openDrilldownModal('${prefix} - Total Calls', '${storeDrilldown(r)}')">${m.total}</td>
+            <td class="p-2 border-r border-b border-slate-300 text-center font-bold text-emerald-700 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${prefix} - Valid', '${storeDrilldown(r.filter(x => !window.isInvalidCall(x)))}')">${m.valid}</td>
+            <td class="p-2 border-r border-b border-slate-300 text-center font-bold text-rose-700 cursor-pointer hover:bg-rose-50 col-invalid" onclick="window.openDrilldownModal('${prefix} - Invalid', '${storeDrilldown(r.filter(x => window.isInvalidCall(x)))}')">
+                ${m.invalid} <br><span class="text-[7px] font-black text-rose-400 leading-none">(${m.cancelled}/${m.revised}/${m.duplicate}/${m.otherAgency})</span>
+            </td>
+            <td class="p-2 border-r border-b border-slate-300 text-center font-bold text-blue-700 cursor-pointer hover:bg-blue-50 col-completed" onclick="window.openDrilldownModal('${prefix} - Completed', '${storeDrilldown(r.filter(x => window.isCallCompleted(x)))}')">
+                ${m.completed} <br><span class="text-[7px] font-black text-blue-400 leading-none">(${m.compOnline}/${m.compOffline}/${m.prevOffline})</span>
+            </td>
+            <td class="p-2 border-r border-b border-slate-300 text-center font-bold cursor-pointer hover:underline" onclick="window.openDrilldownModal('${prefix} - Prepared', '${storeDrilldown(r.filter(x => window.isCallPrepared(x)))}')">${m.prepared}</td>
+            <td class="p-2 border-r border-b border-slate-300 text-center font-bold text-amber-600 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${prefix} - Unprepared', '${storeDrilldown(r.filter(x => window.isCallCompleted(x) && !window.isCallPrepared(x)))}')">${m.unprepared}</td>
+            <td class="p-2 border-r border-b border-slate-300 text-center font-bold cursor-pointer hover:underline" onclick="window.openDrilldownModal('${prefix} - Submitted', '${storeDrilldown(r.filter(x => window.isCallSubmitted(x)))}')">${m.submitted}</td>
+            <td class="p-2 border-r border-b border-slate-300 text-center font-bold text-amber-600 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${prefix} - Unsubmitted', '${storeDrilldown(r.filter(x => window.isCallPrepared(x) && !window.isCallSubmitted(x)))}')">${m.unsubmitted}</td>
+            <td class="p-2 border-b border-slate-300 text-center font-bold text-purple-700 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${prefix} - Billed', '${storeDrilldown(r.filter(x => window.isCompletedStatus(window.getRowValue(x, 'Billed to DISCOM Date'))))}')">${m.billed}</td>
+        `;
+    };
+
+    function renderHierarchicalTableWithTotals(tbody, groupedData) {
+        const flatRows = []; let sno = 1;
+        const KEYS = ['total', 'valid', 'invalid', 'cancelled', 'revised', 'duplicate', 'otherAgency', 'completed', 'compOnline', 'compOffline', 'prevOffline', 'prepared', 'unprepared', 'submitted', 'unsubmitted', 'billed'];
+        let grandTotals = { rows: [] }; KEYS.forEach(k => grandTotals[k] = 0);
+
         for (const z of Object.keys(groupedData).sort()) {
             const circles = groupedData[z]; const zKey = flatRows.length; let zCount = 0;
-            let zoneTotals = { total: 0, completed: 0, prepared: 0, unprepared: 0, submitted: 0, unsubmitted: 0, billed: 0, rows: [] };
+            let zoneTotals = { rows: [] }; KEYS.forEach(k => zoneTotals[k] = 0);
+
             for (const c of Object.keys(circles).sort()) {
                 const divs = circles[c]; const cKey = flatRows.length; let cCount = 0;
                 for (const d of Object.keys(divs).sort()) {
                     const m = divs[d]; flatRows.push({ type: 'data', zone: z, circle: c, division: d, metrics: m, zRowspan: 0, cRowspan: 0, sno: null });
                     zCount++; cCount++;
-                    ['total', 'completed', 'prepared', 'unprepared', 'submitted', 'unsubmitted', 'billed'].forEach(k => { zoneTotals[k] += m[k]; grandTotals[k] += m[k]; });
+                    KEYS.forEach(k => { zoneTotals[k] += m[k]; grandTotals[k] += m[k]; });
                     zoneTotals.rows = zoneTotals.rows.concat(m.rows); grandTotals.rows = grandTotals.rows.concat(m.rows);
                 }
                 flatRows[cKey].cRowspan = cCount;
@@ -828,44 +1176,26 @@
             flatRows.push({ type: 'zoneTotal', zone: z, metrics: zoneTotals }); zCount++; flatRows[zKey].zRowspan = zCount; flatRows[zKey].sno = sno++;
         }
         if (flatRows.length > 0) flatRows.push({ type: 'grandTotal', metrics: grandTotals });
-        if (flatRows.length === 0) { tbody.innerHTML = '<tr><td colspan="11" class="p-12 text-center text-slate-400 font-bold border-b border-slate-300">No data found.</td></tr>'; return; }
+        if (flatRows.length === 0) { tbody.innerHTML = '<tr><td colspan="13" class="p-12 text-center text-slate-400 font-bold border-b border-slate-300">No data found.</td></tr>'; return; }
 
         const fragment = document.createDocumentFragment();
         flatRows.forEach((row) => {
             const tr = document.createElement('tr'); let html = '';
             if (row.type === 'grandTotal') {
-                tr.className = "bg-blue-100 font-bold break-inside-avoid"; const m = row.metrics;
-                html += `<td colspan="4" class="p-3 border-r border-b border-slate-300 text-right font-black text-blue-900 uppercase tracking-wider">Grand Total</td>`;
-                html += `<td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Total Calls', '${storeDrilldown(m.rows)}')">${m.total}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Completed', '${storeDrilldown(m.rows.filter(r => window.isCallCompleted(r)))}')">${m.completed}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Prepared', '${storeDrilldown(m.rows.filter(r => window.isCallPrepared(r)))}')">${m.prepared}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Unprepared', '${storeDrilldown(m.rows.filter(r => window.isCallCompleted(r) && !window.isCallPrepared(r)))}')">${m.unprepared}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Submitted', '${storeDrilldown(m.rows.filter(r => window.isCallSubmitted(r)))}')">${m.submitted}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Unsubmitted', '${storeDrilldown(m.rows.filter(r => window.isCallPrepared(r) && !window.isCallSubmitted(r)))}')">${m.unsubmitted}</td>
-                    <td class="p-3 border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total - Billed', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(window.getRowValue(r,'Billed to DISCOM Date'))))}')">${m.billed}</td>`;
+                tr.className = "bg-blue-100 font-bold break-inside-avoid";
+                html += `<td colspan="4" class="p-2 border-r border-b border-slate-300 text-right font-black text-blue-900 uppercase tracking-wider">Grand Total</td>`;
+                html += buildCells(row.metrics, row.metrics.rows, 'Grand Total', true);
                 tr.innerHTML = html; fragment.appendChild(tr); return;
             }
             tr.className = row.type === 'data' ? "hover:bg-slate-50 transition break-inside-avoid" : "bg-blue-50 transition break-inside-avoid";
-            if (row.zRowspan > 0) { html += `<td rowspan="${row.zRowspan}" class="p-3 border-r border-b border-slate-300 text-center font-bold bg-white">${row.sno}</td><td rowspan="${row.zRowspan}" class="p-3 border-r border-b border-slate-300 text-center font-bold bg-white">${row.zone}</td>`; }
+            if (row.zRowspan > 0) { html += `<td rowspan="${row.zRowspan}" class="p-2 border-r border-b border-slate-300 text-center font-bold bg-white">${row.sno}</td><td rowspan="${row.zRowspan}" class="p-2 border-r border-b border-slate-300 text-center font-bold bg-white">${row.zone}</td>`; }
             if (row.type === 'zoneTotal') {
-                const m = row.metrics; html += `<td colspan="2" class="p-3 border-r border-b border-slate-300 text-right font-black text-blue-800 uppercase tracking-wider">Zone Total (${row.zone})</td>`;
-                html += `<td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Total Calls', '${storeDrilldown(m.rows)}')">${m.total}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Completed', '${storeDrilldown(m.rows.filter(r => window.isCallCompleted(r)))}')">${m.completed}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Prepared', '${storeDrilldown(m.rows.filter(r => window.isCallPrepared(r)))}')">${m.prepared}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Unprepared', '${storeDrilldown(m.rows.filter(r => window.isCallCompleted(r) && !window.isCallPrepared(r)))}')">${m.unprepared}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Submitted', '${storeDrilldown(m.rows.filter(r => window.isCallSubmitted(r)))}')">${m.submitted}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Unsubmitted', '${storeDrilldown(m.rows.filter(r => window.isCallPrepared(r) && !window.isCallSubmitted(r)))}')">${m.unsubmitted}</td>
-                    <td class="p-3 border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Billed', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(window.getRowValue(r,'Billed to DISCOM Date'))))}')">${m.billed}</td>`;
+                html += `<td colspan="2" class="p-2 border-r border-b border-slate-300 text-right font-black text-blue-800 uppercase tracking-wider">Zone Total (${row.zone})</td>`;
+                html += buildCells(row.metrics, row.metrics.rows, `Zone ${row.zone}`, false);
             } else {
-                if (row.cRowspan > 0) html += `<td rowspan="${row.cRowspan}" class="p-3 border-r border-b border-slate-300 text-center bg-white">${row.circle}</td>`;
-                const m = row.metrics; html += `<td class="p-3 border-r border-b border-slate-300">${row.division}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Total Calls', '${storeDrilldown(m.rows)}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m.total}</span></td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Completed Calls', '${storeDrilldown(m.rows.filter(r => window.isCallCompleted(r)))}')" class="cursor-pointer text-green-600 hover:underline font-bold">${m.completed}</span></td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Prepared Reports', '${storeDrilldown(m.rows.filter(r => window.isCallPrepared(r)))}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m.prepared}</span></td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Unprepared Reports', '${storeDrilldown(m.rows.filter(r => window.isCallCompleted(r) && !window.isCallPrepared(r)))}')" class="cursor-pointer text-amber-600 hover:underline font-bold">${m.unprepared}</span></td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Submitted Reports', '${storeDrilldown(m.rows.filter(r => window.isCallSubmitted(r)))}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m.submitted}</span></td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Unsubmitted Reports', '${storeDrilldown(m.rows.filter(r => window.isCallPrepared(r) && !window.isCallSubmitted(r)))}')" class="cursor-pointer text-amber-600 hover:underline font-bold">${m.unsubmitted}</span></td>
-                    <td class="p-3 border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Billed Calls', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(window.getRowValue(r,'Billed to DISCOM Date'))))}')" class="cursor-pointer text-purple-600 hover:underline font-bold">${m.billed}</span></td>`;
+                if (row.cRowspan > 0) html += `<td rowspan="${row.cRowspan}" class="p-2 border-r border-b border-slate-300 text-center bg-white">${row.circle}</td>`;
+                html += `<td class="p-2 border-r border-b border-slate-300">${row.division}</td>`;
+                html += buildCells(row.metrics, row.metrics.rows, `${row.division}`, false);
             }
             tr.innerHTML = html; fragment.appendChild(tr);
         });
@@ -873,76 +1203,86 @@
     }
 
     function renderInspectorTableWithTotals(tbody, groupedData, inspectorMandaysSum) {
-        const flatRows = []; let sno = 1; let grandTotals = { total: 0, completed: 0, prepared: 0, unprepared: 0, submitted: 0, unsubmitted: 0, billed: 0, rows: [], totalMandays: 0 };
+        const flatRows = []; let sno = 1;
+        const KEYS = ['total', 'valid', 'invalid', 'cancelled', 'revised', 'duplicate', 'otherAgency', 'completed', 'compOnline', 'compOffline', 'prevOffline', 'prepared', 'unprepared', 'submitted', 'unsubmitted', 'billed'];
+        let grandTotals = { rows: [], totalMandays: 0 }; KEYS.forEach(k => grandTotals[k] = 0);
+
         for (const inspector of Object.keys(groupedData).sort()) {
             const zones = groupedData[inspector]; const inspKey = flatRows.length; let inspTotalCount = 0;
-            let inspTotals = { total: 0, completed: 0, prepared: 0, unprepared: 0, submitted: 0, unsubmitted: 0, billed: 0, rows: [], totalMandays: inspectorMandaysSum[inspector] || 0 };
+            let inspTotals = { rows: [], totalMandays: inspectorMandaysSum[inspector] || 0 }; KEYS.forEach(k => inspTotals[k] = 0);
+
             for (const z of Object.keys(zones).sort()) {
                 const circles = zones[z]; const zKey = flatRows.length; let zCount = 0;
-                let zoneTotals = { total: 0, completed: 0, prepared: 0, unprepared: 0, submitted: 0, unsubmitted: 0, billed: 0, rows: [] };
+                let zoneTotals = { rows: [] }; KEYS.forEach(k => zoneTotals[k] = 0);
                 for (const c of Object.keys(circles).sort()) {
                     const divs = circles[c]; const cKey = flatRows.length; let cCount = 0;
                     for (const d of Object.keys(divs).sort()) {
                         const m = divs[d]; flatRows.push({ type: 'data', inspector, zone: z, circle: c, division: d, metrics: m, inspRowspan: 0, zRowspan: 0, cRowspan: 0, sno: null, totalMandays: inspTotals.totalMandays });
                         inspTotalCount++; zCount++; cCount++;
-                        ['total', 'completed', 'prepared', 'unprepared', 'submitted', 'unsubmitted', 'billed'].forEach(k => { zoneTotals[k] += m[k]; inspTotals[k] += m[k]; grandTotals[k] += m[k]; });
+                        KEYS.forEach(k => { zoneTotals[k] += m[k]; inspTotals[k] += m[k]; grandTotals[k] += m[k]; });
                         zoneTotals.rows = zoneTotals.rows.concat(m.rows); inspTotals.rows = inspTotals.rows.concat(m.rows); grandTotals.rows = grandTotals.rows.concat(m.rows);
                     }
                     flatRows[cKey].cRowspan = cCount;
                 }
                 flatRows.push({ type: 'zoneTotal', zone: z, metrics: zoneTotals }); zCount++; inspTotalCount++; flatRows[zKey].zRowspan = zCount;
             }
-            grandTotals.totalMandays += inspTotals.totalMandays; flatRows[inspKey].inspRowspan = inspTotalCount; flatRows[inspKey].sno = sno++;
+
+            // --- ⚡ NEW: Push Inspector Subtotal Row ---
+            flatRows.push({ type: 'inspectorTotal', inspector: inspector, metrics: inspTotals, inspRowspan: 0, zRowspan: 0, cRowspan: 0, sno: null });
+            inspTotalCount++;
+            // ------------------------------------------
+
+            grandTotals.totalMandays += inspTotals.totalMandays; 
+            flatRows[inspKey].inspRowspan = inspTotalCount; 
+            flatRows[inspKey].sno = sno++;
         }
+
         if (flatRows.length > 0) flatRows.push({ type: 'grandTotal', metrics: grandTotals });
-        if (flatRows.length === 0) { tbody.innerHTML = '<tr><td colspan="13" class="p-12 text-center text-slate-400 font-bold border-b border-slate-300">No inspector data found.</td></tr>'; return; }
+        if (flatRows.length === 0) { tbody.innerHTML = '<tr><td colspan="15" class="p-12 text-center text-slate-400 font-bold border-b border-slate-300">No inspector data found.</td></tr>'; return; }
 
         const fragment = document.createDocumentFragment();
         flatRows.forEach((row) => {
             const tr = document.createElement('tr'); let html = '';
             if (row.type === 'grandTotal') {
                 tr.className = "bg-blue-100 font-bold break-inside-avoid"; const m = row.metrics;
-                html += `<td colspan="5" class="p-3 border-r border-b border-slate-300 text-right font-black text-blue-900 uppercase tracking-wider">Grand Total</td>`;
-                html += `<td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total Calls', '${storeDrilldown(m.rows)}')">${m.total}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total Completed', '${storeDrilldown(m.rows.filter(r => window.isCallCompleted(r)))}')">${m.completed}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total Prepared', '${storeDrilldown(m.rows.filter(r => window.isCallPrepared(r)))}')">${m.prepared}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total Unprepared', '${storeDrilldown(m.rows.filter(r => window.isCallCompleted(r) && !window.isCallPrepared(r)))}')">${m.unprepared}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total Submitted', '${storeDrilldown(m.rows.filter(r => window.isCallSubmitted(r)))}')">${m.submitted}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total Unsubmitted', '${storeDrilldown(m.rows.filter(r => window.isCallPrepared(r) && !window.isCallSubmitted(r)))}')">${m.unsubmitted}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-black text-blue-900 cursor-pointer hover:underline" onclick="window.openDrilldownModal('Grand Total Billed', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(window.getRowValue(r,'Billed to DISCOM Date'))))}')">${m.billed}</td>
-                    <td class="p-3 border-b border-slate-300 text-center font-mono font-black text-blue-900">${m.totalMandays.toFixed(2)}</td>`;
+                html += `<td colspan="5" class="p-2 border-r border-b border-slate-300 text-right font-black text-blue-900 uppercase tracking-wider">Grand Total</td>`;
+                html += buildCells(m, m.rows, 'Grand Total', true);
+                html += `<td class="p-2 border-b border-slate-300 text-center font-mono font-black text-blue-900">${m.totalMandays.toFixed(2)}</td>`;
                 tr.innerHTML = html; fragment.appendChild(tr); return;
             }
+
             tr.className = row.type === 'data' ? "hover:bg-slate-50 transition break-inside-avoid" : "bg-blue-50 transition break-inside-avoid";
-            if (row.inspRowspan > 0) { html += `<td rowspan="${row.inspRowspan}" class="p-3 border-r border-b border-slate-300 text-center font-bold bg-white">${row.sno}</td><td rowspan="${row.inspRowspan}" class="p-3 border-r border-b border-slate-300 text-center font-black bg-white">${row.inspector}</td>`; }
-            if (row.zRowspan > 0) { html += `<td rowspan="${row.zRowspan}" class="p-3 border-r border-b border-slate-300 text-center font-bold bg-white">${row.zone}</td>`; }
-            if (row.type === 'zoneTotal') {
-                const m = row.metrics; html += `<td colspan="2" class="p-3 border-r border-b border-slate-300 text-right font-black text-blue-800 uppercase tracking-wider">Zone Total (${row.zone})</td>`;
-                html += `<td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Total Calls', '${storeDrilldown(m.rows)}')">${m.total}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Completed', '${storeDrilldown(m.rows.filter(r => window.isCallCompleted(r)))}')">${m.completed}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Prepared', '${storeDrilldown(m.rows.filter(r => window.isCallPrepared(r)))}')">${m.prepared}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Unprepared', '${storeDrilldown(m.rows.filter(r => window.isCallCompleted(r) && !window.isCallPrepared(r)))}')">${m.unprepared}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Submitted', '${storeDrilldown(m.rows.filter(r => window.isCallSubmitted(r)))}')">${m.submitted}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Unsubmitted', '${storeDrilldown(m.rows.filter(r => window.isCallPrepared(r) && !window.isCallSubmitted(r)))}')">${m.unsubmitted}</td>
-                    <td class="p-3 border-b border-slate-300 text-center font-bold text-blue-800 cursor-pointer hover:underline" onclick="window.openDrilldownModal('${row.zone} - Billed', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(window.getRowValue(r,'Billed to DISCOM Date'))))}')">${m.billed}</td>`;
-            } else {
-                if (row.cRowspan > 0) html += `<td rowspan="${row.cRowspan}" class="p-3 border-r border-b border-slate-300 text-center bg-white">${row.circle}</td>`;
-                const m = row.metrics; html += `<td class="p-3 border-r border-b border-slate-300">${row.division}</td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Total Calls', '${storeDrilldown(m.rows)}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m.total}</span></td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Completed Calls', '${storeDrilldown(m.rows.filter(r => window.isCallCompleted(r)))}')" class="cursor-pointer text-green-600 hover:underline font-bold">${m.completed}</span></td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Prepared Reports', '${storeDrilldown(m.rows.filter(r => window.isCallPrepared(r)))}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m.prepared}</span></td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Unprepared Reports', '${storeDrilldown(m.rows.filter(r => window.isCallCompleted(r) && !window.isCallPrepared(r)))}')" class="cursor-pointer text-amber-600 hover:underline font-bold">${m.unprepared}</span></td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Submitted Reports', '${storeDrilldown(m.rows.filter(r => window.isCallSubmitted(r)))}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m.submitted}</span></td>
-                    <td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Unsubmitted Reports', '${storeDrilldown(m.rows.filter(r => window.isCallPrepared(r) && !window.isCallSubmitted(r)))}')" class="cursor-pointer text-amber-600 hover:underline font-bold">${m.unsubmitted}</span></td>
-                    <td class="p-3 border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Billed Calls', '${storeDrilldown(m.rows.filter(r => isCompletedStatus(window.getRowValue(r,'Billed to DISCOM Date'))))}')" class="cursor-pointer text-purple-600 hover:underline font-bold">${m.billed}</span></td>`;
+
+            // ⚡ Optional: Gives the inspector total row a slightly distinct background color
+            if (row.type === 'inspectorTotal') tr.className = "bg-indigo-50/70 transition break-inside-avoid";
+
+            if (row.inspRowspan > 0) { html += `<td rowspan="${row.inspRowspan}" class="p-2 border-r border-b border-slate-300 text-center font-bold bg-white">${row.sno}</td><td rowspan="${row.inspRowspan}" class="p-2 border-r border-b border-slate-300 text-center font-black bg-white">${row.inspector}</td>`; }
+            if (row.zRowspan > 0) { html += `<td rowspan="${row.zRowspan}" class="p-2 border-r border-b border-slate-300 text-center font-bold bg-white">${row.zone}</td>`; }
+
+            // --- ⚡ NEW: Render the Inspector Subtotal Row ---
+            if (row.type === 'inspectorTotal') {
+                html += `<td colspan="3" class="p-2 border-r border-b border-slate-300 text-right font-black text-indigo-900 uppercase tracking-wider">Sub Total (${row.inspector})</td>`;
+                html += buildCells(row.metrics, row.metrics.rows, `${row.inspector} - Sub Total`, false);
             }
-            if (row.inspRowspan > 0) { html += `<td rowspan="${row.inspRowspan}" class="p-3 border-b border-slate-300 text-center font-mono font-black text-blue-700 bg-blue-50/50">${row.totalMandays.toFixed(2)}</td>`; }
+            // -------------------------------------------------
+            else if (row.type === 'zoneTotal') {
+                html += `<td colspan="2" class="p-2 border-r border-b border-slate-300 text-right font-black text-blue-800 uppercase tracking-wider">Zone Total (${row.zone})</td>`;
+                html += buildCells(row.metrics, row.metrics.rows, `${row.inspector} - ${row.zone}`, false);
+            } else {
+                if (row.cRowspan > 0) html += `<td rowspan="${row.cRowspan}" class="p-2 border-r border-b border-slate-300 text-center bg-white">${row.circle}</td>`;
+                html += `<td class="p-2 border-r border-b border-slate-300">${row.division}</td>`;
+                html += buildCells(row.metrics, row.metrics.rows, `${row.inspector} - ${row.division}`, false);
+            }
+
+            if (row.inspRowspan > 0) { html += `<td rowspan="${row.inspRowspan}" class="p-2 border-b border-slate-300 text-center font-mono font-black text-blue-700 bg-blue-50/50">${row.totalMandays.toFixed(2)}</td>`; }
+
             tr.innerHTML = html; fragment.appendChild(tr);
         });
         tbody.innerHTML = ''; tbody.appendChild(fragment);
     }
 
-    function renderProjectStatusHierarchicalTableWithTotals(tbody, groupedData, primaryLabel) {
+
+    function renderProjectStatusHierarchicalTableWithTotals(tbody, groupedData) {
         const flatRows = []; let sno = 1; let grandTotals = { partA: 0, partB: 0, partC: 0, total: 0, rowsA: [], rowsB: [], rowsC: [], rowsTotal: [] };
         for (const z of Object.keys(groupedData).sort()) {
             const circles = groupedData[z]; const zKey = flatRows.length; let zCount = 0;
@@ -1039,10 +1379,9 @@
             } else {
                 if (row.cRowspan > 0) html += `<td rowspan="${row.cRowspan}" class="p-3 border-r border-b border-slate-300 text-center bg-white">${row.circle}</td>`;
                 const m = row.metrics; html += `<td class="p-3 border-r border-b border-slate-300">${row.division}</td>`;
-                
-                // ⚡ FIX: Use the new dynamic color badge generator!
+
                 let modeColor = window.getDynamicBadgeStyle(row.callMode);
-                
+
                 html += `<td class="p-3 border-r border-b border-slate-300 text-center"><span class="px-2 py-1 rounded text-[9px] font-black uppercase border shadow-sm ${modeColor}">${row.callMode}</span></td>`;
                 callStatusesList.forEach(st => { html += `<td class="p-3 border-r border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - ${st}', '${storeDrilldown(m[`rows_${st}`] || [])}')" class="cursor-pointer text-blue-600 hover:underline font-bold">${m[st] || 0}</span></td>`; });
                 html += `<td class="p-3 border-b border-slate-300 text-center"><span onclick="window.openDrilldownModal('${row.division} - Total Calls', '${storeDrilldown(m.rowsTotal)}')" class="cursor-pointer text-slate-800 hover:underline font-black">${m.total}</span></td>`;
@@ -1052,9 +1391,9 @@
         tbody.innerHTML = ''; tbody.appendChild(fragment);
     }
 
-    window.openDrilldownModal = function(title, cacheId) {
+    window.openDrilldownModal = function (title, cacheId) {
         let rows = window.drilldownCache[cacheId] || [];
-        if (typeof cacheId === 'string' && cacheId.startsWith('%5B')) { try { rows = JSON.parse(decodeURIComponent(cacheId)); } catch(e) {} }
+        if (typeof cacheId === 'string' && cacheId.startsWith('%5B')) { try { rows = JSON.parse(decodeURIComponent(cacheId)); } catch (e) { } }
         const modal = document.getElementById('summary-drilldown-modal');
         document.getElementById('drilldown-modal-title').textContent = title;
         document.getElementById('drilldown-modal-subtitle').textContent = `Total Records Found: ${rows.length}`;
@@ -1064,16 +1403,19 @@
         } else {
             let tableHTML = `<table class="w-full text-left text-xs border-collapse">
                 <thead class="bg-slate-100 text-slate-700 uppercase text-[10px] font-black border-b border-slate-200">
-                    <tr><th class="p-3 border-r border-slate-200">Inspection Code</th><th class="p-3 border-r border-slate-200">Inspector (TPIA)</th><th class="p-3 border-r border-slate-200">Division</th><th class="p-3 border-r border-slate-200">Work Description</th><th class="p-3 text-center">Action</th></tr>
+                    <tr><th class="p-3 border-r border-slate-200">Inspection Code</th><th class="p-3 border-r border-slate-200 text-center">Status</th><th class="p-3 border-r border-slate-200">Inspector (TPIA)</th><th class="p-3 border-r border-slate-200">Division</th><th class="p-3 border-r border-slate-200">Work Description</th><th class="p-3 text-center">Action</th></tr>
                 </thead><tbody class="font-medium text-slate-700">`;
             rows.forEach(r => {
                 const encodedR = encodeURIComponent(JSON.stringify(r));
+                const status = window.getCallStatus(r);
+                const colorClass = window.getDynamicBadgeStyle(status);
                 tableHTML += `<tr>
-                    <td class="p-3 border-r border-b border-slate-100 font-bold text-blue-600 cursor-pointer hover:underline" onclick="window.openSingleInspectionDetails('${encodedR}')">${window.getRowValue(r,'Inspection Code') || 'N/A'}</td>
-                    <td class="p-3 border-r border-b border-slate-100 font-bold">${window.getRowValue(r,'Inspecting Engineer TPIA') || 'Unassigned'}</td>
-                    <td class="p-3 border-r border-b border-slate-100">${window.getRowValue(r,'Division') || '-'}</td>
-                    <td class="p-3 border-r border-b border-slate-100">${window.getRowValue(r,'Description of Work') || '-'}</td>
-                    <td class="p-3 border-b border-slate-100 text-center"><button onclick="window.openSingleInspectionDetails('${encodedR}')" class="px-3 py-1 bg-slate-900 text-white rounded-lg text-[10px] font-bold cursor-pointer">View</button></td>
+                    <td class="p-3 border-r border-b border-slate-100 font-bold text-blue-600 cursor-pointer hover:underline" onclick="window.openSingleInspectionDetails('${encodedR}')">${window.getRowValue(r, 'Inspection Code') || 'N/A'}</td>
+                    <td class="p-3 border-r border-b border-slate-100 text-center"><span class="px-2 py-0.5 rounded text-[8px] font-black uppercase border shadow-sm ${colorClass}">${status}</span></td>
+                    <td class="p-3 border-r border-b border-slate-100 font-bold">${window.getRowValue(r, 'Inspecting Engineer TPIA') || 'Unassigned'}</td>
+                    <td class="p-3 border-r border-b border-slate-100">${window.getRowValue(r, 'Division') || '-'}</td>
+                    <td class="p-3 border-r border-b border-slate-100">${window.getRowValue(r, 'Description of Work') || '-'}</td>
+                    <td class="p-3 border-b border-slate-100 text-center"><button onclick="window.openSingleInspectionDetails('${encodedR}')" class="px-3 py-1 bg-slate-900 text-white rounded-lg text-[10px] font-bold cursor-pointer hover:bg-slate-800 transition shadow-sm">View</button></td>
                 </tr>`;
             });
             contentEl.innerHTML = tableHTML + `</tbody></table>`;
@@ -1081,11 +1423,11 @@
         modal.classList.remove('hidden'); modal.classList.add('flex');
     };
 
-    window.openSingleInspectionDetails = function(rowDataStr) {
+    window.openSingleInspectionDetails = function (rowDataStr) {
         let rowData = typeof rowDataStr === 'string' ? JSON.parse(decodeURIComponent(rowDataStr)) : rowDataStr;
         const modal = document.getElementById('summary-drilldown-modal');
-        document.getElementById('drilldown-modal-title').textContent = `Inspection Details: ${window.getRowValue(rowData,'Inspection Code') || 'N/A'}`;
-        document.getElementById('drilldown-modal-subtitle').textContent = `Inspecting Engineer: ${window.getRowValue(rowData,'Inspecting Engineer TPIA') || 'Unassigned'}`;
+        document.getElementById('drilldown-modal-title').textContent = `Inspection Details: ${window.getRowValue(rowData, 'Inspection Code') || 'N/A'}`;
+        document.getElementById('drilldown-modal-subtitle').textContent = `Inspecting Engineer: ${window.getRowValue(rowData, 'Inspecting Engineer TPIA') || 'Unassigned'}`;
         let detailsHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">`;
         for (const [key, val] of Object.entries(rowData)) {
             if (key === "Agency_Source") continue;
@@ -1095,32 +1437,26 @@
         modal.classList.remove('hidden'); modal.classList.add('flex');
     };
 
-    window.closeDrilldownModal = function() { 
+    window.closeDrilldownModal = function () {
         const m = document.getElementById('summary-drilldown-modal');
-        m.classList.add('hidden'); m.classList.remove('flex'); 
+        m.classList.add('hidden'); m.classList.remove('flex');
     };
 
-    window.switchSummaryAgency = async function(agencyName) {
-        if (window.currentAgency === agencyName) return; 
-        window.currentAgency = agencyName;
-        window.cachedCallsData = []; 
-        
-        const equalitasTab = document.getElementById('sum-tab-Equalitas');
-        const aMarkTab = document.getElementById('sum-tab-A-Mark');
-        const activeClass = ['bg-blue-600', 'text-white', 'shadow-md'];
-        const inactiveClass = ['text-slate-500', 'hover:text-slate-800', 'hover:bg-slate-200'];
-
-        if (agencyName === 'Equalitas') {
-            equalitasTab.classList.add(...activeClass); equalitasTab.classList.remove(...inactiveClass);
-            aMarkTab.classList.add(...inactiveClass); aMarkTab.classList.remove(...activeClass);
-        } else {
-            aMarkTab.classList.add(...activeClass); aMarkTab.classList.remove(...inactiveClass);
-            equalitasTab.classList.add(...inactiveClass); equalitasTab.classList.remove(...activeClass);
+    // --- INITIALIZATION (SPA Safe) ---
+    window.initSummaryPortal = async function () {
+        if (typeof window.showToast !== 'function') {
+            window.showToast = function (message) { alert(message); };
         }
-        await window.renderSummaryPortal();
+
+        window.renderSummaryAgencyTabs();
+
+        const activeClass = "flex-1 sm:flex-none px-5 sm:px-6 py-2 rounded-lg text-xs font-black transition bg-blue-600 text-white shadow-md whitespace-nowrap cursor-pointer";
+        const btn = document.getElementById(`sum-tab-${window.currentAgency}`);
+        if (btn) btn.className = activeClass;
+
+        window.renderSummaryPortal(false);
     };
 
-    document.addEventListener('DOMContentLoaded', () => {
-        window.renderSummaryPortal();
-    });
+    setTimeout(window.initSummaryPortal, 50);
+
 </script>
